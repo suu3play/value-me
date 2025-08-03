@@ -121,6 +121,7 @@ export const calculateHourlyWage = (data: SalaryCalculationData): CalculationRes
   return {
     hourlyWage: isNaN(hourlyWage) ? 0 : Math.round(hourlyWage),
     actualAnnualIncome: isNaN(actualAnnualIncome) ? 0 : Math.round(actualAnnualIncome),
+    actualMonthlyIncome: isNaN(actualAnnualIncome) ? 0 : Math.round(actualAnnualIncome / 12),
     totalWorkingHours: isNaN(totalWorkingHours) ? 0 : Math.round(totalWorkingHours),
     totalAnnualHolidays: isNaN(totalAnnualHolidays) ? 0 : totalAnnualHolidays
   };
