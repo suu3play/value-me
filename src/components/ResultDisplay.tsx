@@ -40,6 +40,13 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
           </Box>
           
           <Box sx={{ minWidth: 120 }}>
+            <Typography variant="caption">実質月収</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+              {formatCurrency(result.actualMonthlyIncome)}
+            </Typography>
+          </Box>
+          
+          <Box sx={{ minWidth: 120 }}>
             <Typography variant="caption">年間労働時間</Typography>
             <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
               {formatNumber(result.totalWorkingHours)}時間

@@ -34,6 +34,7 @@ export interface SalaryCalculationData {
 export interface CalculationResult {
   hourlyWage: number;
   actualAnnualIncome: number;
+  actualMonthlyIncome: number;
   totalWorkingHours: number;
   totalAnnualHolidays: number;
 }
