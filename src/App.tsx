@@ -34,9 +34,16 @@ const theme = createTheme({
 const initialData: SalaryCalculationData = {
     salaryType: 'monthly',
     salaryAmount: 200000,
-    annualHolidays: 120,
+    annualHolidays: 119,
     dailyWorkingHours: 8,
     workingHoursType: 'daily',
+    useDynamicHolidays: true,
+    holidayYear: (() => {
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        return currentMonth >= 4 ? currentYear : currentYear - 1;
+    })(),
+    holidayYearType: 'fiscal',
     enableBenefits: false,
     welfareAmount: 0,
     welfareType: 'monthly',

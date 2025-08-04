@@ -5,6 +5,11 @@ export interface SalaryCalculationData {
   dailyWorkingHours: number;
   workingHoursType: 'daily' | 'weekly' | 'monthly';
   
+  // 祝日計算オプション
+  useDynamicHolidays?: boolean;
+  holidayYear?: number;
+  holidayYearType?: 'calendar' | 'fiscal';
+  
   // オプション機能
   enableBenefits: boolean;
   welfareAmount: number;
@@ -42,4 +47,5 @@ export interface CalculationResult {
 export interface HolidayShortcut {
   label: string;
   days: number;
+  description?: string;
 }

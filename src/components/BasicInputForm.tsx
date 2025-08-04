@@ -8,7 +8,6 @@ import {
     ToggleButton,
     ToggleButtonGroup,
     Button,
-    ButtonGroup,
     Box,
     Checkbox,
     FormControlLabel,
@@ -17,6 +16,8 @@ import {
 } from '@mui/material';
 import { KeyboardArrowUp, KeyboardArrowDown } from '@mui/icons-material';
 import type { SalaryCalculationData, HolidayShortcut } from '../types';
+import YearSelector from './YearSelector';
+import { useHolidayCount } from '../hooks/useHolidayCount';
 
 interface BasicInputFormProps {
     data: SalaryCalculationData;
@@ -24,11 +25,44 @@ interface BasicInputFormProps {
 }
 
 const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
-    const holidayShortcuts: HolidayShortcut[] = [
-        { label: '週休二日制', days: 105 },
-        { label: '完全週休二日制（土日）', days: 120 },
-        { label: '完全週休二日制（土日祝）', days: 124 },
-    ];
+    const { holidayTypeCount, loading } = useHolidayCount(data);
+
+    const getHolidayShortcuts = (): HolidayShortcut[] => {
+        if (data.useDynamicHolidays && holidayTypeCount) {
+            return [
+                { 
+                    label: '週休二日制（土日）', 
+                    days: holidayTypeCount.weeklyTwoDay,
+                    description: '基本土日休み、月1回土日出勤、祝日は出勤'
+                },
+                { 
+                    label: '週休二日制（土日祝）', 
+                    days: holidayTypeCount.weeklyTwoDayWithHolidays,
+                    description: '基本土日祝休み、月1回土日出勤'
+                },
+                { 
+                    label: '完全週休二日制（土日）', 
+                    days: holidayTypeCount.fullWeekendOnly,
+                    description: '完全土日休み、祝日は出勤'
+                },
+                { 
+                    label: '完全週休二日制（土日祝）', 
+                    days: holidayTypeCount.fullWeekendWithHolidays,
+                    description: '完全土日祝休み'
+                },
+            ];
+        } else {
+            // フォールバック（従来の固定値）
+            return [
+                { label: '週休二日制（土日）', days: 97, description: '推定値' },
+                { label: '週休二日制（土日祝）', days: 110, description: '推定値' },
+                { label: '完全週休二日制（土日）', days: 104, description: '推定値' },
+                { label: '完全週休二日制（土日祝）', days: 120, description: '推定値' },
+            ];
+        }
+    };
+
+    const holidayShortcuts = getHolidayShortcuts();
 
     // 総休日数を計算する関数
     const calculateTotalHolidays = () => {
@@ -36,10 +70,10 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
 
         if (data.goldenWeekHolidays) {
             let gwDays = 10;
-            if (data.annualHolidays === 120 || data.annualHolidays === 124) {
+            if (data.annualHolidays === 120 || data.annualHolidays === 119) {
                 gwDays = 6; // 平日のみ
             }
-            if (data.annualHolidays === 124) {
+            if (data.annualHolidays === 119) {
                 gwDays = 4; // 平日のみで祝日除外
             }
             total += gwDays;
@@ -51,10 +85,10 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
 
         if (data.yearEndNewYear) {
             let yearEndDays = 6;
-            if (data.annualHolidays === 120 || data.annualHolidays === 124) {
+            if (data.annualHolidays === 120 || data.annualHolidays === 119) {
                 yearEndDays = 4; // 平日のみ
             }
-            if (data.annualHolidays === 124) {
+            if (data.annualHolidays === 119) {
                 yearEndDays = 3; // 平日のみで祝日除外
             }
             total += yearEndDays;
@@ -63,6 +97,8 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
         total += data.customHolidays;
         return total;
     };
+
+
 
     const handleSalaryTypeChange = (
         _: React.MouseEvent<HTMLElement>,
@@ -201,6 +237,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                 基本情報
             </Typography>
 
+
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {/* 給与種別選択 */}
                 <Box>
@@ -279,9 +316,12 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
 
                 {/* 年間休日 */}
                 <Box>
-                    <Typography variant="h6" gutterBottom>
-                        年間休日
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="h6">
+                            年間休日
+                        </Typography>
+                        <YearSelector data={data} onChange={onChange} />
+                    </Box>
                     <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
                         <InputLabel htmlFor="annual-holidays">
                             年間休日
@@ -317,102 +357,88 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                                 mb: 1,
                             }}
                         >
-                            総休日数: {calculateTotalHolidays()}日
-                        </Typography>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                justifyContent: 'center',
-                                gap: 1,
-                            }}
-                        >
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                                基本{data.annualHolidays}日
+                            総休日数: {calculateTotalHolidays()}日 
+                            <Typography component="span" variant="body2" sx={{ opacity: 0.7, ml: 1 }}>
+                                (基本{data.annualHolidays}日
+                                {data.goldenWeekHolidays && (
+                                    <>
+                                        + GW{(() => {
+                                            let gwDays = 10;
+                                            if (data.annualHolidays === 120 || data.annualHolidays === 119) gwDays = 6;
+                                            if (data.annualHolidays === 119) gwDays = 4;
+                                            return gwDays;
+                                        })()}日
+                                    </>
+                                )}
+                                {data.obon && (
+                                    <> + お盆5日</>
+                                )}
+                                {data.yearEndNewYear && (
+                                    <>
+                                        + 年末年始{(() => {
+                                            let yearEndDays = 6;
+                                            if (data.annualHolidays === 120 || data.annualHolidays === 119) yearEndDays = 4;
+                                            if (data.annualHolidays === 119) yearEndDays = 3;
+                                            return yearEndDays;
+                                        })()}日
+                                    </>
+                                )}
+                                {data.customHolidays > 0 && (
+                                    <> + その他{data.customHolidays}日</>
+                                )}
+                                )
                             </Typography>
-                            {data.goldenWeekHolidays && (
-                                <Typography
-                                    variant="body2"
-                                    sx={{ opacity: 0.9 }}
-                                >
-                                    + GW
-                                    {(() => {
-                                        let gwDays = 10;
-                                        if (
-                                            data.annualHolidays === 120 ||
-                                            data.annualHolidays === 124
-                                        )
-                                            gwDays = 6;
-                                        if (data.annualHolidays === 124)
-                                            gwDays = 4;
-                                        return gwDays;
-                                    })()}
-                                    日
-                                </Typography>
-                            )}
-                            {data.obon && (
-                                <Typography
-                                    variant="body2"
-                                    sx={{ opacity: 0.9 }}
-                                >
-                                    + お盆休み5日
-                                </Typography>
-                            )}
-                            {data.yearEndNewYear && (
-                                <Typography
-                                    variant="body2"
-                                    sx={{ opacity: 0.9 }}
-                                >
-                                    + 年末年始
-                                    {(() => {
-                                        let yearEndDays = 6;
-                                        if (
-                                            data.annualHolidays === 120 ||
-                                            data.annualHolidays === 124
-                                        )
-                                            yearEndDays = 4;
-                                        if (data.annualHolidays === 124)
-                                            yearEndDays = 3;
-                                        return yearEndDays;
-                                    })()}
-                                    日
-                                </Typography>
-                            )}
-                            {data.customHolidays > 0 && (
-                                <Typography
-                                    variant="body2"
-                                    sx={{ opacity: 0.9 }}
-                                >
-                                    + その他{data.customHolidays}日
-                                </Typography>
-                            )}
-                        </Box>
+                        </Typography>
                     </Box>
 
                     {/* ショートカットボタン */}
-                    <ButtonGroup variant="outlined" fullWidth sx={{ mb: 2 }}>
-                        {holidayShortcuts.map((shortcut) => (
-                            <Button
-                                key={shortcut.label}
-                                onClick={() =>
-                                    handleHolidayShortcut(shortcut.days)
-                                }
-                                size="small"
-                                variant={
-                                    data.annualHolidays === shortcut.days
-                                        ? 'contained'
-                                        : 'outlined'
-                                }
-                                color={
-                                    data.annualHolidays === shortcut.days
-                                        ? 'primary'
-                                        : 'inherit'
-                                }
-                            >
-                                {shortcut.label}
-                            </Button>
-                        ))}
-                    </ButtonGroup>
+                    <Box sx={{ mb: 2 }}>
+                        {loading && (
+                            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                                休日日数を計算中...
+                            </Typography>
+                        )}
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                            {holidayShortcuts.map((shortcut) => (
+                                <Button
+                                    key={shortcut.label}
+                                    onClick={() =>
+                                        handleHolidayShortcut(shortcut.days)
+                                    }
+                                    size="small"
+                                    variant={
+                                        data.annualHolidays === shortcut.days
+                                            ? 'contained'
+                                            : 'outlined'
+                                    }
+                                    color={
+                                        data.annualHolidays === shortcut.days
+                                            ? 'primary'
+                                            : 'inherit'
+                                    }
+                                    sx={{ 
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        textAlign: 'center',
+                                        px: 1,
+                                        py: 1.5,
+                                        minHeight: 70,
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    <Typography variant="body2" sx={{ fontWeight: 'bold', lineHeight: 1.2, fontSize: '0.8rem' }}>
+                                        {shortcut.label} <span style={{ color: 'var(--mui-palette-primary-main)' }}>{shortcut.days}日</span>
+                                    </Typography>
+                                    {shortcut.description && (
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.5, lineHeight: 1.2 }}>
+                                            {shortcut.description}
+                                        </Typography>
+                                    )}
+                                </Button>
+                            ))}
+                        </Box>
+                    </Box>
 
                     {/* カスタム休日チェックボックス */}
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -531,6 +557,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                     </Typography>
                 </Box>
             </Box>
+
         </Box>
     );
 };
