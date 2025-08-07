@@ -173,7 +173,7 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                         <ToggleButton
                                             value="annual"
                                             aria-label="annual"
-                                        >
+                                            >
                                             年額
                                         </ToggleButton>
                                     </ToggleButtonGroup>
@@ -379,7 +379,6 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                                     円
                                                 </InputAdornment>
                                             }
-                                            label="住宅手当（{data.welfareType === 'monthly' ? '月額' : '年額'}）"
                                         />
                                     </FormControl>
                                     <FormControl
@@ -450,7 +449,6 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                                     円
                                                 </InputAdornment>
                                             }
-                                            label="地域手当（{data.welfareType === 'monthly' ? '月額' : '年額'}）"
                                         />
                                     </FormControl>
                                 </Box>
@@ -529,7 +527,6 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                                     円
                                                 </InputAdornment>
                                             }
-                                            label="家族手当（{data.welfareType === 'monthly' ? '月額' : '年額'}）"
                                         />
                                     </FormControl>
                                     <FormControl
@@ -603,7 +600,6 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                                     円
                                                 </InputAdornment>
                                             }
-                                            label="資格手当（{data.welfareType === 'monthly' ? '月額' : '年額'}）"
                                         />
                                     </FormControl>
                                 </Box>
@@ -682,7 +678,6 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                                     円
                                                 </InputAdornment>
                                             }
-                                            label="その他手当（{data.welfareType === 'monthly' ? '月額' : '年額'}）"
                                         />
                                     </FormControl>
                                 </Box>
