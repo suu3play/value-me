@@ -139,10 +139,23 @@ class HolidayService {
             const holiday = HolidayJP.isHoliday(date);
             
             if (holiday) {
+              let name = '祝日';
+              let nameEn = 'Holiday';
+              
+              if (typeof holiday === 'object' && holiday !== null) {
+                const holidayObj = holiday as Record<string, unknown>;
+                if ('name' in holidayObj && typeof holidayObj.name === 'string') {
+                  name = holidayObj.name;
+                }
+                if ('name_en' in holidayObj && typeof holidayObj.name_en === 'string') {
+                  nameEn = holidayObj.name_en;
+                }
+              }
+              
               const holidayData = {
                 date: new Date(date),
-                name: typeof holiday === 'object' && holiday && 'name' in holiday && typeof holiday.name === 'string' ? holiday.name : '祝日',
-                nameEn: typeof holiday === 'object' && holiday && 'name_en' in holiday && typeof holiday.name_en === 'string' ? holiday.name_en : 'Holiday'
+                name,
+                nameEn
               };
               holidays.push(holidayData);
             }
