@@ -123,7 +123,7 @@ class HolidayService {
       const yearHolidays = HolidayJP.between(new Date(year, 0, 1), new Date(year, 11, 31));
       
       if (yearHolidays && yearHolidays.length > 0) {
-        yearHolidays.forEach((holiday: any) => {
+        yearHolidays.forEach((holiday: { date: Date | string; name?: string; name_en?: string }) => {
           holidays.push({
             date: new Date(holiday.date),
             name: holiday.name || '祝日',
@@ -141,8 +141,8 @@ class HolidayService {
             if (holiday) {
               const holidayData = {
                 date: new Date(date),
-                name: typeof holiday === 'object' && (holiday as any).name ? (holiday as any).name : '祝日',
-                nameEn: typeof holiday === 'object' && (holiday as any).name_en ? (holiday as any).name_en : 'Holiday'
+                name: typeof holiday === 'object' && holiday && 'name' in holiday && typeof holiday.name === 'string' ? holiday.name : '祝日',
+                nameEn: typeof holiday === 'object' && holiday && 'name_en' in holiday && typeof holiday.name_en === 'string' ? holiday.name_en : 'Holiday'
               };
               holidays.push(holidayData);
             }
@@ -150,7 +150,7 @@ class HolidayService {
         }
       }
     } catch (error) {
-      console.warn('Error getting holidays from library, using fallback');
+      console.warn('Error getting holidays from library, using fallback:', error);
     }
     
     return holidays;
