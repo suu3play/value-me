@@ -1,18 +1,18 @@
 import React from 'react';
 import {
     Typography,
-    FormControl,
-    InputLabel,
-    OutlinedInput,
-    InputAdornment,
     ToggleButton,
     ToggleButtonGroup,
     Box,
     Paper,
-    IconButton,
 } from '@mui/material';
-import { KeyboardArrowUp, KeyboardArrowDown } from '@mui/icons-material';
 import type { SalaryCalculationData } from '../types';
+import ValidatedInput from './ValidatedInput';
+import {
+    validateWelfareAmount,
+    validateAllowance,
+    validateBonus
+} from '../utils/validation';
 
 interface OptionsFormProps {
     data: SalaryCalculationData;
@@ -38,63 +38,6 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
         }
     };
 
-    const handleWelfareAmountChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const value = parseInt(event.target.value) || 0;
-        onChange({ ...data, welfareAmount: value });
-    };
-
-    const handleWelfareIncrease = () => {
-        const increment = data.welfareType === 'monthly' ? 1000 : 10000;
-        onChange({ ...data, welfareAmount: data.welfareAmount + increment });
-    };
-
-    const handleWelfareDecrease = () => {
-        const decrement = data.welfareType === 'monthly' ? 1000 : 10000;
-        const newAmount = Math.max(0, data.welfareAmount - decrement);
-        onChange({ ...data, welfareAmount: newAmount });
-    };
-
-    const handleAllowanceChange =
-        (field: keyof SalaryCalculationData) =>
-        (event: React.ChangeEvent<HTMLInputElement>) => {
-            const value = parseInt(event.target.value) || 0;
-            onChange({ ...data, [field]: value });
-        };
-
-    const handleAllowanceIncrease =
-        (field: keyof SalaryCalculationData) => () => {
-            const currentValue = data[field] as number;
-            const increment = data.welfareType === 'monthly' ? 1000 : 10000;
-            onChange({ ...data, [field]: currentValue + increment });
-        };
-
-    const handleAllowanceDecrease =
-        (field: keyof SalaryCalculationData) => () => {
-            const currentValue = data[field] as number;
-            const decrement = data.welfareType === 'monthly' ? 1000 : 10000;
-            const newValue = Math.max(0, currentValue - decrement);
-            onChange({ ...data, [field]: newValue });
-        };
-
-    const handleBonusChange =
-        (field: keyof SalaryCalculationData) =>
-        (event: React.ChangeEvent<HTMLInputElement>) => {
-            const value = parseInt(event.target.value) || 0;
-            onChange({ ...data, [field]: value });
-        };
-
-    const handleBonusIncrease = (field: keyof SalaryCalculationData) => () => {
-        const currentValue = data[field] as number;
-        onChange({ ...data, [field]: currentValue + 10000 });
-    };
-
-    const handleBonusDecrease = (field: keyof SalaryCalculationData) => () => {
-        const currentValue = data[field] as number;
-        const newValue = Math.max(0, currentValue - 10000);
-        onChange({ ...data, [field]: newValue });
-    };
 
     return (
         <Box>
@@ -202,80 +145,32 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                             <Typography variant="h6" gutterBottom>
                                 福利厚生額の全体額
                             </Typography>
-                            <FormControl
-                                fullWidth
-                                variant="outlined"
-                                sx={{ mb: 2 }}
-                            >
-                                <InputLabel htmlFor="welfare-amount">
-                                    福利厚生額（
-                                    {data.welfareType === 'monthly'
+                            <ValidatedInput
+                                id="welfare-amount"
+                                label={`福利厚生額（${
+                                    data.welfareType === 'monthly'
                                         ? '月額'
-                                        : '年額'}
-                                    ）
-                                </InputLabel>
-                                <OutlinedInput
-                                    id="welfare-amount"
-                                    type="number"
-                                    value={
-                                        data.welfareInputMethod === 'individual'
-                                            ? data.housingAllowance +
-                                              data.regionalAllowance +
-                                              data.familyAllowance +
-                                              data.qualificationAllowance +
-                                              data.otherAllowance
-                                            : data.welfareAmount || ''
-                                    }
-                                    onChange={handleWelfareAmountChange}
-                                    disabled={
-                                        data.welfareInputMethod === 'individual'
-                                    }
-                                    endAdornment={
-                                        <InputAdornment position="end">
-                                            <Box
-                                                sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    mr: 1,
-                                                }}
-                                            >
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={
-                                                        handleWelfareIncrease
-                                                    }
-                                                    sx={{ p: 0.2, height: 20 }}
-                                                    disabled={
-                                                        data.welfareInputMethod ===
-                                                        'individual'
-                                                    }
-                                                >
-                                                    <KeyboardArrowUp fontSize="small" />
-                                                </IconButton>
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={
-                                                        handleWelfareDecrease
-                                                    }
-                                                    sx={{ p: 0.2, height: 20 }}
-                                                    disabled={
-                                                        data.welfareInputMethod ===
-                                                        'individual'
-                                                    }
-                                                >
-                                                    <KeyboardArrowDown fontSize="small" />
-                                                </IconButton>
-                                            </Box>
-                                            円
-                                        </InputAdornment>
-                                    }
-                                    label={`福利厚生額（${
-                                        data.welfareType === 'monthly'
-                                            ? '月額'
-                                            : '年額'
-                                    }）`}
-                                />
-                            </FormControl>
+                                        : '年額'
+                                }）`}
+                                value={
+                                    data.welfareInputMethod === 'individual'
+                                        ? data.housingAllowance +
+                                          data.regionalAllowance +
+                                          data.familyAllowance +
+                                          data.qualificationAllowance +
+                                          data.otherAllowance
+                                        : data.welfareAmount
+                                }
+                                onChange={(value) => onChange({ ...data, welfareAmount: value })}
+                                validator={validateWelfareAmount}
+                                type="integer"
+                                step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                unit="円"
+                                disabled={data.welfareInputMethod === 'individual'}
+                                showIncrementButtons={data.welfareInputMethod !== 'individual'}
+                                helperText="福利厚生額を入力してください（0円～1,000万円）"
+                                sx={{ mb: 2 }}
+                            />
                         </Box>
 
                         {/* 各種手当 */}
@@ -311,146 +206,40 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                         flexWrap: 'wrap',
                                     }}
                                 >
-                                    <FormControl
+                                    <ValidatedInput
+                                        id="housing-allowance"
+                                        label={`住宅手当（${
+                                            data.welfareType === 'monthly' ? '月額' : '年額'
+                                        }）`}
+                                        value={data.housingAllowance}
+                                        onChange={(value) => onChange({ ...data, housingAllowance: value })}
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        unit="円"
+                                        disabled={data.welfareInputMethod === 'total'}
+                                        showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        helperText="住宅手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
-                                        variant="outlined"
-                                    >
-                                        <InputLabel htmlFor="housing-allowance">
-                                            住宅手当（
-                                            {data.welfareType === 'monthly'
-                                                ? '月額'
-                                                : '年額'}
-                                            ）
-                                        </InputLabel>
-                                        <OutlinedInput
-                                            id="housing-allowance"
-                                            type="number"
-                                            value={data.housingAllowance || ''}
-                                            onChange={handleAllowanceChange(
-                                                'housingAllowance'
-                                            )}
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            flexDirection:
-                                                                'column',
-                                                            mr: 1,
-                                                        }}
-                                                    >
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceIncrease(
-                                                                'housingAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowUp fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceDecrease(
-                                                                'housingAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowDown fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                    円
-                                                </InputAdornment>
-                                            }
-                                        />
-                                    </FormControl>
-                                    <FormControl
+                                        fullWidth={false}
+                                    />
+                                    <ValidatedInput
+                                        id="regional-allowance"
+                                        label={`地域手当（${
+                                            data.welfareType === 'monthly' ? '月額' : '年額'
+                                        }）`}
+                                        value={data.regionalAllowance}
+                                        onChange={(value) => onChange({ ...data, regionalAllowance: value })}
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        unit="円"
+                                        disabled={data.welfareInputMethod === 'total'}
+                                        showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        helperText="地域手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
-                                        variant="outlined"
-                                    >
-                                        <InputLabel htmlFor="regional-allowance">
-                                            地域手当（
-                                            {data.welfareType === 'monthly'
-                                                ? '月額'
-                                                : '年額'}
-                                            ）
-                                        </InputLabel>
-                                        <OutlinedInput
-                                            id="regional-allowance"
-                                            type="number"
-                                            value={data.regionalAllowance || ''}
-                                            onChange={handleAllowanceChange(
-                                                'regionalAllowance'
-                                            )}
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            flexDirection:
-                                                                'column',
-                                                            mr: 1,
-                                                        }}
-                                                    >
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceIncrease(
-                                                                'regionalAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowUp fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceDecrease(
-                                                                'regionalAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowDown fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                    円
-                                                </InputAdornment>
-                                            }
-                                        />
-                                    </FormControl>
+                                        fullWidth={false}
+                                    />
                                 </Box>
                                 <Box
                                     sx={{
@@ -459,149 +248,40 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                         flexWrap: 'wrap',
                                     }}
                                 >
-                                    <FormControl
+                                    <ValidatedInput
+                                        id="family-allowance"
+                                        label={`家族手当（${
+                                            data.welfareType === 'monthly' ? '月額' : '年額'
+                                        }）`}
+                                        value={data.familyAllowance}
+                                        onChange={(value) => onChange({ ...data, familyAllowance: value })}
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        unit="円"
+                                        disabled={data.welfareInputMethod === 'total'}
+                                        showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        helperText="家族手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
-                                        variant="outlined"
-                                    >
-                                        <InputLabel htmlFor="family-allowance">
-                                            家族手当（
-                                            {data.welfareType === 'monthly'
-                                                ? '月額'
-                                                : '年額'}
-                                            ）
-                                        </InputLabel>
-                                        <OutlinedInput
-                                            id="family-allowance"
-                                            type="number"
-                                            value={data.familyAllowance || ''}
-                                            onChange={handleAllowanceChange(
-                                                'familyAllowance'
-                                            )}
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            flexDirection:
-                                                                'column',
-                                                            mr: 1,
-                                                        }}
-                                                    >
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceIncrease(
-                                                                'familyAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowUp fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceDecrease(
-                                                                'familyAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowDown fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                    円
-                                                </InputAdornment>
-                                            }
-                                        />
-                                    </FormControl>
-                                    <FormControl
+                                        fullWidth={false}
+                                    />
+                                    <ValidatedInput
+                                        id="qualification-allowance"
+                                        label={`資格手当（${
+                                            data.welfareType === 'monthly' ? '月額' : '年額'
+                                        }）`}
+                                        value={data.qualificationAllowance}
+                                        onChange={(value) => onChange({ ...data, qualificationAllowance: value })}
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        unit="円"
+                                        disabled={data.welfareInputMethod === 'total'}
+                                        showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        helperText="資格手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
-                                        variant="outlined"
-                                    >
-                                        <InputLabel htmlFor="qualification-allowance">
-                                            資格手当（
-                                            {data.welfareType === 'monthly'
-                                                ? '月額'
-                                                : '年額'}
-                                            ）
-                                        </InputLabel>
-                                        <OutlinedInput
-                                            id="qualification-allowance"
-                                            type="number"
-                                            value={
-                                                data.qualificationAllowance ||
-                                                ''
-                                            }
-                                            onChange={handleAllowanceChange(
-                                                'qualificationAllowance'
-                                            )}
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            flexDirection:
-                                                                'column',
-                                                            mr: 1,
-                                                        }}
-                                                    >
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceIncrease(
-                                                                'qualificationAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowUp fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceDecrease(
-                                                                'qualificationAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowDown fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                    円
-                                                </InputAdornment>
-                                            }
-                                        />
-                                    </FormControl>
+                                        fullWidth={false}
+                                    />
                                 </Box>
                                 <Box
                                     sx={{
@@ -610,76 +290,23 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                         flexWrap: 'wrap',
                                     }}
                                 >
-                                    <FormControl
+                                    <ValidatedInput
+                                        id="other-allowance"
+                                        label={`その他手当（${
+                                            data.welfareType === 'monthly' ? '月額' : '年額'
+                                        }）`}
+                                        value={data.otherAllowance}
+                                        onChange={(value) => onChange({ ...data, otherAllowance: value })}
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        unit="円"
+                                        disabled={data.welfareInputMethod === 'total'}
+                                        showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        helperText="その他手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
-                                        variant="outlined"
-                                    >
-                                        <InputLabel htmlFor="other-allowance">
-                                            その他手当（
-                                            {data.welfareType === 'monthly'
-                                                ? '月額'
-                                                : '年額'}
-                                            ）
-                                        </InputLabel>
-                                        <OutlinedInput
-                                            id="other-allowance"
-                                            type="number"
-                                            value={data.otherAllowance || ''}
-                                            onChange={handleAllowanceChange(
-                                                'otherAllowance'
-                                            )}
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            flexDirection:
-                                                                'column',
-                                                            mr: 1,
-                                                        }}
-                                                    >
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceIncrease(
-                                                                'otherAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowUp fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={handleAllowanceDecrease(
-                                                                'otherAllowance'
-                                                            )}
-                                                            sx={{
-                                                                p: 0.2,
-                                                                height: 20,
-                                                            }}
-                                                            disabled={
-                                                                data.welfareInputMethod ===
-                                                                'total'
-                                                            }
-                                                        >
-                                                            <KeyboardArrowDown fontSize="small" />
-                                                        </IconButton>
-                                                    </Box>
-                                                    円
-                                                </InputAdornment>
-                                            }
-                                        />
-                                    </FormControl>
+                                        fullWidth={false}
+                                    />
                                 </Box>
                             </Box>
                         </Box>
@@ -706,114 +333,34 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                     flexWrap: 'wrap',
                                 }}
                             >
-                                <FormControl
+                                <ValidatedInput
+                                    id="summer-bonus"
+                                    label="夏期賞与"
+                                    value={data.summerBonus}
+                                    onChange={(value) => onChange({ ...data, summerBonus: value })}
+                                    validator={validateBonus}
+                                    type="integer"
+                                    step={10000}
+                                    unit="円"
+                                    showIncrementButtons
+                                    helperText="夏期賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
-                                    variant="outlined"
-                                >
-                                    <InputLabel htmlFor="summer-bonus">
-                                        夏期賞与
-                                    </InputLabel>
-                                    <OutlinedInput
-                                        id="summer-bonus"
-                                        type="number"
-                                        value={data.summerBonus || ''}
-                                        onChange={handleBonusChange(
-                                            'summerBonus'
-                                        )}
-                                        endAdornment={
-                                            <InputAdornment position="end">
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        mr: 1,
-                                                    }}
-                                                >
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={handleBonusIncrease(
-                                                            'summerBonus'
-                                                        )}
-                                                        sx={{
-                                                            p: 0.2,
-                                                            height: 20,
-                                                        }}
-                                                    >
-                                                        <KeyboardArrowUp fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={handleBonusDecrease(
-                                                            'summerBonus'
-                                                        )}
-                                                        sx={{
-                                                            p: 0.2,
-                                                            height: 20,
-                                                        }}
-                                                    >
-                                                        <KeyboardArrowDown fontSize="small" />
-                                                    </IconButton>
-                                                </Box>
-                                                円
-                                            </InputAdornment>
-                                        }
-                                        label="夏期賞与"
-                                    />
-                                </FormControl>
-                                <FormControl
+                                    fullWidth={false}
+                                />
+                                <ValidatedInput
+                                    id="winter-bonus"
+                                    label="冬期賞与"
+                                    value={data.winterBonus}
+                                    onChange={(value) => onChange({ ...data, winterBonus: value })}
+                                    validator={validateBonus}
+                                    type="integer"
+                                    step={10000}
+                                    unit="円"
+                                    showIncrementButtons
+                                    helperText="冬期賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
-                                    variant="outlined"
-                                >
-                                    <InputLabel htmlFor="winter-bonus">
-                                        冬期賞与
-                                    </InputLabel>
-                                    <OutlinedInput
-                                        id="winter-bonus"
-                                        type="number"
-                                        value={data.winterBonus || ''}
-                                        onChange={handleBonusChange(
-                                            'winterBonus'
-                                        )}
-                                        endAdornment={
-                                            <InputAdornment position="end">
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        mr: 1,
-                                                    }}
-                                                >
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={handleBonusIncrease(
-                                                            'winterBonus'
-                                                        )}
-                                                        sx={{
-                                                            p: 0.2,
-                                                            height: 20,
-                                                        }}
-                                                    >
-                                                        <KeyboardArrowUp fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={handleBonusDecrease(
-                                                            'winterBonus'
-                                                        )}
-                                                        sx={{
-                                                            p: 0.2,
-                                                            height: 20,
-                                                        }}
-                                                    >
-                                                        <KeyboardArrowDown fontSize="small" />
-                                                    </IconButton>
-                                                </Box>
-                                                円
-                                            </InputAdornment>
-                                        }
-                                        label="冬期賞与"
-                                    />
-                                </FormControl>
+                                    fullWidth={false}
+                                />
                             </Box>
                             <Box
                                 sx={{
@@ -822,114 +369,34 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                     flexWrap: 'wrap',
                                 }}
                             >
-                                <FormControl
+                                <ValidatedInput
+                                    id="settlement-bonus"
+                                    label="決算賞与"
+                                    value={data.settlementBonus}
+                                    onChange={(value) => onChange({ ...data, settlementBonus: value })}
+                                    validator={validateBonus}
+                                    type="integer"
+                                    step={10000}
+                                    unit="円"
+                                    showIncrementButtons
+                                    helperText="決算賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
-                                    variant="outlined"
-                                >
-                                    <InputLabel htmlFor="settlement-bonus">
-                                        決算賞与
-                                    </InputLabel>
-                                    <OutlinedInput
-                                        id="settlement-bonus"
-                                        type="number"
-                                        value={data.settlementBonus || ''}
-                                        onChange={handleBonusChange(
-                                            'settlementBonus'
-                                        )}
-                                        endAdornment={
-                                            <InputAdornment position="end">
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        mr: 1,
-                                                    }}
-                                                >
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={handleBonusIncrease(
-                                                            'settlementBonus'
-                                                        )}
-                                                        sx={{
-                                                            p: 0.2,
-                                                            height: 20,
-                                                        }}
-                                                    >
-                                                        <KeyboardArrowUp fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={handleBonusDecrease(
-                                                            'settlementBonus'
-                                                        )}
-                                                        sx={{
-                                                            p: 0.2,
-                                                            height: 20,
-                                                        }}
-                                                    >
-                                                        <KeyboardArrowDown fontSize="small" />
-                                                    </IconButton>
-                                                </Box>
-                                                円
-                                            </InputAdornment>
-                                        }
-                                        label="決算賞与"
-                                    />
-                                </FormControl>
-                                <FormControl
+                                    fullWidth={false}
+                                />
+                                <ValidatedInput
+                                    id="other-bonus"
+                                    label="その他特別賞与"
+                                    value={data.otherBonus}
+                                    onChange={(value) => onChange({ ...data, otherBonus: value })}
+                                    validator={validateBonus}
+                                    type="integer"
+                                    step={10000}
+                                    unit="円"
+                                    showIncrementButtons
+                                    helperText="その他特別賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
-                                    variant="outlined"
-                                >
-                                    <InputLabel htmlFor="other-bonus">
-                                        その他特別賞与
-                                    </InputLabel>
-                                    <OutlinedInput
-                                        id="other-bonus"
-                                        type="number"
-                                        value={data.otherBonus || ''}
-                                        onChange={handleBonusChange(
-                                            'otherBonus'
-                                        )}
-                                        endAdornment={
-                                            <InputAdornment position="end">
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        mr: 1,
-                                                    }}
-                                                >
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={handleBonusIncrease(
-                                                            'otherBonus'
-                                                        )}
-                                                        sx={{
-                                                            p: 0.2,
-                                                            height: 20,
-                                                        }}
-                                                    >
-                                                        <KeyboardArrowUp fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={handleBonusDecrease(
-                                                            'otherBonus'
-                                                        )}
-                                                        sx={{
-                                                            p: 0.2,
-                                                            height: 20,
-                                                        }}
-                                                    >
-                                                        <KeyboardArrowDown fontSize="small" />
-                                                    </IconButton>
-                                                </Box>
-                                                円
-                                            </InputAdornment>
-                                        }
-                                        label="その他特別賞与"
-                                    />
-                                </FormControl>
+                                    fullWidth={false}
+                                />
                             </Box>
                         </Box>
                     </Box>

@@ -1,23 +1,23 @@
 import React from 'react';
 import {
     Typography,
-    FormControl,
-    InputLabel,
-    OutlinedInput,
-    InputAdornment,
     ToggleButton,
     ToggleButtonGroup,
     Button,
     Box,
     Checkbox,
     FormControlLabel,
-    TextField,
-    IconButton,
 } from '@mui/material';
-import { KeyboardArrowUp, KeyboardArrowDown } from '@mui/icons-material';
 import type { SalaryCalculationData, HolidayShortcut } from '../types';
 import YearSelector from './YearSelector';
 import { useHolidayCount } from '../hooks/useHolidayCount';
+import ValidatedInput from './ValidatedInput';
+import {
+    validateSalary,
+    validateHolidays,
+    validateWorkingHours,
+    validateCustomHolidays
+} from '../utils/validation';
 
 interface BasicInputFormProps {
     data: SalaryCalculationData;
@@ -109,37 +109,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
         }
     };
 
-    const handleSalaryAmountChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const value = parseInt(event.target.value) || 0;
-        onChange({ ...data, salaryAmount: value });
-    };
-
-    const handleSalaryIncrease = () => {
-        const increment = data.salaryType === 'monthly' ? 1000 : 10000;
-        onChange({ ...data, salaryAmount: data.salaryAmount + increment });
-    };
-
-    const handleSalaryDecrease = () => {
-        const decrement = data.salaryType === 'monthly' ? 1000 : 10000;
-        const newAmount = Math.max(0, data.salaryAmount - decrement);
-        onChange({ ...data, salaryAmount: newAmount });
-    };
-
-    const handleHolidaysChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const value = parseInt(event.target.value) || 0;
-        onChange({ ...data, annualHolidays: value });
-    };
-
-    const handleWorkingHoursChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const value = parseFloat(event.target.value) || 0;
-        onChange({ ...data, dailyWorkingHours: value });
-    };
 
     const handleWorkingHoursTypeChange = (
         _: React.MouseEvent<HTMLElement>,
@@ -220,12 +189,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
             onChange({ ...data, [field]: event.target.checked });
         };
 
-    const handleCustomHolidayDaysChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const value = parseInt(event.target.value) || 0;
-        onChange({ ...data, customHolidays: value });
-    };
 
     return (
         <Box>
@@ -262,56 +225,22 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
 
                 {/* 給与額入力 */}
                 <Box>
-                    <FormControl fullWidth variant="outlined">
-                        <InputLabel htmlFor="salary-amount">
-                            {data.salaryType === 'monthly' ? '月収' : '年収'}
-                        </InputLabel>
-                        <OutlinedInput
-                            id="salary-amount"
-                            type="number"
-                            value={data.salaryAmount || ''}
-                            onChange={handleSalaryAmountChange}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            mr: 1,
-                                        }}
-                                    >
-                                        <IconButton
-                                            size="small"
-                                            onClick={handleSalaryIncrease}
-                                            sx={{ p: 0.2, height: 20 }}
-                                        >
-                                            <KeyboardArrowUp fontSize="small" />
-                                        </IconButton>
-                                        <IconButton
-                                            size="small"
-                                            onClick={handleSalaryDecrease}
-                                            sx={{ p: 0.2, height: 20 }}
-                                        >
-                                            <KeyboardArrowDown fontSize="small" />
-                                        </IconButton>
-                                    </Box>
-                                    円
-                                </InputAdornment>
-                            }
-                            label={
-                                data.salaryType === 'monthly' ? '月収' : '年収'
-                            }
-                        />
-                    </FormControl>
-                    <Typography
-                        variant="caption"
-                        color="textSecondary"
-                        sx={{ ml: 1, mt: 0.5 }}
-                    >
-                        {data.salaryType === 'monthly'
-                            ? '▲▼ボタンで1,000円単位で調整'
-                            : '▲▼ボタンで10,000円単位で調整'}
-                    </Typography>
+                    <ValidatedInput
+                        id="salary-amount"
+                        label={data.salaryType === 'monthly' ? '月収' : '年収'}
+                        value={data.salaryAmount}
+                        onChange={(value) => onChange({ ...data, salaryAmount: value })}
+                        validator={validateSalary}
+                        type="integer"
+                        step={data.salaryType === 'monthly' ? 1000 : 10000}
+                        unit="円"
+                        showIncrementButtons
+                        helperText={
+                            data.salaryType === 'monthly'
+                                ? '月収を入力してください（0円～1億円）'
+                                : '年収を入力してください（0円～1億円）'
+                        }
+                    />
                 </Box>
 
                 {/* 年間休日 */}
@@ -322,23 +251,17 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                         </Typography>
                         <YearSelector data={data} onChange={onChange} />
                     </Box>
-                    <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
-                        <InputLabel htmlFor="annual-holidays">
-                            年間休日
-                        </InputLabel>
-                        <OutlinedInput
-                            id="annual-holidays"
-                            type="number"
-                            value={data.annualHolidays || ''}
-                            onChange={handleHolidaysChange}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    日
-                                </InputAdornment>
-                            }
-                            label="年間休日"
-                        />
-                    </FormControl>
+                    <ValidatedInput
+                        id="annual-holidays"
+                        label="年間休日"
+                        value={data.annualHolidays}
+                        onChange={(value) => onChange({ ...data, annualHolidays: value })}
+                        validator={validateHolidays}
+                        type="integer"
+                        unit="日"
+                        helperText="年間休日数を入力してください（0～366日）"
+                        sx={{ mb: 2 }}
+                    />
 
                     <Box
                         sx={{
@@ -473,20 +396,17 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                             }
                             label="年末年始"
                         />
-                        <TextField
-                            size="small"
+                        <ValidatedInput
+                            id="custom-holidays"
                             label="その他特別休暇"
-                            type="number"
-                            value={data.customHolidays || ''}
-                            onChange={handleCustomHolidayDaysChange}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        日
-                                    </InputAdornment>
-                                ),
-                            }}
-                            sx={{ minWidth: 150 }}
+                            value={data.customHolidays}
+                            onChange={(value) => onChange({ ...data, customHolidays: value })}
+                            validator={validateCustomHolidays}
+                            type="integer"
+                            unit="日"
+                            helperText="その他の特別休暇日数（0～365日）"
+                            sx={{ minWidth: 200 }}
+                            fullWidth={false}
                         />
                     </Box>
                 </Box>
@@ -515,39 +435,23 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                             </ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
-                    <FormControl fullWidth variant="outlined">
-                        <InputLabel htmlFor="working-hours">
-                            {data.workingHoursType === 'daily'
+                    <ValidatedInput
+                        id="working-hours"
+                        label={
+                            data.workingHoursType === 'daily'
                                 ? '1日の労働時間'
                                 : data.workingHoursType === 'weekly'
                                 ? '1週の労働時間'
-                                : '1ヶ月の労働時間'}
-                        </InputLabel>
-                        <OutlinedInput
-                            id="working-hours"
-                            type="number"
-                            inputProps={{
-                                step:
-                                    data.workingHoursType === 'daily'
-                                        ? '0.5'
-                                        : '1',
-                            }}
-                            value={getDisplayWorkingHours() || ''}
-                            onChange={handleWorkingHoursChange}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    時間
-                                </InputAdornment>
-                            }
-                            label={
-                                data.workingHoursType === 'daily'
-                                    ? '1日の労働時間'
-                                    : data.workingHoursType === 'weekly'
-                                    ? '1週の労働時間'
-                                    : '1ヶ月の労働時間'
-                            }
-                        />
-                    </FormControl>
+                                : '1ヶ月の労働時間'
+                        }
+                        value={getDisplayWorkingHours()}
+                        onChange={(value) => onChange({ ...data, dailyWorkingHours: value })}
+                        validator={validateWorkingHours}
+                        type="float"
+                        step={data.workingHoursType === 'daily' ? 0.5 : 1}
+                        unit="時間"
+                        helperText="労働時間を入力してください（0.5～24時間）"
+                    />
                     <Typography
                         variant="caption"
                         color="textSecondary"
