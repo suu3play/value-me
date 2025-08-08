@@ -45,9 +45,9 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                 オプション機能
             </Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
                 {/* 福利厚生 */}
-                <Paper elevation={1} sx={{ p: 3, bgcolor: 'grey.50' }}>
+                <Paper elevation={1} sx={{ p: { xs: 2, sm: 3 }, bgcolor: 'grey.50' }}>
                     <Box
                         sx={{
                             display: 'flex',
@@ -81,6 +81,11 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                         }
                                         aria-label="welfare input method"
                                         size="small"
+                                        sx={{
+                                            '& .MuiToggleButton-root': {
+                                                minHeight: { xs: 44, sm: 40 },
+                                            }
+                                        }}
                                     >
                                         <ToggleButton
                                             value="individual"
@@ -106,6 +111,11 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                                         onChange={handleWelfareTypeChange}
                                         aria-label="welfare type"
                                         size="small"
+                                        sx={{
+                                            '& .MuiToggleButton-root': {
+                                                minHeight: { xs: 44, sm: 40 },
+                                            }
+                                        }}
                                     >
                                         <ToggleButton
                                             value="monthly"
@@ -314,7 +324,7 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                 </Paper>
 
                 {/* ボーナス */}
-                <Paper elevation={1} sx={{ p: 3, bgcolor: 'grey.50' }}>
+                <Paper elevation={1} sx={{ p: { xs: 2, sm: 3 }, bgcolor: 'grey.50' }}>
                     <Box>
                         <Typography variant="h6" gutterBottom>
                             ボーナス（年額）
