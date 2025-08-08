@@ -201,7 +201,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
             </Typography>
 
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
                 {/* 給与種別選択 */}
                 <Box>
                     <Typography variant="h6" gutterBottom>
@@ -213,6 +213,11 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                         onChange={handleSalaryTypeChange}
                         aria-label="salary type"
                         fullWidth
+                        sx={{
+                            '& .MuiToggleButton-root': {
+                                minHeight: { xs: 48, sm: 44 },
+                            }
+                        }}
                     >
                         <ToggleButton value="monthly" aria-label="monthly">
                             月収
@@ -321,7 +326,13 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                                 休日日数を計算中...
                             </Typography>
                         )}
-                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                        <Box 
+                            sx={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, 
+                                gap: { xs: 1, sm: 1 } 
+                            }}
+                        >
                             {holidayShortcuts.map((shortcut) => (
                                 <Button
                                     key={shortcut.label}
@@ -423,6 +434,11 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                             onChange={handleWorkingHoursTypeChange}
                             aria-label="working hours type"
                             size="small"
+                            sx={{
+                                '& .MuiToggleButton-root': {
+                                    minHeight: { xs: 44, sm: 40 },
+                                }
+                            }}
                         >
                             <ToggleButton value="daily" aria-label="daily">
                                 1日単位

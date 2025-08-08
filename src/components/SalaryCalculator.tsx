@@ -41,33 +41,61 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange }) =
   }, [data, useDynamicHolidays]);
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       {/* 計算結果を上部に固定表示 */}
       <Paper 
         elevation={4} 
         sx={{ 
-          p: 2,
-          mb: 3,
+          p: { xs: 2, sm: 3 },
+          mb: { xs: 2, sm: 3 },
           borderRadius: 2,
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
           position: 'sticky',
-          top: 90,
-          zIndex: 999
+          top: { xs: 70, sm: 90 },
+          zIndex: 999,
+          mx: { xs: 0, sm: 'auto' },
         }}
       >
         <ResultDisplay result={result} />
       </Paper>
 
       {/* 入力フォーム */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3 }}>
-        <Box sx={{ flex: 1 }}>
-          <Paper elevation={2} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { 
+            xs: 'column', 
+            lg: 'row',
+            '@media (max-height: 600px) and (orientation: landscape) and (min-width: 768px)': 'row'
+          }, 
+          gap: { xs: 2, sm: 3 },
+          width: '100%',
+        }}
+      >
+        <Box sx={{ flex: 1, width: '100%' }}>
+          <Paper 
+            elevation={2} 
+            sx={{ 
+              p: { xs: 2, sm: 3 }, 
+              borderRadius: 2, 
+              mb: { xs: 2, sm: 3 },
+              width: '100%',
+            }}
+          >
             <BasicInputForm data={data} onChange={onChange} />
           </Paper>
         </Box>
-        <Box sx={{ flex: 1 }}>
-          <Paper elevation={2} sx={{ p: 3, borderRadius: 2, mb: 2 }}>
+        <Box sx={{ flex: 1, width: '100%' }}>
+          <Paper 
+            elevation={2} 
+            sx={{ 
+              p: { xs: 2, sm: 3 }, 
+              borderRadius: 2, 
+              mb: { xs: 2, sm: 2 },
+              width: '100%',
+            }}
+          >
             <OptionsForm data={data} onChange={onChange} />
           </Paper>
           <DynamicHolidaySettings data={data} onChange={onChange} />

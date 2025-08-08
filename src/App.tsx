@@ -25,9 +25,55 @@ const theme = createTheme({
             'Roboto',
             'sans-serif',
         ].join(','),
+        h4: {
+            '@media (max-width:600px)': {
+                fontSize: '1.75rem',
+            },
+        },
+        subtitle1: {
+            '@media (max-width:600px)': {
+                fontSize: '0.9rem',
+            },
+        },
     },
     shape: {
         borderRadius: 12,
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    minHeight: 44,
+                    '@media (max-width:600px)': {
+                        minHeight: 48,
+                        fontSize: '1rem',
+                        padding: '12px 16px',
+                    },
+                },
+            },
+        },
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    '@media (max-width:600px)': {
+                        '& .MuiInputBase-root': {
+                            minHeight: 48,
+                        },
+                    },
+                },
+            },
+        },
+        MuiFormControl: {
+            styleOverrides: {
+                root: {
+                    '@media (max-width:600px)': {
+                        '& .MuiInputBase-root': {
+                            minHeight: 48,
+                        },
+                    },
+                },
+            },
+        },
     },
 });
 
@@ -77,6 +123,9 @@ function App() {
                     display: 'flex',
                     flexDirection: 'column',
                     bgcolor: 'grey.50',
+                    '@media (max-height: 600px) and (orientation: landscape)': {
+                        minHeight: 'auto',
+                    },
                 }}
             >
                 {/* 固定ヘッダー */}
@@ -88,12 +137,18 @@ function App() {
                         bgcolor: 'white',
                         borderBottom: '1px solid',
                         borderColor: 'divider',
-                        py: 2,
-                        mb: 3,
+                        py: { xs: 1.5, sm: 2 },
+                        mb: { xs: 2, sm: 3 },
                         width: '100%',
                     }}
                 >
-                    <Container maxWidth="lg" sx={{ width: '100%' }}>
+                    <Container 
+                        maxWidth="lg" 
+                        sx={{ 
+                            width: '100%',
+                            px: { xs: 2, sm: 3 },
+                        }}
+                    >
                         <Typography
                             variant="h4"
                             component="h1"
@@ -101,7 +156,8 @@ function App() {
                             sx={{
                                 fontWeight: 'bold',
                                 color: 'primary.main',
-                                mb: 1,
+                                mb: { xs: 0.5, sm: 1 },
+                                fontSize: { xs: '1.75rem', sm: '2.125rem' },
                             }}
                         >
                             Value-me
@@ -111,6 +167,9 @@ function App() {
                             component="p"
                             align="center"
                             color="textSecondary"
+                            sx={{
+                                fontSize: { xs: '0.9rem', sm: '1rem' },
+                            }}
                         >
                             あなたの時給を正確に計算しましょう
                         </Typography>
@@ -122,14 +181,20 @@ function App() {
                     maxWidth="lg"
                     sx={{
                         flex: 1,
-                        py: 2,
+                        py: { xs: 1, sm: 2 },
+                        px: { xs: 2, sm: 3 },
                         width: '100%',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'flex-start',
                     }}
                 >
-                    <Box sx={{ width: '100%', maxWidth: '1200px' }}>
+                    <Box 
+                        sx={{ 
+                            width: '100%', 
+                            maxWidth: { xs: '100%', sm: '1200px' },
+                        }}
+                    >
                         <SalaryCalculator
                             data={calculationData}
                             onChange={setCalculationData}

@@ -21,7 +21,7 @@ const DynamicHolidaySettings: React.FC<DynamicHolidaySettingsProps> = ({ data, o
   };
 
   return (
-    <Box sx={{ p: 1, border: '1px solid', borderColor: 'grey.300', borderRadius: 1, bgcolor: 'grey.50' }}>
+    <Box sx={{ p: { xs: 1, sm: 1 }, border: '1px solid', borderColor: 'grey.300', borderRadius: 1, bgcolor: 'grey.50' }}>
       <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
         祝日計算設定
       </Typography>
