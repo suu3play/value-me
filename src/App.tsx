@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import SalaryCalculator from './components/SalaryCalculator';
 import type { SalaryCalculationData } from './types';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 const theme = createTheme({
     palette: {
@@ -112,6 +113,31 @@ const initialData: SalaryCalculationData = {
 function App() {
     const [calculationData, setCalculationData] =
         useState<SalaryCalculationData>(initialData);
+    
+    const localStorage = useLocalStorage(initialData);
+
+    // LocalStorageからの復元
+    useEffect(() => {
+        if (localStorage.data && localStorage.isEnabled) {
+            setCalculationData(localStorage.data);
+        }
+    }, [localStorage.data, localStorage.isEnabled]);
+
+    // データ変更時の自動保存（デバウンス処理）
+    useEffect(() => {
+        if (!localStorage.isEnabled) return;
+        
+        const timeoutId = window.setTimeout(() => {
+            localStorage.saveData(calculationData);
+        }, 1000);
+
+        return () => clearTimeout(timeoutId);
+    }, [calculationData, localStorage]);
+
+    // データ変更時の処理
+    const handleDataChange = useCallback((newData: SalaryCalculationData) => {
+        setCalculationData(newData);
+    }, []);
 
     return (
         <ThemeProvider theme={theme}>
@@ -197,7 +223,13 @@ function App() {
                     >
                         <SalaryCalculator
                             data={calculationData}
-                            onChange={setCalculationData}
+                            onChange={handleDataChange}
+                            localStorageProps={{
+                                isEnabled: localStorage.isEnabled,
+                                onToggleEnabled: localStorage.toggleEnabled,
+                                onClearData: localStorage.clearData,
+                                isSupported: localStorage.isSupported,
+                            }}
                         />
                     </Box>
                 </Container>
