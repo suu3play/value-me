@@ -5,15 +5,24 @@ import BasicInputForm from './BasicInputForm';
 import OptionsForm from './OptionsForm';
 import ResultDisplay from './ResultDisplay';
 import DynamicHolidaySettings from './DynamicHolidaySettings';
+import DataPersistenceSettings from './DataPersistenceSettings';
 import { calculateHourlyWage } from '../utils/calculations';
 import { calculateHourlyWageWithDynamicHolidays } from '../utils/dynamicHolidayCalculations';
+
+interface LocalStorageProps {
+  isEnabled: boolean;
+  onToggleEnabled: (enabled: boolean) => void;
+  onClearData: () => void;
+  isSupported: boolean;
+}
 
 interface SalaryCalculatorProps {
   data: SalaryCalculationData;
   onChange: (data: SalaryCalculationData) => void;
+  localStorageProps?: LocalStorageProps;
 }
 
-const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange }) => {
+const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, localStorageProps }) => {
   const [result, setResult] = useState<CalculationResult>(() => calculateHourlyWage(data));
   const [useDynamicHolidays, setUseDynamicHolidays] = useState(true);
 
@@ -99,6 +108,16 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange }) =
             <OptionsForm data={data} onChange={onChange} />
           </Paper>
           <DynamicHolidaySettings data={data} onChange={onChange} />
+          {localStorageProps && (
+            <Box sx={{ mt: { xs: 2, sm: 2 } }}>
+              <DataPersistenceSettings
+                isEnabled={localStorageProps.isEnabled}
+                onToggleEnabled={localStorageProps.onToggleEnabled}
+                onClearData={localStorageProps.onClearData}
+                isSupported={localStorageProps.isSupported}
+              />
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>
