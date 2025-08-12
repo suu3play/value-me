@@ -1,13 +1,16 @@
 import React from 'react';
-import { Typography, Box, Divider } from '@mui/material';
+import { Typography, Box, Divider, Button } from '@mui/material';
+import { Save as SaveIcon } from '@mui/icons-material';
 import type { CalculationResult } from '../types';
 import { formatCurrency, formatNumber } from '../utils/calculations';
 
 interface ResultDisplayProps {
   result: CalculationResult;
+  onSaveToHistory?: () => void;
+  isSaving?: boolean;
 }
 
-const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
+const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, onSaveToHistory, isSaving = false }) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
       {/* 時給表示 */}
@@ -31,7 +34,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
           内訳
         </Typography>
         
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-end' }}>
           <Box sx={{ minWidth: 120 }}>
             <Typography variant="caption">実質年収</Typography>
             <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
@@ -59,6 +62,40 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
               {formatNumber(result.totalAnnualHolidays)}日
             </Typography>
           </Box>
+          
+          {/* 保存ボタン */}
+          {result.hourlyWage > 0 && onSaveToHistory && (
+            <Box sx={{ ml: 'auto', minWidth: 120 }}>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<SaveIcon />}
+                onClick={onSaveToHistory}
+                disabled={isSaving}
+                sx={{
+                  backgroundColor: isSaving ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.15)',
+                  color: 'inherit',
+                  fontWeight: 'bold',
+                  borderRadius: 2,
+                  px: 2,
+                  py: 1,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  '&:hover:not(:disabled)': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                    transform: 'translateY(-1px)',
+                  },
+                  '&:disabled': {
+                    color: 'rgba(255, 255, 255, 0.5)',
+                  },
+                  transition: 'all 0.2s ease-in-out',
+                }}
+              >
+                {isSaving ? '保存中...' : '履歴に保存'}
+              </Button>
+            </Box>
+          )}
         </Box>
       </Box>
 

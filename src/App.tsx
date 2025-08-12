@@ -1,12 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Fab from '@mui/material/Fab';
+import Badge from '@mui/material/Badge';
+import { History as HistoryIcon } from '@mui/icons-material';
 import SalaryCalculator from './components/SalaryCalculator';
+import { CalculationHistory } from './components/CalculationHistory';
 import type { SalaryCalculationData } from './types';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useCalculationHistory } from './hooks/useCalculationHistory';
 
 const theme = createTheme({
     palette: {
@@ -113,31 +117,60 @@ const initialData: SalaryCalculationData = {
 function App() {
     const [calculationData, setCalculationData] =
         useState<SalaryCalculationData>(initialData);
+    const [historyOpen, setHistoryOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     
-    const localStorage = useLocalStorage(initialData);
-
-    // LocalStorageからの復元
-    useEffect(() => {
-        if (localStorage.data && localStorage.isEnabled) {
-            setCalculationData(localStorage.data);
-        }
-    }, [localStorage.data, localStorage.isEnabled]);
-
-    // データ変更時の自動保存（デバウンス処理）
-    useEffect(() => {
-        if (!localStorage.isEnabled) return;
-        
-        const timeoutId = window.setTimeout(() => {
-            localStorage.saveData(calculationData);
-        }, 1000);
-
-        return () => clearTimeout(timeoutId);
-    }, [calculationData, localStorage]);
+    const calculationHistory = useCalculationHistory();
 
     // データ変更時の処理
     const handleDataChange = useCallback((newData: SalaryCalculationData) => {
         setCalculationData(newData);
     }, []);
+
+    // 手動で履歴に保存する処理（デバウンス付き）
+    const handleSaveToHistory = useCallback(async () => {
+        if (calculationHistory.isSupported && !isSaving) {
+            setIsSaving(true);
+            
+            try {
+                const { calculateHourlyWage } = await import('./utils/calculations');
+                const { calculateHourlyWageWithDynamicHolidays } = await import('./utils/dynamicHolidayCalculations');
+                
+                let result;
+                try {
+                    // 動的祝日計算を優先して試行
+                    result = await calculateHourlyWageWithDynamicHolidays(calculationData, { 
+                        useCurrentYear: true 
+                    });
+                } catch (error) {
+                    // フォールバック計算
+                    console.warn('動的祝日計算に失敗。フォールバック計算を使用:', error);
+                    result = calculateHourlyWage(calculationData);
+                }
+                
+                if (result.hourlyWage > 0) {
+                    calculationHistory.addToHistory(calculationData, result);
+                    console.log('履歴に保存されました:', result.hourlyWage);
+                }
+            } catch (error) {
+                console.error('履歴保存エラー:', error);
+            } finally {
+                // 500ms後にボタンを再有効化
+                setTimeout(() => {
+                    setIsSaving(false);
+                }, 500);
+            }
+        }
+    }, [calculationData, calculationHistory, isSaving]);
+
+    // 履歴からのデータ復元処理
+    const handleRestoreFromHistory = useCallback((data: SalaryCalculationData) => {
+        setCalculationData(data);
+    }, []);
+
+    // 履歴ドロワーの開閉
+    const handleHistoryOpen = () => setHistoryOpen(true);
+    const handleHistoryClose = () => setHistoryOpen(false);
 
     return (
         <ThemeProvider theme={theme}>
@@ -224,15 +257,43 @@ function App() {
                         <SalaryCalculator
                             data={calculationData}
                             onChange={handleDataChange}
-                            localStorageProps={{
-                                isEnabled: localStorage.isEnabled,
-                                onToggleEnabled: localStorage.toggleEnabled,
-                                onClearData: localStorage.clearData,
-                                isSupported: localStorage.isSupported,
-                            }}
+                            onSaveToHistory={handleSaveToHistory}
+                            isSaving={isSaving}
                         />
                     </Box>
                 </Container>
+
+                {/* 履歴表示FAB */}
+                <Badge
+                    badgeContent={calculationHistory.history.length}
+                    color="secondary"
+                    max={99}
+                    sx={{
+                        position: 'fixed',
+                        bottom: { xs: 16, sm: 24 },
+                        right: { xs: 16, sm: 24 },
+                        zIndex: 1000,
+                    }}
+                >
+                    <Fab
+                        color="primary"
+                        aria-label="calculation history"
+                        onClick={handleHistoryOpen}
+                    >
+                        <HistoryIcon />
+                    </Fab>
+                </Badge>
+
+                {/* 履歴ドロワー */}
+                <CalculationHistory
+                    open={historyOpen}
+                    onClose={handleHistoryClose}
+                    onRestoreData={handleRestoreFromHistory}
+                    history={calculationHistory.history}
+                    onRemoveFromHistory={calculationHistory.removeFromHistory}
+                    onClearHistory={calculationHistory.clearHistory}
+                    isSupported={calculationHistory.isSupported}
+                />
             </Box>
         </ThemeProvider>
     );

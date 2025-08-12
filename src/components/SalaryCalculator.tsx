@@ -5,39 +5,32 @@ import BasicInputForm from './BasicInputForm';
 import OptionsForm from './OptionsForm';
 import ResultDisplay from './ResultDisplay';
 import DynamicHolidaySettings from './DynamicHolidaySettings';
-import DataPersistenceSettings from './DataPersistenceSettings';
 import { calculateHourlyWage } from '../utils/calculations';
 import { calculateHourlyWageWithDynamicHolidays } from '../utils/dynamicHolidayCalculations';
-
-interface LocalStorageProps {
-  isEnabled: boolean;
-  onToggleEnabled: (enabled: boolean) => void;
-  onClearData: () => void;
-  isSupported: boolean;
-}
 
 interface SalaryCalculatorProps {
   data: SalaryCalculationData;
   onChange: (data: SalaryCalculationData) => void;
-  localStorageProps?: LocalStorageProps;
+  onSaveToHistory?: () => void;
+  isSaving?: boolean;
 }
 
-const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, localStorageProps }) => {
+const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onSaveToHistory, isSaving }) => {
   const [result, setResult] = useState<CalculationResult>(() => calculateHourlyWage(data));
   const [useDynamicHolidays, setUseDynamicHolidays] = useState(true);
 
   useEffect(() => {
     const updateResult = async () => {
       try {
+        let newResult: CalculationResult;
         if (useDynamicHolidays) {
-          const dynamicResult = await calculateHourlyWageWithDynamicHolidays(data, { 
+          newResult = await calculateHourlyWageWithDynamicHolidays(data, { 
             useCurrentYear: true 
           });
-          setResult(dynamicResult);
         } else {
-          const fallbackResult = calculateHourlyWage(data);
-          setResult(fallbackResult);
+          newResult = calculateHourlyWage(data);
         }
+        setResult(newResult);
       } catch (error) {
         console.warn('動的祝日計算に失敗しました。フォールバック計算を使用します:', error);
         const fallbackResult = calculateHourlyWage(data);
@@ -66,7 +59,7 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, loc
           mx: { xs: 0, sm: 'auto' },
         }}
       >
-        <ResultDisplay result={result} />
+        <ResultDisplay result={result} onSaveToHistory={onSaveToHistory} isSaving={isSaving} />
       </Paper>
 
       {/* 入力フォーム */}
@@ -108,16 +101,6 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, loc
             <OptionsForm data={data} onChange={onChange} />
           </Paper>
           <DynamicHolidaySettings data={data} onChange={onChange} />
-          {localStorageProps && (
-            <Box sx={{ mt: { xs: 2, sm: 2 } }}>
-              <DataPersistenceSettings
-                isEnabled={localStorageProps.isEnabled}
-                onToggleEnabled={localStorageProps.onToggleEnabled}
-                onClearData={localStorageProps.onClearData}
-                isSupported={localStorageProps.isSupported}
-              />
-            </Box>
-          )}
         </Box>
       </Box>
     </Box>

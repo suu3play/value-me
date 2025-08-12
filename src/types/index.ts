@@ -49,3 +49,11 @@ export interface HolidayShortcut {
   days: number;
   description?: string;
 }
+
+export interface CalculationHistoryEntry {
+  id: string;
+  timestamp: number;
+  inputData: SalaryCalculationData;
+  result: CalculationResult;
+  label?: string;
+}
