@@ -9,7 +9,8 @@ import Badge from '@mui/material/Badge';
 import { History as HistoryIcon } from '@mui/icons-material';
 import SalaryCalculator from './components/SalaryCalculator';
 import { CalculationHistory } from './components/CalculationHistory';
-import type { SalaryCalculationData } from './types';
+import ResultDisplay from './components/ResultDisplay';
+import type { SalaryCalculationData, CalculationResult } from './types';
 import { useCalculationHistory } from './hooks/useCalculationHistory';
 
 const theme = createTheme({
@@ -119,7 +120,9 @@ function App() {
         useState<SalaryCalculationData>(initialData);
     const [historyOpen, setHistoryOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    
+    const [calculationResult, setCalculationResult] =
+        useState<CalculationResult | null>(null);
+
     const calculationHistory = useCalculationHistory();
 
     // データ変更時の処理
@@ -127,27 +130,42 @@ function App() {
         setCalculationData(newData);
     }, []);
 
+    // 計算結果更新時の処理
+    const handleResultChange = useCallback((result: CalculationResult) => {
+        setCalculationResult(result);
+    }, []);
+
     // 手動で履歴に保存する処理（デバウンス付き）
     const handleSaveToHistory = useCallback(async () => {
         if (calculationHistory.isSupported && !isSaving) {
             setIsSaving(true);
-            
+
             try {
-                const { calculateHourlyWage } = await import('./utils/calculations');
-                const { calculateHourlyWageWithDynamicHolidays } = await import('./utils/dynamicHolidayCalculations');
-                
+                const { calculateHourlyWage } = await import(
+                    './utils/calculations'
+                );
+                const { calculateHourlyWageWithDynamicHolidays } = await import(
+                    './utils/dynamicHolidayCalculations'
+                );
+
                 let result;
                 try {
                     // 動的祝日計算を優先して試行
-                    result = await calculateHourlyWageWithDynamicHolidays(calculationData, { 
-                        useCurrentYear: true 
-                    });
+                    result = await calculateHourlyWageWithDynamicHolidays(
+                        calculationData,
+                        {
+                            useCurrentYear: true,
+                        }
+                    );
                 } catch (error) {
                     // フォールバック計算
-                    console.warn('動的祝日計算に失敗。フォールバック計算を使用:', error);
+                    console.warn(
+                        '動的祝日計算に失敗。フォールバック計算を使用:',
+                        error
+                    );
                     result = calculateHourlyWage(calculationData);
                 }
-                
+
                 if (result.hourlyWage > 0) {
                     calculationHistory.addToHistory(calculationData, result);
                     console.log('履歴に保存されました:', result.hourlyWage);
@@ -164,9 +182,12 @@ function App() {
     }, [calculationData, calculationHistory, isSaving]);
 
     // 履歴からのデータ復元処理
-    const handleRestoreFromHistory = useCallback((data: SalaryCalculationData) => {
-        setCalculationData(data);
-    }, []);
+    const handleRestoreFromHistory = useCallback(
+        (data: SalaryCalculationData) => {
+            setCalculationData(data);
+        },
+        []
+    );
 
     // 履歴ドロワーの開閉
     const handleHistoryOpen = () => setHistoryOpen(true);
@@ -196,42 +217,62 @@ function App() {
                         bgcolor: 'white',
                         borderBottom: '1px solid',
                         borderColor: 'divider',
-                        py: { xs: 1.5, sm: 2 },
-                        mb: { xs: 2, sm: 3 },
                         width: '100%',
                     }}
                 >
-                    <Container 
-                        maxWidth="lg" 
-                        sx={{ 
+                    <Container
+                        maxWidth="lg"
+                        sx={{
                             width: '100%',
                             px: { xs: 2, sm: 3 },
                         }}
                     >
-                        <Typography
-                            variant="h4"
-                            component="h1"
-                            align="center"
-                            sx={{
-                                fontWeight: 'bold',
-                                color: 'primary.main',
-                                mb: { xs: 0.5, sm: 1 },
-                                fontSize: { xs: '1.75rem', sm: '2.125rem' },
-                            }}
-                        >
-                            Value-me
-                        </Typography>
-                        <Typography
-                            variant="subtitle1"
-                            component="p"
-                            align="center"
-                            color="textSecondary"
-                            sx={{
-                                fontSize: { xs: '0.9rem', sm: '1rem' },
-                            }}
-                        >
-                            あなたの時給を正確に計算しましょう
-                        </Typography>
+                        {/* タイトル部分 */}
+                        <Box sx={{ py: { xs: 1.5, sm: 2 } }}>
+                            <Typography
+                                variant="h4"
+                                component="h1"
+                                align="center"
+                                sx={{
+                                    fontWeight: 'bold',
+                                    color: 'primary.main',
+                                    mb: { xs: 0.5, sm: 1 },
+                                    fontSize: { xs: '1.75rem', sm: '2.125rem' },
+                                }}
+                            >
+                                Value-me
+                            </Typography>
+                            <Typography
+                                variant="subtitle1"
+                                component="p"
+                                align="center"
+                                color="textSecondary"
+                                sx={{
+                                    fontSize: { xs: '0.9rem', sm: '1rem' },
+                                }}
+                            >
+                                あなたの時給を正確に計算しましょう
+                            </Typography>
+                        </Box>
+
+                        {/* 計算結果表示 */}
+                        {calculationResult && (
+                            <Box
+                                sx={{
+                                    bgcolor: 'primary.main',
+                                    color: 'primary.contrastText',
+                                    borderRadius: 2,
+                                    p: { xs: 1, sm: 2 },
+                                    mb: { xs: 1, sm: 2 },
+                                }}
+                            >
+                                <ResultDisplay
+                                    result={calculationResult}
+                                    onSaveToHistory={handleSaveToHistory}
+                                    isSaving={isSaving}
+                                />
+                            </Box>
+                        )}
                     </Container>
                 </Box>
 
@@ -248,17 +289,16 @@ function App() {
                         alignItems: 'flex-start',
                     }}
                 >
-                    <Box 
-                        sx={{ 
-                            width: '100%', 
+                    <Box
+                        sx={{
+                            width: '100%',
                             maxWidth: { xs: '100%', sm: '1200px' },
                         }}
                     >
                         <SalaryCalculator
                             data={calculationData}
                             onChange={handleDataChange}
-                            onSaveToHistory={handleSaveToHistory}
-                            isSaving={isSaving}
+                            onResultChange={handleResultChange}
                         />
                     </Box>
                 </Container>
