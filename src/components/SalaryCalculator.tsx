@@ -3,7 +3,6 @@ import { Box, Paper } from '@mui/material';
 import type { SalaryCalculationData, CalculationResult } from '../types';
 import BasicInputForm from './BasicInputForm';
 import OptionsForm from './OptionsForm';
-import ResultDisplay from './ResultDisplay';
 import DynamicHolidaySettings from './DynamicHolidaySettings';
 import { calculateHourlyWage } from '../utils/calculations';
 import { calculateHourlyWageWithDynamicHolidays } from '../utils/dynamicHolidayCalculations';
@@ -11,12 +10,10 @@ import { calculateHourlyWageWithDynamicHolidays } from '../utils/dynamicHolidayC
 interface SalaryCalculatorProps {
   data: SalaryCalculationData;
   onChange: (data: SalaryCalculationData) => void;
-  onSaveToHistory?: () => void;
-  isSaving?: boolean;
+  onResultChange: (result: CalculationResult) => void;
 }
 
-const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onSaveToHistory, isSaving }) => {
-  const [result, setResult] = useState<CalculationResult>(() => calculateHourlyWage(data));
+const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onResultChange }) => {
   const [useDynamicHolidays, setUseDynamicHolidays] = useState(true);
 
   useEffect(() => {
@@ -30,38 +27,20 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onS
         } else {
           newResult = calculateHourlyWage(data);
         }
-        setResult(newResult);
+        onResultChange(newResult);
       } catch (error) {
         console.warn('動的祝日計算に失敗しました。フォールバック計算を使用します:', error);
         const fallbackResult = calculateHourlyWage(data);
-        setResult(fallbackResult);
+        onResultChange(fallbackResult);
         setUseDynamicHolidays(false);
       }
     };
 
     updateResult();
-  }, [data, useDynamicHolidays]);
+  }, [data, useDynamicHolidays, onResultChange]);
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* 計算結果を上部に固定表示 */}
-      <Paper 
-        elevation={4} 
-        sx={{ 
-          p: { xs: 2, sm: 3 },
-          mb: { xs: 2, sm: 3 },
-          borderRadius: 2,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          position: 'sticky',
-          top: { xs: 70, sm: 90 },
-          zIndex: 999,
-          mx: { xs: 0, sm: 'auto' },
-        }}
-      >
-        <ResultDisplay result={result} onSaveToHistory={onSaveToHistory} isSaving={isSaving} />
-      </Paper>
-
       {/* 入力フォーム */}
       <Box 
         sx={{ 
