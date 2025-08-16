@@ -57,3 +57,33 @@ export interface CalculationHistoryEntry {
   result: CalculationResult;
   label?: string;
 }
+
+// 比較機能用の型定義
+export interface ComparisonItem {
+  id: string;
+  label: string;
+  data: SalaryCalculationData;
+  result?: CalculationResult;
+}
+
+export interface ComparisonState {
+  items: ComparisonItem[];
+  activeItemId: string | null;
+  mode: 'single' | 'comparison';
+}
+
+export interface ComparisonResult {
+  items: ComparisonItem[];
+  highest: {
+    hourlyWage: ComparisonItem | null;
+    annualIncome: ComparisonItem | null;
+  };
+  lowest: {
+    hourlyWage: ComparisonItem | null;
+    annualIncome: ComparisonItem | null;
+  };
+  differences: {
+    maxHourlyWageDiff: number;
+    maxAnnualIncomeDiff: number;
+  };
+}
