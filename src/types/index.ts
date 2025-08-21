@@ -87,3 +87,82 @@ export interface ComparisonResult {
     maxAnnualIncomeDiff: number;
   };
 }
+
+// チーム機能用の型定義
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  salaryData: SalaryCalculationData;
+  isActive: boolean;
+  joinDate: string;
+  notes?: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  description?: string;
+  members: TeamMember[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CostCalculationMethod = 'average' | 'individual' | 'byRole';
+
+export interface TeamCostCalculation {
+  method: CostCalculationMethod;
+  teamId: string;
+  totalHourlyCost: number;
+  totalMonthlyCost: number;
+  totalAnnualCost: number;
+  memberBreakdown: {
+    memberId: string;
+    name: string;
+    role: string;
+    hourlyWage: number;
+    monthlyIncome: number;
+    annualIncome: number;
+  }[];
+}
+
+export interface TaskDefinition {
+  id: string;
+  name: string;
+  description?: string;
+  estimatedMinutes: number;
+  frequency: TaskFrequency;
+  teamId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  tags?: string[];
+}
+
+export interface TaskFrequency {
+  type: 'once' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval?: number; // type が 'daily', 'weekly', 'monthly', 'yearly' の場合のみ
+  daysOfWeek?: number[]; // type が 'weekly' の場合のみ (0=日曜日, 1=月曜日, ...)
+  dayOfMonth?: number; // type が 'monthly' の場合のみ
+  monthOfYear?: number; // type が 'yearly' の場合のみ
+}
+
+export interface TaskCostAnalysis {
+  taskId: string;
+  taskName: string;
+  singleExecutionCost: number;
+  annualExecutionCount: number;
+  annualTotalCost: number;
+  costPerMinute: number;
+  teamCostCalculation: TeamCostCalculation;
+}
+
+export interface TeamTaskOverview {
+  teamId: string;
+  teamName: string;
+  totalTasks: number;
+  totalAnnualCost: number;
+  totalAnnualHours: number;
+  highestCostTask: TaskCostAnalysis | null;
+  tasks: TaskCostAnalysis[];
+}

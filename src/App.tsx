@@ -13,6 +13,7 @@ import {
   History as HistoryIcon,
   Calculate as CalculateIcon,
   Compare as CompareIcon,
+  Group as GroupIcon,
 } from '@mui/icons-material';
 import SalaryCalculator from './components/SalaryCalculator';
 import ComparisonForm from './components/ComparisonForm';
@@ -204,12 +205,21 @@ function App() {
     const handleHistoryOpen = () => setHistoryOpen(true);
     const handleHistoryClose = () => setHistoryOpen(false);
 
+    const [currentTab, setCurrentTab] = useState<'calculation' | 'team'>('calculation');
+
     // モード切り替え
     const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'single' | 'comparison' | null) => {
         if (newMode !== null) {
             comparison.setMode(newMode);
         }
     }, [comparison]);
+
+    // タブ切り替え
+    const handleTabChange = useCallback((_: React.MouseEvent<HTMLElement>, newTab: 'calculation' | 'team' | null) => {
+        if (newTab !== null) {
+            setCurrentTab(newTab);
+        }
+    }, []);
 
     return (
         <ThemeProvider theme={theme}>
@@ -270,34 +280,58 @@ function App() {
                                     mb: 2,
                                 }}
                             >
-                                あなたの時給を正確に計算しましょう
+                                {currentTab === 'calculation' ? 'あなたの時給を正確に計算しましょう' : 'チームのコスト分析と管理'}
                             </Typography>
 
-                            {/* モード切り替えボタン */}
+                            {/* タブ切り替えボタン */}
                             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                                 <Paper elevation={1} sx={{ p: 0.5 }}>
                                     <ToggleButtonGroup
-                                        value={comparison.state.mode}
+                                        value={currentTab}
                                         exclusive
-                                        onChange={handleModeChange}
-                                        aria-label="calculation mode"
+                                        onChange={handleTabChange}
+                                        aria-label="main tab"
                                         size="small"
                                     >
-                                        <ToggleButton value="single" aria-label="single calculation">
+                                        <ToggleButton value="calculation" aria-label="calculation tab">
                                             <CalculateIcon sx={{ mr: 1 }} />
-                                            単一計算
+                                            計算
                                         </ToggleButton>
-                                        <ToggleButton value="comparison" aria-label="comparison mode">
-                                            <CompareIcon sx={{ mr: 1 }} />
-                                            条件比較
+                                        <ToggleButton value="team" aria-label="team tab">
+                                            <GroupIcon sx={{ mr: 1 }} />
+                                            チーム
                                         </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Paper>
                             </Box>
+
+                            {/* 計算モード切り替えボタン（計算タブのみ） */}
+                            {currentTab === 'calculation' && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                    <Paper elevation={1} sx={{ p: 0.5 }}>
+                                        <ToggleButtonGroup
+                                            value={comparison.state.mode}
+                                            exclusive
+                                            onChange={handleModeChange}
+                                            aria-label="calculation mode"
+                                            size="small"
+                                        >
+                                            <ToggleButton value="single" aria-label="single calculation">
+                                                <CalculateIcon sx={{ mr: 1 }} />
+                                                単一計算
+                                            </ToggleButton>
+                                            <ToggleButton value="comparison" aria-label="comparison mode">
+                                                <CompareIcon sx={{ mr: 1 }} />
+                                                条件比較
+                                            </ToggleButton>
+                                        </ToggleButtonGroup>
+                                    </Paper>
+                                </Box>
+                            )}
                         </Box>
 
                         {/* 計算結果表示 */}
-                        {comparison.state.mode === 'single' && calculationResult && (
+                        {currentTab === 'calculation' && comparison.state.mode === 'single' && calculationResult && (
                             <Box
                                 sx={{
                                     bgcolor: 'primary.main',
@@ -336,28 +370,37 @@ function App() {
                             maxWidth: { xs: '100%', sm: '1200px' },
                         }}
                     >
-                        {comparison.state.mode === 'single' ? (
-                            <SalaryCalculator
-                                data={calculationData}
-                                onChange={handleDataChange}
-                                onResultChange={handleResultChange}
-                            />
+                        {currentTab === 'calculation' ? (
+                            comparison.state.mode === 'single' ? (
+                                <SalaryCalculator
+                                    data={calculationData}
+                                    onChange={handleDataChange}
+                                    onResultChange={handleResultChange}
+                                />
+                            ) : (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                    <ComparisonForm
+                                        items={comparison.state.items}
+                                        activeItemId={comparison.state.activeItemId}
+                                        onAddItem={comparison.addItem}
+                                        onRemoveItem={comparison.removeItem}
+                                        onUpdateItem={comparison.updateItem}
+                                        onUpdateLabel={comparison.updateLabel}
+                                        onSetActiveItem={comparison.setActiveItem}
+                                        maxItems={3}
+                                    />
+                                    <ComparisonResults
+                                        comparisonResult={comparison.comparisonResult}
+                                        loading={comparison.isCalculating}
+                                    />
+                                </Box>
+                            )
                         ) : (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                <ComparisonForm
-                                    items={comparison.state.items}
-                                    activeItemId={comparison.state.activeItemId}
-                                    onAddItem={comparison.addItem}
-                                    onRemoveItem={comparison.removeItem}
-                                    onUpdateItem={comparison.updateItem}
-                                    onUpdateLabel={comparison.updateLabel}
-                                    onSetActiveItem={comparison.setActiveItem}
-                                    maxItems={3}
-                                />
-                                <ComparisonResults
-                                    comparisonResult={comparison.comparisonResult}
-                                    loading={comparison.isCalculating}
-                                />
+                                {/* チーム機能のプレースホルダー */}
+                                <Typography variant="h6" align="center" color="textSecondary">
+                                    チーム機能は開発中です
+                                </Typography>
                             </Box>
                         )}
                     </Box>
