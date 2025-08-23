@@ -9,17 +9,22 @@ import Badge from '@mui/material/Badge';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
+import Grid from '@mui/material/Grid';
 import { 
   History as HistoryIcon,
   Calculate as CalculateIcon,
   Compare as CompareIcon,
+  Group as GroupIcon,
 } from '@mui/icons-material';
 import SalaryCalculator from './components/SalaryCalculator';
 import ComparisonForm from './components/ComparisonForm';
 import ComparisonResults from './components/ComparisonResults';
 import { CalculationHistory } from './components/CalculationHistory';
 import ResultDisplay from './components/ResultDisplay';
+import { TeamCostCalculatorV2 } from './components/teamcost/TeamCostCalculatorV2';
 import type { SalaryCalculationData, CalculationResult } from './types';
+import type { CostCalculationResult } from './types/teamCost';
 import { useCalculationHistory } from './hooks/useCalculationHistory';
 import { useComparison } from './hooks/useComparison';
 
@@ -132,6 +137,10 @@ function App() {
     const [isSaving, setIsSaving] = useState(false);
     const [calculationResult, setCalculationResult] =
         useState<CalculationResult | null>(null);
+    
+    // チームコスト計算の状態
+    const [teamCostResult, setTeamCostResult] = useState<CostCalculationResult | null>(null);
+    const [teamCostErrors, setTeamCostErrors] = useState<string[]>([]);
 
     const calculationHistory = useCalculationHistory();
     const comparison = useComparison();
@@ -204,12 +213,30 @@ function App() {
     const handleHistoryOpen = () => setHistoryOpen(true);
     const handleHistoryClose = () => setHistoryOpen(false);
 
+    const [currentTab, setCurrentTab] = useState<'calculation' | 'team'>('calculation');
+
     // モード切り替え
     const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'single' | 'comparison' | null) => {
         if (newMode !== null) {
             comparison.setMode(newMode);
         }
     }, [comparison]);
+
+    // タブ切り替え
+    const handleTabChange = useCallback((_: React.MouseEvent<HTMLElement>, newTab: 'calculation' | 'team' | null) => {
+        if (newTab !== null) {
+            setCurrentTab(newTab);
+        }
+    }, []);
+
+    // 通貨フォーマット関数
+    const formatCurrency = (amount: number): string => {
+        return new Intl.NumberFormat('ja-JP', {
+            style: 'currency',
+            currency: 'JPY',
+            maximumFractionDigits: 0,
+        }).format(amount);
+    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -270,34 +297,58 @@ function App() {
                                     mb: 2,
                                 }}
                             >
-                                あなたの時給を正確に計算しましょう
+                                {currentTab === 'calculation' ? 'あなたの時給を正確に計算しましょう' : 'チームの作業コストを自動計算'}
                             </Typography>
 
-                            {/* モード切り替えボタン */}
+                            {/* タブ切り替えボタン */}
                             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                                 <Paper elevation={1} sx={{ p: 0.5 }}>
                                     <ToggleButtonGroup
-                                        value={comparison.state.mode}
+                                        value={currentTab}
                                         exclusive
-                                        onChange={handleModeChange}
-                                        aria-label="calculation mode"
+                                        onChange={handleTabChange}
+                                        aria-label="main tab"
                                         size="small"
                                     >
-                                        <ToggleButton value="single" aria-label="single calculation">
+                                        <ToggleButton value="calculation" aria-label="calculation tab">
                                             <CalculateIcon sx={{ mr: 1 }} />
-                                            単一計算
+                                            計算
                                         </ToggleButton>
-                                        <ToggleButton value="comparison" aria-label="comparison mode">
-                                            <CompareIcon sx={{ mr: 1 }} />
-                                            条件比較
+                                        <ToggleButton value="team" aria-label="team tab">
+                                            <GroupIcon sx={{ mr: 1 }} />
+                                            チームコスト
                                         </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Paper>
                             </Box>
+
+                            {/* 計算モード切り替えボタン（計算タブのみ） */}
+                            {currentTab === 'calculation' && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                    <Paper elevation={1} sx={{ p: 0.5 }}>
+                                        <ToggleButtonGroup
+                                            value={comparison.state.mode}
+                                            exclusive
+                                            onChange={handleModeChange}
+                                            aria-label="calculation mode"
+                                            size="small"
+                                        >
+                                            <ToggleButton value="single" aria-label="single calculation">
+                                                <CalculateIcon sx={{ mr: 1 }} />
+                                                単一計算
+                                            </ToggleButton>
+                                            <ToggleButton value="comparison" aria-label="comparison mode">
+                                                <CompareIcon sx={{ mr: 1 }} />
+                                                条件比較
+                                            </ToggleButton>
+                                        </ToggleButtonGroup>
+                                    </Paper>
+                                </Box>
+                            )}
                         </Box>
 
                         {/* 計算結果表示 */}
-                        {comparison.state.mode === 'single' && calculationResult && (
+                        {currentTab === 'calculation' && comparison.state.mode === 'single' && calculationResult && (
                             <Box
                                 sx={{
                                     bgcolor: 'primary.main',
@@ -313,6 +364,69 @@ function App() {
                                     isSaving={isSaving}
                                 />
                             </Box>
+                        )}
+
+                        {/* チームコスト計算結果表示 */}
+                        {currentTab === 'team' && (
+                            teamCostErrors.length > 0 ? (
+                                <Alert severity="warning" sx={{ mb: { xs: 1, sm: 2 } }}>
+                                    <Typography variant="subtitle2" gutterBottom>
+                                        設定を完了してください:
+                                    </Typography>
+                                    <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
+                                        {teamCostErrors.map((error, index) => (
+                                            <li key={index}>{error}</li>
+                                        ))}
+                                    </ul>
+                                </Alert>
+                            ) : teamCostResult ? (
+                                <Box
+                                    sx={{
+                                        bgcolor: 'primary.main',
+                                        color: 'primary.contrastText',
+                                        borderRadius: 2,
+                                        p: { xs: 1, sm: 2 },
+                                        mb: { xs: 1, sm: 2 },
+                                    }}
+                                >
+                                    <Grid container spacing={3} alignItems="center">
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                                年間総コスト
+                                            </Typography>
+                                            <Typography variant="h3" fontWeight="bold">
+                                                {formatCurrency(teamCostResult.totalAnnualCost)}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                                月平均コスト
+                                            </Typography>
+                                            <Typography variant="h5">
+                                                {formatCurrency(teamCostResult.totalAnnualCost / 12)}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                                年間作業時間: {teamCostResult.totalAnnualHours.toFixed(1)}h
+                                            </Typography>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                                月平均作業時間
+                                            </Typography>
+                                            <Typography variant="h5">
+                                                {teamCostResult.totalMonthlyHours.toFixed(1)}時間
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                                1時間あたり: {formatCurrency(teamCostResult.totalAnnualCost / teamCostResult.totalAnnualHours)}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                            ) : (
+                                <Alert severity="info" sx={{ mb: { xs: 1, sm: 2 } }}>
+                                    設定を完了すると計算結果が表示されます
+                                </Alert>
+                            )
                         )}
                     </Container>
                 </Box>
@@ -336,29 +450,36 @@ function App() {
                             maxWidth: { xs: '100%', sm: '1200px' },
                         }}
                     >
-                        {comparison.state.mode === 'single' ? (
-                            <SalaryCalculator
-                                data={calculationData}
-                                onChange={handleDataChange}
-                                onResultChange={handleResultChange}
-                            />
+                        {currentTab === 'calculation' ? (
+                            comparison.state.mode === 'single' ? (
+                                <SalaryCalculator
+                                    data={calculationData}
+                                    onChange={handleDataChange}
+                                    onResultChange={handleResultChange}
+                                />
+                            ) : (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                    <ComparisonForm
+                                        items={comparison.state.items}
+                                        activeItemId={comparison.state.activeItemId}
+                                        onAddItem={comparison.addItem}
+                                        onRemoveItem={comparison.removeItem}
+                                        onUpdateItem={comparison.updateItem}
+                                        onUpdateLabel={comparison.updateLabel}
+                                        onSetActiveItem={comparison.setActiveItem}
+                                        maxItems={3}
+                                    />
+                                    <ComparisonResults
+                                        comparisonResult={comparison.comparisonResult}
+                                        loading={comparison.isCalculating}
+                                    />
+                                </Box>
+                            )
                         ) : (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                <ComparisonForm
-                                    items={comparison.state.items}
-                                    activeItemId={comparison.state.activeItemId}
-                                    onAddItem={comparison.addItem}
-                                    onRemoveItem={comparison.removeItem}
-                                    onUpdateItem={comparison.updateItem}
-                                    onUpdateLabel={comparison.updateLabel}
-                                    onSetActiveItem={comparison.setActiveItem}
-                                    maxItems={3}
-                                />
-                                <ComparisonResults
-                                    comparisonResult={comparison.comparisonResult}
-                                    loading={comparison.isCalculating}
-                                />
-                            </Box>
+                            <TeamCostCalculatorV2 
+                                onResultChange={setTeamCostResult}
+                                onErrorsChange={setTeamCostErrors}
+                            />
                         )}
                     </Box>
                 </Container>
