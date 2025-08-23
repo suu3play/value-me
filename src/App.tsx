@@ -9,6 +9,8 @@ import Badge from '@mui/material/Badge';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
+import Grid from '@mui/material/Grid';
 import { 
   History as HistoryIcon,
   Calculate as CalculateIcon,
@@ -20,9 +22,12 @@ import ComparisonForm from './components/ComparisonForm';
 import ComparisonResults from './components/ComparisonResults';
 import { CalculationHistory } from './components/CalculationHistory';
 import ResultDisplay from './components/ResultDisplay';
+import { TeamCostCalculatorV2 } from './components/teamcost/TeamCostCalculatorV2';
 import type { SalaryCalculationData, CalculationResult } from './types';
+import type { CostCalculationResult } from './types/teamCost';
 import { useCalculationHistory } from './hooks/useCalculationHistory';
 import { useComparison } from './hooks/useComparison';
+import { useTeamManagement } from './hooks/useTeamManagement';
 
 const theme = createTheme({
     palette: {
@@ -133,6 +138,10 @@ function App() {
     const [isSaving, setIsSaving] = useState(false);
     const [calculationResult, setCalculationResult] =
         useState<CalculationResult | null>(null);
+    
+    // チームコスト計算の状態
+    const [teamCostResult, setTeamCostResult] = useState<CostCalculationResult | null>(null);
+    const [teamCostErrors, setTeamCostErrors] = useState<string[]>([]);
 
     const calculationHistory = useCalculationHistory();
     const comparison = useComparison();
@@ -221,6 +230,15 @@ function App() {
         }
     }, []);
 
+    // 通貨フォーマット関数
+    const formatCurrency = (amount: number): string => {
+        return new Intl.NumberFormat('ja-JP', {
+            style: 'currency',
+            currency: 'JPY',
+            maximumFractionDigits: 0,
+        }).format(amount);
+    };
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -280,7 +298,7 @@ function App() {
                                     mb: 2,
                                 }}
                             >
-                                {currentTab === 'calculation' ? 'あなたの時給を正確に計算しましょう' : 'チームのコスト分析と管理'}
+                                {currentTab === 'calculation' ? 'あなたの時給を正確に計算しましょう' : 'チームの作業コストを自動計算'}
                             </Typography>
 
                             {/* タブ切り替えボタン */}
@@ -299,7 +317,7 @@ function App() {
                                         </ToggleButton>
                                         <ToggleButton value="team" aria-label="team tab">
                                             <GroupIcon sx={{ mr: 1 }} />
-                                            チーム
+                                            チームコスト
                                         </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Paper>
@@ -347,6 +365,69 @@ function App() {
                                     isSaving={isSaving}
                                 />
                             </Box>
+                        )}
+
+                        {/* チームコスト計算結果表示 */}
+                        {currentTab === 'team' && (
+                            teamCostErrors.length > 0 ? (
+                                <Alert severity="warning" sx={{ mb: { xs: 1, sm: 2 } }}>
+                                    <Typography variant="subtitle2" gutterBottom>
+                                        設定を完了してください:
+                                    </Typography>
+                                    <ul style={{ margin: 0, paddingLeft: '1.2em' }}>
+                                        {teamCostErrors.map((error, index) => (
+                                            <li key={index}>{error}</li>
+                                        ))}
+                                    </ul>
+                                </Alert>
+                            ) : teamCostResult ? (
+                                <Box
+                                    sx={{
+                                        bgcolor: 'primary.main',
+                                        color: 'primary.contrastText',
+                                        borderRadius: 2,
+                                        p: { xs: 1, sm: 2 },
+                                        mb: { xs: 1, sm: 2 },
+                                    }}
+                                >
+                                    <Grid container spacing={3} alignItems="center">
+                                        <Grid item xs={12} md={4}>
+                                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                                年間総コスト
+                                            </Typography>
+                                            <Typography variant="h3" fontWeight="bold">
+                                                {formatCurrency(teamCostResult.totalAnnualCost)}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                                月平均コスト
+                                            </Typography>
+                                            <Typography variant="h5">
+                                                {formatCurrency(teamCostResult.totalAnnualCost / 12)}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                                年間作業時間: {teamCostResult.totalAnnualHours.toFixed(1)}h
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                                月平均作業時間
+                                            </Typography>
+                                            <Typography variant="h5">
+                                                {teamCostResult.totalMonthlyHours.toFixed(1)}時間
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                                1時間あたり: {formatCurrency(teamCostResult.totalAnnualCost / teamCostResult.totalAnnualHours)}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                            ) : (
+                                <Alert severity="info" sx={{ mb: { xs: 1, sm: 2 } }}>
+                                    設定を完了すると計算結果が表示されます
+                                </Alert>
+                            )
                         )}
                     </Container>
                 </Box>
@@ -396,12 +477,10 @@ function App() {
                                 </Box>
                             )
                         ) : (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                {/* チーム機能のプレースホルダー */}
-                                <Typography variant="h6" align="center" color="textSecondary">
-                                    チーム機能は開発中です
-                                </Typography>
-                            </Box>
+                            <TeamCostCalculatorV2 
+                                onResultChange={setTeamCostResult}
+                                onErrorsChange={setTeamCostErrors}
+                            />
                         )}
                     </Box>
                 </Container>
