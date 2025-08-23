@@ -1,11 +1,11 @@
-import { Team, TeamMember, CostCalculationMethod, TeamCostCalculation, CalculationResult } from '../types';
-import { calculateSalary } from './calculations';
+import type { Team, TeamMember, CostCalculationMethod, TeamCostCalculation, CalculationResult } from '../types';
+import { calculateHourlyWage } from './calculations';
 
 /**
  * チームメンバー個別のコスト計算
  */
 export const calculateMemberCost = (member: TeamMember): CalculationResult => {
-  return calculateSalary(member.salaryData);
+  return calculateHourlyWage(member.salaryData);
 };
 
 /**

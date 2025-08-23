@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TaskDefinition, TaskFrequency } from '../types';
+import type { TaskDefinition, TaskFrequency } from '../types';
 
 const STORAGE_KEY = 'value-me-tasks';
 

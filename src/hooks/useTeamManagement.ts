@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Team, TeamMember, SalaryCalculationData } from '../types';
+import type { Team, TeamMember, SalaryCalculationData } from '../types';
 
 const STORAGE_KEY = 'value-me-teams';
 

@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useTeamManagement } from './useTeamManagement';
 import { useTaskManagement } from './useTaskManagement';
-import { 
+import type { 
   Team, 
   TaskDefinition, 
   CostCalculationMethod, 
