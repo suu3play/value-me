@@ -167,16 +167,3 @@ export interface TeamTaskOverview {
   tasks: TaskCostAnalysis[];
 }
 
-// 明示的なexport（デバッグ用）
-export type {
-  SalaryCalculationData,
-  CalculationResult,
-  Team,
-  TeamMember,
-  CostCalculationMethod,
-  TeamCostCalculation,
-  TaskDefinition,
-  TaskFrequency,
-  TaskCostAnalysis,
-  TeamTaskOverview
-};

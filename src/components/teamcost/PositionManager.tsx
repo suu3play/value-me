@@ -9,7 +9,6 @@ import {
     IconButton,
     Grid,
     Chip,
-    Stack,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -135,10 +134,7 @@ export const PositionManager: React.FC<PositionManagerProps> = ({
                         <Grid container spacing={2}>
                             {positions.map((position) => (
                                 <Grid
-                                    item
-                                    xs={12}
-                                    sm={6}
-                                    md={4}
+                                    size={{ xs: 12, sm: 6, md: 4 }}
                                     key={position.id}
                                 >
                                     <Box

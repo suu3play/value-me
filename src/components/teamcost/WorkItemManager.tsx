@@ -7,7 +7,6 @@ import {
   TextField,
   Button,
   IconButton,
-  Grid,
   Chip,
   Select,
   MenuItem,
@@ -22,13 +21,11 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Edit as EditIcon,
   Delete as DeleteIcon,
   Assignment as AssignmentIcon,
-  Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import type { WorkItem } from '../../types/teamCost';
-import { FREQUENCY_LABELS, FREQUENCY_MULTIPLIERS } from '../../types/teamCost';
+import { FREQUENCY_MULTIPLIERS } from '../../types/teamCost';
 
 interface WorkItemManagerProps {
   workItems: WorkItem[];
@@ -51,10 +48,10 @@ const DEFAULT_WORK_ITEMS = [
 
 export const WorkItemManager: React.FC<WorkItemManagerProps> = ({ workItems, onChange }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<WorkItem | null>(null);
+  const [editingItem] = useState<WorkItem | null>(null);
   const [formData, setFormData] = useState({ 
     name: '', 
-    frequency: 'monthly' as const,
+    frequency: 'monthly' as WorkItem['frequency'],
     hours: 1 
   });
 
@@ -69,11 +66,6 @@ export const WorkItemManager: React.FC<WorkItemManagerProps> = ({ workItems, onC
     onChange([...workItems, newItem]);
   };
 
-  const handleEdit = (item: WorkItem) => {
-    setEditingItem(item);
-    setFormData({ name: item.name, frequency: item.frequency, hours: item.hours });
-    setDialogOpen(true);
-  };
 
   const handleSave = () => {
     if (!formData.name.trim()) return;
@@ -106,15 +98,6 @@ export const WorkItemManager: React.FC<WorkItemManagerProps> = ({ workItems, onC
     ));
   };
 
-  const getFrequencyColor = (frequency: WorkItem['frequency']) => {
-    const colors = {
-      daily: 'error',
-      weekly: 'warning', 
-      monthly: 'info',
-      yearly: 'success',
-    } as const;
-    return colors[frequency];
-  };
 
   const getTotalAnnualHours = () => {
     return workItems.reduce((total, item) => {

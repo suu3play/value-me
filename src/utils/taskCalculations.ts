@@ -1,4 +1,4 @@
-import type { TaskDefinition, TaskCostAnalysis, TeamTaskOverview, Team, CostCalculationMethod, TeamCostCalculation } from '../types';
+import type { TaskDefinition, TaskCostAnalysis, TeamTaskOverview, Team, CostCalculationMethod } from '../types';
 import { calculateTeamCost } from './teamCalculations';
 
 /**

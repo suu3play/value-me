@@ -21,25 +21,19 @@ export const TeamCostCalculatorV2: React.FC<TeamCostCalculatorV2Props> = ({
   onErrorsChange 
 }) => {
   const [teamData, setTeamData] = useState<TeamCostData>(createDefaultTeamCostData());
-  const [result, setResult] = useState<CostCalculationResult | null>(null);
-  const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
     const validationErrors = validateTeamCostData(teamData);
-    setErrors(validationErrors);
     onErrorsChange?.(validationErrors);
 
     if (validationErrors.length === 0) {
       try {
         const calculationResult = calculateTeamCost(teamData);
-        setResult(calculationResult);
         onResultChange?.(calculationResult);
       } catch (error) {
-        setResult(null);
         onResultChange?.(null);
       }
     } else {
-      setResult(null);
       onResultChange?.(null);
     }
 
@@ -75,13 +69,6 @@ export const TeamCostCalculatorV2: React.FC<TeamCostCalculatorV2Props> = ({
     }));
   };
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('ja-JP', {
-      style: 'currency',
-      currency: 'JPY',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

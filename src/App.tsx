@@ -27,7 +27,6 @@ import type { SalaryCalculationData, CalculationResult } from './types';
 import type { CostCalculationResult } from './types/teamCost';
 import { useCalculationHistory } from './hooks/useCalculationHistory';
 import { useComparison } from './hooks/useComparison';
-import { useTeamManagement } from './hooks/useTeamManagement';
 
 const theme = createTheme({
     palette: {
@@ -391,7 +390,7 @@ function App() {
                                     }}
                                 >
                                     <Grid container spacing={3} alignItems="center">
-                                        <Grid item xs={12} md={4}>
+                                        <Grid size={{ xs: 12, md: 4 }}>
                                             <Typography variant="body2" sx={{ opacity: 0.9 }}>
                                                 年間総コスト
                                             </Typography>
@@ -399,7 +398,7 @@ function App() {
                                                 {formatCurrency(teamCostResult.totalAnnualCost)}
                                             </Typography>
                                         </Grid>
-                                        <Grid item xs={12} md={4}>
+                                        <Grid size={{ xs: 12, md: 4 }}>
                                             <Typography variant="body2" sx={{ opacity: 0.9 }}>
                                                 月平均コスト
                                             </Typography>
@@ -410,7 +409,7 @@ function App() {
                                                 年間作業時間: {teamCostResult.totalAnnualHours.toFixed(1)}h
                                             </Typography>
                                         </Grid>
-                                        <Grid item xs={12} md={4}>
+                                        <Grid size={{ xs: 12, md: 4 }}>
                                             <Typography variant="body2" sx={{ opacity: 0.9 }}>
                                                 月平均作業時間
                                             </Typography>

@@ -6,7 +6,7 @@ const STORAGE_KEY = 'value-me-teams';
 export const useTeamManagement = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   // ローカルストレージからチーム情報を読み込み
   useEffect(() => {

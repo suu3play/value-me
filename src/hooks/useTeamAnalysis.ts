@@ -2,12 +2,8 @@ import { useState, useCallback, useMemo } from 'react';
 import { useTeamManagement } from './useTeamManagement';
 import { useTaskManagement } from './useTaskManagement';
 import type { 
-  Team, 
-  TaskDefinition, 
   CostCalculationMethod, 
-  TeamCostCalculation,
-  TaskCostAnalysis,
-  TeamTaskOverview 
+  TeamCostCalculation
 } from '../types';
 import { 
   calculateTeamCost, 

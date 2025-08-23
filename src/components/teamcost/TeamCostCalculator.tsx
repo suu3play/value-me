@@ -8,7 +8,6 @@ import {
   CardContent,
   Alert,
   Divider,
-  Chip,
   Stack,
 } from '@mui/material';
 import {
@@ -99,7 +98,7 @@ export const TeamCostCalculator: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* 設定エリア */}
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <Stack spacing={3}>
             {/* メンバー構成 */}
             <PositionManager
@@ -123,7 +122,7 @@ export const TeamCostCalculator: React.FC = () => {
         </Grid>
 
         {/* 結果表示エリア */}
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Box sx={{ position: 'sticky', top: 24 }}>
             <Card>
               <CardContent>
@@ -166,7 +165,7 @@ export const TeamCostCalculator: React.FC = () => {
                         作業時間統計
                       </Typography>
                       <Grid container spacing={1}>
-                        <Grid item xs={6}>
+                        <Grid size={6}>
                           <Typography variant="body2" color="text.secondary">
                             年間総時間
                           </Typography>
@@ -174,7 +173,7 @@ export const TeamCostCalculator: React.FC = () => {
                             {result.totalAnnualHours.toFixed(1)}h
                           </Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={6}>
                           <Typography variant="body2" color="text.secondary">
                             月平均時間
                           </Typography>
@@ -197,7 +196,7 @@ export const TeamCostCalculator: React.FC = () => {
                         {result.workBreakdown
                           .sort((a, b) => b.totalAnnualCost - a.totalAnnualCost)
                           .slice(0, 5)
-                          .map((work, index) => (
+                          .map((work) => (
                             <Box key={work.workName} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Box sx={{ flex: 1 }}>
                                 <Typography variant="body2" noWrap>

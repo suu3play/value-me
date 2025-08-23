@@ -5,7 +5,7 @@ const STORAGE_KEY = 'value-me-tasks';
 
 export const useTaskManagement = () => {
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   // ローカルストレージから作業情報を読み込み
   useEffect(() => {

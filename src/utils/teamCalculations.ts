@@ -70,7 +70,7 @@ export const calculateTeamCost = (
         return groups;
       }, {} as Record<string, TeamMember[]>);
 
-      Object.entries(roleGroups).forEach(([role, members]) => {
+      Object.entries(roleGroups).forEach(([, members]) => {
         const roleResults = members.map(member => calculateMemberCost(member));
         const roleAvgHourlyWage = roleResults.reduce((sum, result) => sum + result.hourlyWage, 0) / roleResults.length;
         const roleAvgMonthlyIncome = roleResults.reduce((sum, result) => sum + result.actualMonthlyIncome, 0) / roleResults.length;

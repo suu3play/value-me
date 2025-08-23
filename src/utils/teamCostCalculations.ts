@@ -3,8 +3,7 @@ import type {
   CostCalculationResult, 
   Position, 
   WorkItem, 
-  SalaryData,
-  FREQUENCY_MULTIPLIERS 
+  SalaryData
 } from '../types/teamCost';
 
 // 役職ごとの年収を計算
