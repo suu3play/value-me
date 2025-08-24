@@ -10,7 +10,6 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
-import Grid from '@mui/material/Grid';
 import { 
   History as HistoryIcon,
   Calculate as CalculateIcon,
@@ -19,7 +18,6 @@ import {
 } from '@mui/icons-material';
 import SalaryCalculator from './components/SalaryCalculator';
 import ComparisonForm from './components/ComparisonForm';
-import ComparisonResults from './components/ComparisonResults';
 import { CalculationHistory } from './components/CalculationHistory';
 import ResultDisplay from './components/ResultDisplay';
 import { TeamCostCalculatorV2 } from './components/teamcost/TeamCostCalculatorV2';
@@ -143,7 +141,7 @@ function App() {
     const [teamCostErrors, setTeamCostErrors] = useState<string[]>([]);
 
     const calculationHistory = useCalculationHistory();
-    const comparison = useComparison();
+    const comparison = useComparison(calculationData);
 
     // データ変更時の処理
     const handleDataChange = useCallback((newData: SalaryCalculationData) => {
@@ -366,6 +364,61 @@ function App() {
                             </Box>
                         )}
 
+                        {/* 比較結果表示 */}
+                        {currentTab === 'calculation' && comparison.state.mode === 'comparison' && comparison.comparisonResult && (
+                            <Box
+                                sx={{
+                                    bgcolor: 'primary.main',
+                                    color: 'primary.contrastText',
+                                    borderRadius: 2,
+                                    p: { xs: 1, sm: 2 },
+                                    mb: { xs: 1, sm: 2 },
+                                }}
+                            >
+                                <Box sx={{ 
+                                    display: 'flex', 
+                                    flexDirection: { xs: 'column', md: 'row' },
+                                    gap: 3,
+                                    alignItems: 'center',
+                                    textAlign: 'center'
+                                }}>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                            最高時給
+                                        </Typography>
+                                        <Typography variant="h4" fontWeight="bold">
+                                            {formatCurrency(comparison.comparisonResult.highest.hourlyWage?.result?.hourlyWage || 0)}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                            {comparison.comparisonResult.highest.hourlyWage?.label}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                            時給差額
+                                        </Typography>
+                                        <Typography variant="h5">
+                                            {formatCurrency(comparison.comparisonResult.differences.maxHourlyWageDiff)}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                            年間: {formatCurrency(comparison.comparisonResult.differences.maxAnnualIncomeDiff)}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                            最低時給
+                                        </Typography>
+                                        <Typography variant="h5">
+                                            {formatCurrency(comparison.comparisonResult.lowest.hourlyWage?.result?.hourlyWage || 0)}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                            {comparison.comparisonResult.lowest.hourlyWage?.label}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        )}
+
                         {/* チームコスト計算結果表示 */}
                         {currentTab === 'team' && (
                             teamCostErrors.length > 0 ? (
@@ -389,16 +442,22 @@ function App() {
                                         mb: { xs: 1, sm: 2 },
                                     }}
                                 >
-                                    <Grid container spacing={3} alignItems="center">
-                                        <Grid size={{ xs: 12, md: 4 }}>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        flexDirection: { xs: 'column', md: 'row' },
+                                        gap: 3,
+                                        alignItems: 'center',
+                                        textAlign: 'center'
+                                    }}>
+                                        <Box sx={{ flex: 1 }}>
                                             <Typography variant="body2" sx={{ opacity: 0.9 }}>
                                                 年間総コスト
                                             </Typography>
                                             <Typography variant="h3" fontWeight="bold">
                                                 {formatCurrency(teamCostResult.totalAnnualCost)}
                                             </Typography>
-                                        </Grid>
-                                        <Grid size={{ xs: 12, md: 4 }}>
+                                        </Box>
+                                        <Box sx={{ flex: 1 }}>
                                             <Typography variant="body2" sx={{ opacity: 0.9 }}>
                                                 月平均コスト
                                             </Typography>
@@ -408,8 +467,8 @@ function App() {
                                             <Typography variant="body2" sx={{ opacity: 0.8 }}>
                                                 年間作業時間: {teamCostResult.totalAnnualHours.toFixed(1)}h
                                             </Typography>
-                                        </Grid>
-                                        <Grid size={{ xs: 12, md: 4 }}>
+                                        </Box>
+                                        <Box sx={{ flex: 1 }}>
                                             <Typography variant="body2" sx={{ opacity: 0.9 }}>
                                                 月平均作業時間
                                             </Typography>
@@ -419,8 +478,8 @@ function App() {
                                             <Typography variant="body2" sx={{ opacity: 0.8 }}>
                                                 1時間あたり: {formatCurrency(teamCostResult.totalAnnualCost / teamCostResult.totalAnnualHours)}
                                             </Typography>
-                                        </Grid>
-                                    </Grid>
+                                        </Box>
+                                    </Box>
                                 </Box>
                             ) : (
                                 <Alert severity="info" sx={{ mb: { xs: 1, sm: 2 } }}>
@@ -458,22 +517,16 @@ function App() {
                                     onResultChange={handleResultChange}
                                 />
                             ) : (
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                    <ComparisonForm
-                                        items={comparison.state.items}
-                                        activeItemId={comparison.state.activeItemId}
-                                        onAddItem={comparison.addItem}
-                                        onRemoveItem={comparison.removeItem}
-                                        onUpdateItem={comparison.updateItem}
-                                        onUpdateLabel={comparison.updateLabel}
-                                        onSetActiveItem={comparison.setActiveItem}
-                                        maxItems={3}
-                                    />
-                                    <ComparisonResults
-                                        comparisonResult={comparison.comparisonResult}
-                                        loading={comparison.isCalculating}
-                                    />
-                                </Box>
+                                <ComparisonForm
+                                    items={comparison.state.items}
+                                    activeItemId={comparison.state.activeItemId}
+                                    onAddItem={comparison.addItem}
+                                    onRemoveItem={comparison.removeItem}
+                                    onUpdateItem={comparison.updateItem}
+                                    onUpdateLabel={comparison.updateLabel}
+                                    onSetActiveItem={comparison.setActiveItem}
+                                    maxItems={2}
+                                />
                             )
                         ) : (
                             <TeamCostCalculatorV2 
