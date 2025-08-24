@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
-  Tabs,
-  Tab,
-  IconButton,
   Typography,
   Button,
   TextField,
@@ -12,10 +9,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Divider,
+  IconButton,
 } from '@mui/material';
 import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
   Edit as EditIcon,
 } from '@mui/icons-material';
 import type { ComparisonItem, SalaryCalculationData } from '../types';
@@ -34,61 +31,66 @@ interface ComparisonFormProps {
 
 const ComparisonForm: React.FC<ComparisonFormProps> = ({
   items,
-  activeItemId,
   onAddItem,
-  onRemoveItem,
   onUpdateItem,
   onUpdateLabel,
-  onSetActiveItem,
-  maxItems = 3,
 }) => {
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editLabelDialogOpen, setEditLabelDialogOpen] = useState(false);
-  const [newItemLabel, setNewItemLabel] = useState('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState('');
 
-  const activeItem = items.find(item => item.id === activeItemId);
+  const sourceItem = items[0] || null;
+  const targetItem = items[1] || null;
 
-  const handleAddItem = () => {
-    if (newItemLabel.trim()) {
-      const defaultData: SalaryCalculationData = {
-        salaryType: 'monthly',
-        salaryAmount: 200000,
-        annualHolidays: 119,
-        dailyWorkingHours: 8,
-        workingHoursType: 'daily',
-        useDynamicHolidays: true,
-        holidayYear: (() => {
-          const currentMonth = new Date().getMonth() + 1;
-          const currentYear = new Date().getFullYear();
-          return currentMonth >= 4 ? currentYear : currentYear - 1;
-        })(),
-        holidayYearType: 'fiscal',
-        enableBenefits: false,
-        welfareAmount: 0,
-        welfareType: 'monthly',
-        welfareInputMethod: 'individual',
-        housingAllowance: 0,
-        regionalAllowance: 0,
-        familyAllowance: 0,
-        qualificationAllowance: 0,
-        otherAllowance: 0,
-        summerBonus: 0,
-        winterBonus: 0,
-        settlementBonus: 0,
-        otherBonus: 0,
-        goldenWeekHolidays: false,
-        obon: false,
-        yearEndNewYear: false,
-        customHolidays: 0,
-      };
-      
-      onAddItem(newItemLabel.trim(), defaultData);
-      setNewItemLabel('');
-      setAddDialogOpen(false);
+  const initializeItems = useCallback(() => {
+    const defaultData: SalaryCalculationData = {
+      salaryType: 'monthly',
+      salaryAmount: 200000,
+      annualHolidays: 119,
+      dailyWorkingHours: 8,
+      workingHoursType: 'daily',
+      useDynamicHolidays: true,
+      holidayYear: (() => {
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        return currentMonth >= 4 ? currentYear : currentYear - 1;
+      })(),
+      holidayYearType: 'fiscal',
+      enableBenefits: false,
+      welfareAmount: 0,
+      welfareType: 'monthly',
+      welfareInputMethod: 'individual',
+      housingAllowance: 0,
+      regionalAllowance: 0,
+      familyAllowance: 0,
+      qualificationAllowance: 0,
+      otherAllowance: 0,
+      summerBonus: 0,
+      winterBonus: 0,
+      settlementBonus: 0,
+      otherBonus: 0,
+      goldenWeekHolidays: false,
+      obon: false,
+      yearEndNewYear: false,
+      customHolidays: 0,
+    };
+    
+    // 比較元が存在しない場合は追加
+    if (!sourceItem) {
+      onAddItem('比較元', defaultData);
     }
-  };
+    // 比較先が存在しない場合は追加
+    if (!targetItem && sourceItem) {
+      onAddItem('比較先', { ...defaultData, salaryAmount: 250000 });
+    }
+  }, [sourceItem, targetItem, onAddItem]);
+
+  // コンポーネント初期化時に2項目を自動で作成
+  useEffect(() => {
+    if (items.length === 0) {
+      initializeItems();
+    }
+  }, [items.length, initializeItems]);
 
   const handleEditLabel = (itemId: string, currentLabel: string) => {
     setEditingItemId(itemId);
@@ -105,163 +107,100 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({
     }
   };
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: string) => {
-    onSetActiveItem(newValue);
-  };
 
   return (
     <Box sx={{ width: '100%' }}>
       <Paper elevation={1} sx={{ bgcolor: 'grey.50' }}>
-        {/* タブヘッダー */}
+        {/* ヘッダー */}
         <Box sx={{ 
           borderBottom: 1, 
           borderColor: 'divider',
           display: 'flex',
           alignItems: 'center',
-          px: 1,
+          justifyContent: 'center',
+          px: 2,
+          py: 1,
         }}>
-          <Tabs
-            value={activeItemId || false}
-            onChange={handleTabChange}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{ flex: 1 }}
-          >
-            {items.map((item) => (
-              <Tab
-                key={item.id}
-                value={item.id}
-                label={
+          <Typography variant="h6" color="primary">
+            条件比較（2項目）
+          </Typography>
+        </Box>
+
+        {/* 横並び比較フォーム */}
+        <Box sx={{ p: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 3,
+          }}>
+            {/* 比較元 */}
+            <Box sx={{ flex: 1 }}>
+              {sourceItem && (
+                <Box>
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: 0.5,
-                    minWidth: 0,
+                    justifyContent: 'space-between',
+                    mb: 2,
                   }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        maxWidth: { xs: '80px', sm: '120px' },
-                      }}
-                    >
-                      {item.label}
+                    <Typography variant="h6" color="primary.main">
+                      {sourceItem.label}
                     </Typography>
                     <IconButton
                       size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditLabel(item.id, item.label);
-                      }}
-                      sx={{ 
-                        ml: 0.5,
-                        p: 0.25,
-                        '&:hover': { bgcolor: 'action.hover' }
-                      }}
+                      onClick={() => handleEditLabel(sourceItem.id, sourceItem.label)}
+                      sx={{ color: 'text.secondary' }}
                     >
-                      <EditIcon fontSize="inherit" />
+                      <EditIcon fontSize="small" />
                     </IconButton>
-                    {items.length > 1 && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRemoveItem(item.id);
-                        }}
-                        sx={{ 
-                          ml: 0.25,
-                          p: 0.25,
-                          color: 'error.main',
-                          '&:hover': { bgcolor: 'error.light', color: 'error.contrastText' }
-                        }}
-                      >
-                        <DeleteIcon fontSize="inherit" />
-                      </IconButton>
-                    )}
                   </Box>
-                }
-                sx={{
-                  minHeight: 48,
-                  textTransform: 'none',
-                  '&.Mui-selected': {
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                    '& .MuiIconButton-root': {
-                      color: 'inherit',
-                    },
-                  },
-                }}
-              />
-            ))}
-          </Tabs>
-          
-          {/* 追加ボタン */}
-          {items.length < maxItems && (
-            <IconButton
-              onClick={() => setAddDialogOpen(true)}
-              sx={{ 
-                ml: 1,
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                '&:hover': { bgcolor: 'primary.dark' }
-              }}
-            >
-              <AddIcon />
-            </IconButton>
-          )}
-        </Box>
+                  <SalaryCalculator
+                    data={sourceItem.data}
+                    onChange={(data) => onUpdateItem(sourceItem.id, data)}
+                    onResultChange={() => {}}
+                  />
+                </Box>
+              )}
+            </Box>
 
-        {/* アクティブアイテムのフォーム */}
-        {activeItem && (
-          <Box sx={{ p: 2 }}>
-            <SalaryCalculator
-              data={activeItem.data}
-              onChange={(data) => onUpdateItem(activeItem.id, data)}
-              onResultChange={() => {}}
-            />
+            {/* モバイル用水平区切り線 */}
+            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+              <Divider sx={{ my: 1 }} />
+            </Box>
+
+            {/* 比較先 */}
+            <Box sx={{ flex: 1 }}>
+              {targetItem && (
+                <Box>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    mb: 2,
+                  }}>
+                    <Typography variant="h6" color="secondary.main">
+                      {targetItem.label}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleEditLabel(targetItem.id, targetItem.label)}
+                      sx={{ color: 'text.secondary' }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                  <SalaryCalculator
+                    data={targetItem.data}
+                    onChange={(data) => onUpdateItem(targetItem.id, data)}
+                    onResultChange={() => {}}
+                  />
+                </Box>
+              )}
+            </Box>
           </Box>
-        )}
+        </Box>
       </Paper>
 
-      {/* 新規項目追加ダイアログ */}
-      <Dialog 
-        open={addDialogOpen} 
-        onClose={() => setAddDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>新しい比較項目を追加</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            fullWidth
-            label="項目名"
-            placeholder="例: A社、B社、現在の職場など"
-            value={newItemLabel}
-            onChange={(e) => setNewItemLabel(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleAddItem();
-              }
-            }}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddDialogOpen(false)}>
-            キャンセル
-          </Button>
-          <Button 
-            onClick={handleAddItem}
-            variant="contained"
-            disabled={!newItemLabel.trim()}
-          >
-            追加
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* ラベル編集ダイアログ */}
       <Dialog 

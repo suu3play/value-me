@@ -11,7 +11,7 @@ import { calculateHourlyWageWithDynamicHolidays } from '../utils/dynamicHolidayC
 
 const STORAGE_KEY = 'value-me-comparison-state';
 
-export const useComparison = () => {
+export const useComparison = (singleCalculationData?: SalaryCalculationData) => {
   const [state, setState] = useState<ComparisonState>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -212,54 +212,63 @@ export const useComparison = () => {
   const setMode = useCallback((mode: 'single' | 'comparison') => {
     let newState = { ...state, mode };
 
-    // 比較モードに切り替える時、アイテムがない場合はデフォルトアイテムを追加
-    if (mode === 'comparison' && state.items.length === 0) {
-      const defaultItem: ComparisonItem = {
-        id: `comparison-${Date.now()}`,
-        label: '条件 1',
-        data: {
-          salaryType: 'monthly',
-          salaryAmount: 200000,
-          annualHolidays: 119,
-          dailyWorkingHours: 8,
-          workingHoursType: 'daily',
-          useDynamicHolidays: true,
-          holidayYear: (() => {
-            const currentMonth = new Date().getMonth() + 1;
-            const currentYear = new Date().getFullYear();
-            return currentMonth >= 4 ? currentYear : currentYear - 1;
-          })(),
-          holidayYearType: 'fiscal',
-          enableBenefits: false,
-          welfareAmount: 0,
-          welfareType: 'monthly',
-          welfareInputMethod: 'individual',
-          housingAllowance: 0,
-          regionalAllowance: 0,
-          familyAllowance: 0,
-          qualificationAllowance: 0,
-          otherAllowance: 0,
-          summerBonus: 0,
-          winterBonus: 0,
-          settlementBonus: 0,
-          otherBonus: 0,
-          goldenWeekHolidays: false,
-          obon: false,
-          yearEndNewYear: false,
-          customHolidays: 0,
-        },
+    // 比較モードに切り替える時の処理
+    if (mode === 'comparison') {
+      // 単一計算データがある場合は比較元として使用
+      const sourceData = singleCalculationData || {
+        salaryType: 'monthly',
+        salaryAmount: 200000,
+        annualHolidays: 119,
+        dailyWorkingHours: 8,
+        workingHoursType: 'daily',
+        useDynamicHolidays: true,
+        holidayYear: (() => {
+          const currentMonth = new Date().getMonth() + 1;
+          const currentYear = new Date().getFullYear();
+          return currentMonth >= 4 ? currentYear : currentYear - 1;
+        })(),
+        holidayYearType: 'fiscal',
+        enableBenefits: false,
+        welfareAmount: 0,
+        welfareType: 'monthly',
+        welfareInputMethod: 'individual',
+        housingAllowance: 0,
+        regionalAllowance: 0,
+        familyAllowance: 0,
+        qualificationAllowance: 0,
+        otherAllowance: 0,
+        summerBonus: 0,
+        winterBonus: 0,
+        settlementBonus: 0,
+        otherBonus: 0,
+        goldenWeekHolidays: false,
+        obon: false,
+        yearEndNewYear: false,
+        customHolidays: 0,
+      } as const;
+
+      const sourceItem: ComparisonItem = {
+        id: `comparison-source-${Date.now()}`,
+        label: '比較元',
+        data: sourceData,
+      };
+
+      const targetItem: ComparisonItem = {
+        id: `comparison-target-${Date.now()}`,
+        label: '比較先',
+        data: { ...sourceData, salaryAmount: sourceData.salaryAmount + 50000 },
       };
 
       newState = {
         ...newState,
-        items: [defaultItem],
-        activeItemId: defaultItem.id,
+        items: [sourceItem, targetItem],
+        activeItemId: sourceItem.id,
       };
     }
 
     setState(newState);
     saveToStorage(newState);
-  }, [state, saveToStorage]);
+  }, [state, saveToStorage, singleCalculationData]);
 
   // 全クリア
   const clearAll = useCallback(() => {
