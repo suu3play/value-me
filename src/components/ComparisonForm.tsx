@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import type { ComparisonItem, SalaryCalculationData } from '../types';
 import SalaryCalculator from './SalaryCalculator';
+import DynamicHolidaySettings from './DynamicHolidaySettings';
 
 interface ComparisonFormProps {
   items: ComparisonItem[];
@@ -38,6 +39,21 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({
   const [editLabelDialogOpen, setEditLabelDialogOpen] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState('');
+  
+  // 共有動的祝日設定の状態管理
+  const [sharedHolidaySettings, setSharedHolidaySettings] = useState<{
+    useDynamicHolidays: boolean;
+    holidayYear: number;
+    holidayYearType: 'fiscal' | 'calendar';
+  }>({
+    useDynamicHolidays: true,
+    holidayYear: (() => {
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      return currentMonth >= 4 ? currentYear : currentYear - 1;
+    })(),
+    holidayYearType: 'fiscal',
+  });
 
   const sourceItem = items[0] || null;
   const targetItem = items[1] || null;
@@ -49,13 +65,9 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({
       annualHolidays: 119,
       dailyWorkingHours: 8,
       workingHoursType: 'daily',
-      useDynamicHolidays: true,
-      holidayYear: (() => {
-        const currentMonth = new Date().getMonth() + 1;
-        const currentYear = new Date().getFullYear();
-        return currentMonth >= 4 ? currentYear : currentYear - 1;
-      })(),
-      holidayYearType: 'fiscal',
+      useDynamicHolidays: sharedHolidaySettings.useDynamicHolidays,
+      holidayYear: sharedHolidaySettings.holidayYear,
+      holidayYearType: sharedHolidaySettings.holidayYearType,
       enableBenefits: false,
       welfareAmount: 0,
       welfareType: 'monthly',
@@ -83,7 +95,7 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({
     if (!targetItem && sourceItem) {
       onAddItem('比較先', { ...defaultData, salaryAmount: 250000 });
     }
-  }, [sourceItem, targetItem, onAddItem]);
+  }, [sourceItem, targetItem, onAddItem, sharedHolidaySettings]);
 
   // コンポーネント初期化時に2項目を自動で作成
   useEffect(() => {
@@ -106,6 +118,34 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({
       setEditingLabel('');
     }
   };
+
+  // 共有祝日設定の変更処理
+  const handleSharedHolidaySettingsChange = useCallback((newSettings: typeof sharedHolidaySettings) => {
+    setSharedHolidaySettings(newSettings);
+    
+    // 全項目に共有設定を適用
+    items.forEach(item => {
+      const updatedData: SalaryCalculationData = {
+        ...item.data,
+        useDynamicHolidays: newSettings.useDynamicHolidays,
+        holidayYear: newSettings.holidayYear,
+        holidayYearType: newSettings.holidayYearType,
+      };
+      onUpdateItem(item.id, updatedData);
+    });
+  }, [items, onUpdateItem]);
+
+  // 項目データ変更時の処理（共有設定以外の変更のみ）
+  const handleItemDataChange = useCallback((itemId: string, newData: SalaryCalculationData) => {
+    // 共有設定を保持しながら他の設定のみ更新
+    const dataWithSharedSettings: SalaryCalculationData = {
+      ...newData,
+      useDynamicHolidays: sharedHolidaySettings.useDynamicHolidays,
+      holidayYear: sharedHolidaySettings.holidayYear,
+      holidayYearType: sharedHolidaySettings.holidayYearType,
+    };
+    onUpdateItem(itemId, dataWithSharedSettings);
+  }, [sharedHolidaySettings, onUpdateItem]);
 
 
   return (
@@ -156,7 +196,7 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({
                   </Box>
                   <SalaryCalculator
                     data={sourceItem.data}
-                    onChange={(data) => onUpdateItem(sourceItem.id, data)}
+                    onChange={(data) => handleItemDataChange(sourceItem.id, data)}
                     onResultChange={() => {}}
                   />
                 </Box>
@@ -191,12 +231,54 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({
                   </Box>
                   <SalaryCalculator
                     data={targetItem.data}
-                    onChange={(data) => onUpdateItem(targetItem.id, data)}
+                    onChange={(data) => handleItemDataChange(targetItem.id, data)}
                     onResultChange={() => {}}
                   />
                 </Box>
               )}
             </Box>
+          </Box>
+
+          {/* 共有動的祝日設定 */}
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+              共有設定（比較元・比較先で共通）
+            </Typography>
+            <DynamicHolidaySettings
+              data={{
+                useDynamicHolidays: sharedHolidaySettings.useDynamicHolidays,
+                holidayYear: sharedHolidaySettings.holidayYear,
+                holidayYearType: sharedHolidaySettings.holidayYearType,
+                // DynamicHolidaySettingsが必要とする他の必須プロパティを追加
+                salaryType: 'monthly',
+                salaryAmount: 0,
+                annualHolidays: 0,
+                dailyWorkingHours: 0,
+                workingHoursType: 'daily',
+                enableBenefits: false,
+                welfareAmount: 0,
+                welfareType: 'monthly',
+                welfareInputMethod: 'individual',
+                housingAllowance: 0,
+                regionalAllowance: 0,
+                familyAllowance: 0,
+                qualificationAllowance: 0,
+                otherAllowance: 0,
+                summerBonus: 0,
+                winterBonus: 0,
+                settlementBonus: 0,
+                otherBonus: 0,
+                goldenWeekHolidays: false,
+                obon: false,
+                yearEndNewYear: false,
+                customHolidays: 0,
+              }}
+              onChange={(data) => handleSharedHolidaySettingsChange({
+                useDynamicHolidays: data.useDynamicHolidays ?? true,
+                holidayYear: data.holidayYear ?? sharedHolidaySettings.holidayYear,
+                holidayYearType: data.holidayYearType === 'calendar' ? 'calendar' : 'fiscal',
+              })}
+            />
           </Box>
         </Box>
       </Paper>
