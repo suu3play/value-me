@@ -406,6 +406,11 @@ function App() {
         }).format(amount);
     };
 
+    // パーセンテージフォーマット関数
+    const formatPercentage = (percentage: number): string => {
+        return `(${percentage.toFixed(1)}%)`;
+    };
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -604,43 +609,84 @@ function App() {
                                 <Box sx={{ 
                                     display: 'flex', 
                                     flexDirection: { xs: 'column', md: 'row' },
-                                    gap: 3,
-                                    alignItems: 'center',
+                                    gap: { xs: 2, sm: 3 },
+                                    alignItems: 'stretch',
                                     textAlign: 'center'
                                 }}>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                    {/* 最高時給 */}
+                                    <Box sx={{ 
+                                        flex: 1, 
+                                        display: 'flex', 
+                                        flexDirection: 'column', 
+                                        justifyContent: 'center',
+                                        minHeight: { xs: 'auto', md: '120px' }
+                                    }}>
+                                        <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
                                             最高時給
                                         </Typography>
-                                        <Typography variant="h4" fontWeight="bold">
+                                        <Typography variant="h4" fontWeight="bold" sx={{ mb: 0.5 }}>
                                             {formatCurrency(comparison.comparisonResult.highest.hourlyWage?.result?.hourlyWage || 0)}
                                         </Typography>
                                         <Typography variant="body2" sx={{ opacity: 0.8 }}>
                                             {comparison.comparisonResult.highest.hourlyWage?.label}
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+
+                                    {/* 時給差額 */}
+                                    <Box sx={{ 
+                                        flex: 1, 
+                                        display: 'flex', 
+                                        flexDirection: 'column', 
+                                        justifyContent: 'center',
+                                        minHeight: { xs: 'auto', md: '120px' }
+                                    }}>
+                                        <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
                                             時給差額
                                         </Typography>
-                                        <Typography variant="h5">
+                                        <Typography variant="h5" fontWeight="bold" sx={{ mb: 0.5 }}>
                                             {formatCurrency(comparison.comparisonResult.differences.maxHourlyWageDiff)}
                                         </Typography>
                                         <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                                            年間: {formatCurrency(comparison.comparisonResult.differences.maxAnnualIncomeDiff)}
+                                            {formatPercentage(comparison.comparisonResult.differences.maxHourlyWageDiffPercent)}
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+
+                                    {/* 最低時給 */}
+                                    <Box sx={{ 
+                                        flex: 1, 
+                                        display: 'flex', 
+                                        flexDirection: 'column', 
+                                        justifyContent: 'center',
+                                        minHeight: { xs: 'auto', md: '120px' }
+                                    }}>
+                                        <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
                                             最低時給
                                         </Typography>
-                                        <Typography variant="h5">
+                                        <Typography variant="h5" fontWeight="bold" sx={{ mb: 0.5 }}>
                                             {formatCurrency(comparison.comparisonResult.lowest.hourlyWage?.result?.hourlyWage || 0)}
                                         </Typography>
                                         <Typography variant="body2" sx={{ opacity: 0.8 }}>
                                             {comparison.comparisonResult.lowest.hourlyWage?.label}
                                         </Typography>
                                     </Box>
+                                </Box>
+
+                                {/* 年収差額セクション */}
+                                <Box sx={{ 
+                                    mt: { xs: 2, sm: 3 }, 
+                                    pt: { xs: 2, sm: 3 }, 
+                                    borderTop: '1px solid rgba(255,255,255,0.2)',
+                                    textAlign: 'center'
+                                }}>
+                                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
+                                        年収差額
+                                    </Typography>
+                                    <Typography variant="h5" fontWeight="bold" sx={{ mb: 0.5 }}>
+                                        {formatCurrency(comparison.comparisonResult.differences.maxAnnualIncomeDiff)}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                        {formatPercentage(comparison.comparisonResult.differences.maxAnnualIncomeDiffPercent)}
+                                    </Typography>
                                 </Box>
                             </Box>
                         )}
