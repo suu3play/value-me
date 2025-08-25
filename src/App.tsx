@@ -211,21 +211,20 @@ function App() {
     const handleHistoryOpen = () => setHistoryOpen(true);
     const handleHistoryClose = () => setHistoryOpen(false);
 
-    const [currentTab, setCurrentTab] = useState<'calculation' | 'team'>('calculation');
+    const [currentMode, setCurrentMode] = useState<'hourly-calculation' | 'hourly-comparison' | 'team-cost'>('hourly-calculation');
 
-    // モード切り替え
-    const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'single' | 'comparison' | null) => {
+    // 機能モード切り替え
+    const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'hourly-calculation' | 'hourly-comparison' | 'team-cost' | null) => {
         if (newMode !== null) {
-            comparison.setMode(newMode);
+            setCurrentMode(newMode);
+            // 既存のcomparison状態も更新
+            if (newMode === 'hourly-calculation') {
+                comparison.setMode('single');
+            } else if (newMode === 'hourly-comparison') {
+                comparison.setMode('comparison');
+            }
         }
     }, [comparison]);
-
-    // タブ切り替え
-    const handleTabChange = useCallback((_: React.MouseEvent<HTMLElement>, newTab: 'calculation' | 'team' | null) => {
-        if (newTab !== null) {
-            setCurrentTab(newTab);
-        }
-    }, []);
 
     // 通貨フォーマット関数
     const formatCurrency = (amount: number): string => {
@@ -295,10 +294,12 @@ function App() {
                                     mb: 2,
                                 }}
                             >
-                                {currentTab === 'calculation' ? 'あなたの時給を正確に計算しましょう' : 'チームの作業コストを自動計算'}
+                                {currentMode === 'hourly-calculation' ? 'あなたの時給を正確に計算しましょう' : 
+                                 currentMode === 'hourly-comparison' ? '複数の条件で時給を比較できます' : 
+                                 'チームの作業コストを自動計算'}
                             </Typography>
 
-                            {/* ナビゲーションバー: タブと計算モード切り替え */}
+                            {/* 機能選択ナビゲーション */}
                             <Box 
                                 sx={{ 
                                     display: 'flex', 
@@ -309,52 +310,33 @@ function App() {
                                     alignItems: 'center'
                                 }}
                             >
-                                {/* メインタブ切り替え */}
                                 <Paper elevation={1} sx={{ p: 0.5 }}>
                                     <ToggleButtonGroup
-                                        value={currentTab}
+                                        value={currentMode}
                                         exclusive
-                                        onChange={handleTabChange}
-                                        aria-label="main tab"
+                                        onChange={handleModeChange}
+                                        aria-label="function selection"
                                         size="small"
                                     >
-                                        <ToggleButton value="calculation" aria-label="calculation tab">
+                                        <ToggleButton value="hourly-calculation" aria-label="hourly calculation">
                                             <CalculateIcon sx={{ mr: 1 }} />
-                                            計算
+                                            時給計算
                                         </ToggleButton>
-                                        <ToggleButton value="team" aria-label="team tab">
+                                        <ToggleButton value="hourly-comparison" aria-label="hourly comparison">
+                                            <CompareIcon sx={{ mr: 1 }} />
+                                            時給比較
+                                        </ToggleButton>
+                                        <ToggleButton value="team-cost" aria-label="team cost">
                                             <GroupIcon sx={{ mr: 1 }} />
                                             チームコスト
                                         </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Paper>
-
-                                {/* 計算モード切り替え（計算タブ選択時のみ表示） */}
-                                {currentTab === 'calculation' && (
-                                    <Paper elevation={1} sx={{ p: 0.5 }}>
-                                        <ToggleButtonGroup
-                                            value={comparison.state.mode}
-                                            exclusive
-                                            onChange={handleModeChange}
-                                            aria-label="calculation mode"
-                                            size="small"
-                                        >
-                                            <ToggleButton value="single" aria-label="single calculation">
-                                                <CalculateIcon sx={{ mr: 1 }} />
-                                                単一計算
-                                            </ToggleButton>
-                                            <ToggleButton value="comparison" aria-label="comparison mode">
-                                                <CompareIcon sx={{ mr: 1 }} />
-                                                条件比較
-                                            </ToggleButton>
-                                        </ToggleButtonGroup>
-                                    </Paper>
-                                )}
                             </Box>
                         </Box>
 
                         {/* 計算結果表示 */}
-                        {currentTab === 'calculation' && comparison.state.mode === 'single' && calculationResult && (
+                        {currentMode === 'hourly-calculation' && calculationResult && (
                             <Box
                                 sx={{
                                     bgcolor: 'primary.main',
@@ -373,7 +355,7 @@ function App() {
                         )}
 
                         {/* 比較結果表示 */}
-                        {currentTab === 'calculation' && comparison.state.mode === 'comparison' && comparison.comparisonResult && (
+                        {currentMode === 'hourly-comparison' && comparison.comparisonResult && (
                             <Box
                                 sx={{
                                     bgcolor: 'primary.main',
@@ -428,7 +410,7 @@ function App() {
                         )}
 
                         {/* チームコスト計算結果表示 */}
-                        {currentTab === 'team' && (
+                        {currentMode === 'team-cost' && (
                             teamCostErrors.length > 0 ? (
                                 <Alert severity="warning" sx={{ mb: { xs: 1, sm: 2 } }}>
                                     <Typography variant="subtitle2" gutterBottom>
@@ -517,25 +499,23 @@ function App() {
                             maxWidth: { xs: '100%', sm: '1200px' },
                         }}
                     >
-                        {currentTab === 'calculation' ? (
-                            comparison.state.mode === 'single' ? (
-                                <SalaryCalculator
-                                    data={calculationData}
-                                    onChange={handleDataChange}
-                                    onResultChange={handleResultChange}
-                                />
-                            ) : (
-                                <ComparisonForm
-                                    items={comparison.state.items}
-                                    activeItemId={comparison.state.activeItemId}
-                                    onAddItem={comparison.addItem}
-                                    onRemoveItem={comparison.removeItem}
-                                    onUpdateItem={comparison.updateItem}
-                                    onUpdateLabel={comparison.updateLabel}
-                                    onSetActiveItem={comparison.setActiveItem}
-                                    maxItems={2}
-                                />
-                            )
+                        {currentMode === 'hourly-calculation' ? (
+                            <SalaryCalculator
+                                data={calculationData}
+                                onChange={handleDataChange}
+                                onResultChange={handleResultChange}
+                            />
+                        ) : currentMode === 'hourly-comparison' ? (
+                            <ComparisonForm
+                                items={comparison.state.items}
+                                activeItemId={comparison.state.activeItemId}
+                                onAddItem={comparison.addItem}
+                                onRemoveItem={comparison.removeItem}
+                                onUpdateItem={comparison.updateItem}
+                                onUpdateLabel={comparison.updateLabel}
+                                onSetActiveItem={comparison.setActiveItem}
+                                maxItems={2}
+                            />
                         ) : (
                             <TeamCostCalculatorV2 
                                 onResultChange={setTeamCostResult}
