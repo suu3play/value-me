@@ -11,9 +11,10 @@ interface SalaryCalculatorProps {
   data: SalaryCalculationData;
   onChange: (data: SalaryCalculationData) => void;
   onResultChange: (result: CalculationResult) => void;
+  hideDynamicHolidaySettings?: boolean;
 }
 
-const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onResultChange }) => {
+const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onResultChange, hideDynamicHolidaySettings = false }) => {
   const [useDynamicHolidays, setUseDynamicHolidays] = useState(true);
 
   useEffect(() => {
@@ -79,7 +80,9 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onR
           >
             <OptionsForm data={data} onChange={onChange} />
           </Paper>
-          <DynamicHolidaySettings data={data} onChange={onChange} />
+          {!hideDynamicHolidaySettings && (
+            <DynamicHolidaySettings data={data} onChange={onChange} />
+          )}
         </Box>
       </Box>
     </Box>
