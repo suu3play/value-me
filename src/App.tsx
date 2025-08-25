@@ -298,8 +298,18 @@ function App() {
                                 {currentTab === 'calculation' ? 'あなたの時給を正確に計算しましょう' : 'チームの作業コストを自動計算'}
                             </Typography>
 
-                            {/* タブ切り替えボタン */}
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                            {/* ナビゲーションバー: タブと計算モード切り替え */}
+                            <Box 
+                                sx={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'center', 
+                                    mb: 2,
+                                    flexDirection: { xs: 'column', sm: 'row' },
+                                    gap: { xs: 2, sm: 3 },
+                                    alignItems: 'center'
+                                }}
+                            >
+                                {/* メインタブ切り替え */}
                                 <Paper elevation={1} sx={{ p: 0.5 }}>
                                     <ToggleButtonGroup
                                         value={currentTab}
@@ -318,11 +328,9 @@ function App() {
                                         </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Paper>
-                            </Box>
 
-                            {/* 計算モード切り替えボタン（計算タブのみ） */}
-                            {currentTab === 'calculation' && (
-                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                {/* 計算モード切り替え（計算タブ選択時のみ表示） */}
+                                {currentTab === 'calculation' && (
                                     <Paper elevation={1} sx={{ p: 0.5 }}>
                                         <ToggleButtonGroup
                                             value={comparison.state.mode}
@@ -341,8 +349,8 @@ function App() {
                                             </ToggleButton>
                                         </ToggleButtonGroup>
                                     </Paper>
-                                </Box>
-                            )}
+                                )}
+                            </Box>
                         </Box>
 
                         {/* 計算結果表示 */}
