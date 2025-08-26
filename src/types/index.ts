@@ -80,6 +80,12 @@ export interface SocialInsuranceResult {
     employerContribution: number; // 労災保険は事業主負担のみ
     rate: number;
   };
+  residentTax: {
+    employeeContribution: number; // 住民税（従業員負担のみ）
+    prefecturalTax: number; // 県民税
+    municipalTax: number; // 市町村民税
+    rate: number; // 住民税率（所得割）
+  };
   totalEmployeeContribution: number; // 従業員負担合計
   totalEmployerContribution: number; // 事業主負担合計
   totalContribution: number; // 合計負担額

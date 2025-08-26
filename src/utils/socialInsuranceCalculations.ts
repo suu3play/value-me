@@ -121,13 +121,63 @@ function calculateStandardSalary(monthlySalary: number): number {
 }
 
 /**
+ * 住民税を計算する（簡易計算）
+ * @param annualIncome 年収（総収入）
+ * @param dependents 扶養者数
+ * @returns 住民税額
+ */
+function calculateResidentTax(annualIncome: number, dependents: number) {
+  // 給与所得控除
+  let employmentIncomeDeduction = 0;
+  if (annualIncome <= 1625000) {
+    employmentIncomeDeduction = 550000;
+  } else if (annualIncome <= 1800000) {
+    employmentIncomeDeduction = annualIncome * 0.4 - 100000;
+  } else if (annualIncome <= 3600000) {
+    employmentIncomeDeduction = annualIncome * 0.3 + 80000;
+  } else if (annualIncome <= 6600000) {
+    employmentIncomeDeduction = annualIncome * 0.2 + 440000;
+  } else if (annualIncome <= 8500000) {
+    employmentIncomeDeduction = annualIncome * 0.1 + 1100000;
+  } else {
+    employmentIncomeDeduction = 1950000;
+  }
+
+  // 給与所得
+  const employmentIncome = annualIncome - employmentIncomeDeduction;
+
+  // 所得控除
+  const basicDeduction = 430000; // 基礎控除（令和3年分以降）
+  const dependentDeduction = dependents * 330000; // 扶養控除（一般）
+  const totalDeductions = basicDeduction + dependentDeduction;
+
+  // 課税所得
+  const taxableIncome = Math.max(0, employmentIncome - totalDeductions);
+
+  // 住民税の計算（所得割10% + 均等割）
+  const incomeRate = 0.10; // 所得割（道府県民税4% + 市町村民税6%）
+  const equalRate = 5000; // 均等割（道府県民税1,500円 + 市町村民税3,500円）
+
+  const incomeTax = Math.floor(taxableIncome * incomeRate);
+  const prefecturalTax = Math.floor(taxableIncome * 0.04) + 1500; // 道府県民税
+  const municipalTax = Math.floor(taxableIncome * 0.06) + 3500; // 市町村民税
+
+  return {
+    employeeContribution: incomeTax + equalRate,
+    prefecturalTax: prefecturalTax,
+    municipalTax: municipalTax,
+    rate: incomeRate * 100 // パーセンテージ
+  };
+}
+
+/**
  * 社会保険料を計算する
  */
 export function calculateSocialInsurance(
   data: SalaryCalculationData
 ): SocialInsuranceResult | null {
-  // 社会保障費計算が無効の場合はnullを返す
-  if (!data.enableSocialInsurance || !data.prefecture) {
+  // 居住地が未設定の場合はnullを返す
+  if (!data.prefecture) {
     return null;
   }
 
@@ -182,8 +232,12 @@ export function calculateSocialInsurance(
   // 労災保険料計算（事業主負担のみ）
   const workersCompensation = Math.floor(monthlySalary * (rates.workersCompensationRate / 100));
 
-  // 合計計算
-  const totalEmployeeContribution = healthInsuranceEmployee + pensionInsuranceEmployee + employmentInsuranceEmployee;
+  // 住民税計算（年収ベース）
+  const annualIncome = monthlySalary * 12;
+  const residentTaxResult = calculateResidentTax(annualIncome, data.dependents || 0);
+
+  // 合計計算（住民税を含む）
+  const totalEmployeeContribution = healthInsuranceEmployee + pensionInsuranceEmployee + employmentInsuranceEmployee + residentTaxResult.employeeContribution;
   const totalEmployerContribution = healthInsuranceEmployer + pensionInsuranceEmployer + employmentInsuranceEmployer + workersCompensation;
   const totalContribution = totalEmployeeContribution + totalEmployerContribution;
   const totalLaborCost = monthlySalary + totalEmployerContribution;
@@ -208,6 +262,12 @@ export function calculateSocialInsurance(
     workersCompensation: {
       employerContribution: workersCompensation,
       rate: rates.workersCompensationRate
+    },
+    residentTax: {
+      employeeContribution: residentTaxResult.employeeContribution,
+      prefecturalTax: residentTaxResult.prefecturalTax,
+      municipalTax: residentTaxResult.municipalTax,
+      rate: residentTaxResult.rate
     },
     totalEmployeeContribution,
     totalEmployerContribution,

@@ -27,11 +27,19 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
             {/* 時給表示 */}
             <Box sx={{ textAlign: 'center', minWidth: 200 }}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                    あなたの時給
+                    {result.socialInsurance ? '総人件費ベースの時給' : 'あなたの時給'}
                 </Typography>
                 <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-                    {formatCurrency(result.hourlyWage)}
+                    {result.socialInsurance 
+                        ? formatCurrency(Math.round((result.socialInsurance.totalLaborCost * 12) / result.totalWorkingHours))
+                        : formatCurrency(result.hourlyWage)
+                    }
                 </Typography>
+                {result.socialInsurance && (
+                    <Typography variant="body2" sx={{ opacity: 0.8, mt: 0.5 }}>
+                        給与のみ: {formatCurrency(result.hourlyWage)}
+                    </Typography>
+                )}
             </Box>
 
             <Divider
@@ -60,7 +68,9 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                     }}
                 >
                     <Box sx={{ minWidth: { xs: 80, sm: 120 }, flex: 1 }}>
-                        <Typography variant="caption">実質年収</Typography>
+                        <Typography variant="caption">
+                            {result.socialInsurance ? '総人件費（年間）' : '実質年収'}
+                        </Typography>
                         <Typography
                             variant="caption"
                             sx={{
@@ -69,9 +79,10 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                             }}
                         >
                             （
-                            {Math.round(
-                                (result.actualAnnualIncome / 100000) * 10
-                            )}
+                            {result.socialInsurance
+                                ? Math.round((result.socialInsurance.totalLaborCost * 12 / 100000) * 10)
+                                : Math.round((result.actualAnnualIncome / 100000) * 10)
+                            }
                             万円）
                         </Typography>
                         <Box
@@ -88,13 +99,18 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                                     fontSize: { xs: '0.9rem', sm: '1.3rem' },
                                 }}
                             >
-                                {formatCurrency(result.actualAnnualIncome)}
+                                {result.socialInsurance
+                                    ? formatCurrency(result.socialInsurance.totalLaborCost * 12)
+                                    : formatCurrency(result.actualAnnualIncome)
+                                }
                             </Typography>
                         </Box>
                     </Box>
 
                     <Box sx={{ minWidth: { xs: 70, sm: 120 }, flex: 1 }}>
-                        <Typography variant="caption">実質月収</Typography>
+                        <Typography variant="caption">
+                            {result.socialInsurance ? '総人件費（月間）' : '実質月収'}
+                        </Typography>
                         <Typography
                             variant="caption"
                             sx={{
@@ -103,9 +119,10 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                             }}
                         >
                             （
-                            {Math.round(
-                                (result.actualMonthlyIncome / 10000) * 10
-                            ) / 10}
+                            {result.socialInsurance
+                                ? Math.round((result.socialInsurance.totalLaborCost / 10000) * 10) / 10
+                                : Math.round((result.actualMonthlyIncome / 10000) * 10) / 10
+                            }
                             万円）
                         </Typography>
                         <Typography
@@ -115,7 +132,10 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                                 fontSize: { xs: '0.9rem', sm: '1.3rem' },
                             }}
                         >
-                            {formatCurrency(result.actualMonthlyIncome)}
+                            {result.socialInsurance
+                                ? formatCurrency(result.socialInsurance.totalLaborCost)
+                                : formatCurrency(result.actualMonthlyIncome)
+                            }
                         </Typography>
                     </Box>
 
@@ -320,6 +340,21 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                                             </Typography>
                                             <Typography variant="body2" sx={{ color: '#4caf50' }}>
                                                 会社: {formatCurrency(result.socialInsurance.workersCompensation.employerContribution)}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+
+                                    {/* 住民税 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                            住民税 ({result.socialInsurance.residentTax.rate.toFixed(1)}% + 均等割)
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Typography variant="body2" sx={{ color: '#ff9800' }}>
+                                                従業員: {formatCurrency(result.socialInsurance.residentTax.employeeContribution)}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: '#666' }}>
+                                                会社: -
                                             </Typography>
                                         </Box>
                                     </Box>

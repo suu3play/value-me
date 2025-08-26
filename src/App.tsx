@@ -127,7 +127,7 @@ const initialData: SalaryCalculationData = {
     yearEndNewYear: false,
     customHolidays: 0,
     // 社会保障費計算オプション
-    enableSocialInsurance: false,
+    enableSocialInsurance: true,
     prefecture: '東京都',
     age: 30,
     dependents: 0,

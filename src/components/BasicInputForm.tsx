@@ -7,6 +7,10 @@ import {
     Box,
     Checkbox,
     FormControlLabel,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@mui/material';
 import type { SalaryCalculationData, HolidayShortcut } from '../types';
 import YearSelector from './YearSelector';
@@ -18,6 +22,7 @@ import {
     validateWorkingHours,
     validateCustomHolidays
 } from '../utils/validation';
+import { getAvailablePrefectures } from '../utils/socialInsuranceCalculations';
 
 interface BasicInputFormProps {
     data: SalaryCalculationData;
@@ -420,6 +425,30 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                             fullWidth={false}
                         />
                     </Box>
+                </Box>
+
+                {/* 居住地 */}
+                <Box>
+                    <Typography variant="h6" gutterBottom>
+                        居住地
+                    </Typography>
+                    <FormControl fullWidth sx={{ mb: 2 }}>
+                        <InputLabel>都道府県</InputLabel>
+                        <Select
+                            value={data.prefecture || '東京都'}
+                            onChange={(e) => onChange({ ...data, prefecture: e.target.value })}
+                            label="都道府県"
+                        >
+                            {getAvailablePrefectures().map((prefecture) => (
+                                <MenuItem key={prefecture} value={prefecture}>
+                                    {prefecture}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 2 }}>
+                        ※ 社会保険料の計算に使用されます
+                    </Typography>
                 </Box>
 
                 {/* 労働時間 */}
