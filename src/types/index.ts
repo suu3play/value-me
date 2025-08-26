@@ -34,6 +34,12 @@ export interface SalaryCalculationData {
   obon: boolean;
   yearEndNewYear: boolean;
   customHolidays: number;
+  
+  // 社会保障費計算オプション
+  enableSocialInsurance?: boolean;
+  prefecture?: string;
+  age?: number;
+  dependents?: number;
 }
 
 export interface CalculationResult {
@@ -42,6 +48,52 @@ export interface CalculationResult {
   actualMonthlyIncome: number;
   totalWorkingHours: number;
   totalAnnualHolidays: number;
+  socialInsurance?: SocialInsuranceResult;
+}
+
+// 社会保障費関連の型定義
+export interface SocialInsuranceData {
+  prefecture: string;
+  age: number;
+  dependents: number;
+  monthlyStandardSalary: number; // 標準報酬月額
+}
+
+export interface SocialInsuranceResult {
+  healthInsurance: {
+    employeeContribution: number; // 従業員負担分
+    employerContribution: number; // 事業主負担分
+    rate: number; // 保険料率
+  };
+  pensionInsurance: {
+    employeeContribution: number;
+    employerContribution: number;
+    rate: number;
+  };
+  employmentInsurance: {
+    employeeContribution: number;
+    employerContribution: number;
+    employeeRate: number;
+    employerRate: number;
+  };
+  workersCompensation: {
+    employerContribution: number; // 労災保険は事業主負担のみ
+    rate: number;
+  };
+  totalEmployeeContribution: number; // 従業員負担合計
+  totalEmployerContribution: number; // 事業主負担合計
+  totalContribution: number; // 合計負担額
+  totalLaborCost: number; // 総人件費（給与 + 社会保障費）
+}
+
+export interface PrefectureRates {
+  code: string;
+  name: string;
+  healthInsuranceRate: number; // 健康保険料率（％）
+  pensionInsuranceRate: number; // 厚生年金保険料率（％）
+  employmentInsuranceRateEmployee: number; // 雇用保険料率（従業員）
+  employmentInsuranceRateEmployer: number; // 雇用保険料率（事業主）
+  workersCompensationRate: number; // 労災保険料率（業種による、一般的な事務業）
 }
 
 export interface HolidayShortcut {

@@ -1,0 +1,242 @@
+import type { SalaryCalculationData, SocialInsuranceResult, PrefectureRates } from '../types';
+
+/**
+ * 都道府県別の社会保険料率データ（令和6年度版）
+ * 健康保険料率は協会けんぽの料率を使用
+ */
+export const PREFECTURE_RATES: { [key: string]: PrefectureRates } = {
+  '東京都': {
+    code: '13',
+    name: '東京都',
+    healthInsuranceRate: 10.0, // 健康保険料率（労使折半で5.0%ずつ）
+    pensionInsuranceRate: 18.3, // 厚生年金保険料率（労使折半で9.15%ずつ）
+    employmentInsuranceRateEmployee: 0.6, // 雇用保険料率（従業員負担）
+    employmentInsuranceRateEmployer: 0.95, // 雇用保険料率（事業主負担）
+    workersCompensationRate: 0.25 // 労災保険料率（事務業）
+  },
+  '大阪府': {
+    code: '27',
+    name: '大阪府',
+    healthInsuranceRate: 10.29,
+    pensionInsuranceRate: 18.3,
+    employmentInsuranceRateEmployee: 0.6,
+    employmentInsuranceRateEmployer: 0.95,
+    workersCompensationRate: 0.25
+  },
+  '神奈川県': {
+    code: '14',
+    name: '神奈川県',
+    healthInsuranceRate: 10.00,
+    pensionInsuranceRate: 18.3,
+    employmentInsuranceRateEmployee: 0.6,
+    employmentInsuranceRateEmployer: 0.95,
+    workersCompensationRate: 0.25
+  },
+  '愛知県': {
+    code: '23',
+    name: '愛知県',
+    healthInsuranceRate: 10.01,
+    pensionInsuranceRate: 18.3,
+    employmentInsuranceRateEmployee: 0.6,
+    employmentInsuranceRateEmployer: 0.95,
+    workersCompensationRate: 0.25
+  },
+  '福岡県': {
+    code: '40',
+    name: '福岡県',
+    healthInsuranceRate: 10.36,
+    pensionInsuranceRate: 18.3,
+    employmentInsuranceRateEmployee: 0.6,
+    employmentInsuranceRateEmployer: 0.95,
+    workersCompensationRate: 0.25
+  },
+  // その他の主要都道府県のデータ
+  '北海道': {
+    code: '01',
+    name: '北海道',
+    healthInsuranceRate: 10.39,
+    pensionInsuranceRate: 18.3,
+    employmentInsuranceRateEmployee: 0.6,
+    employmentInsuranceRateEmployer: 0.95,
+    workersCompensationRate: 0.25
+  },
+  '全国平均': {
+    code: '00',
+    name: '全国平均',
+    healthInsuranceRate: 10.0,
+    pensionInsuranceRate: 18.3,
+    employmentInsuranceRateEmployee: 0.6,
+    employmentInsuranceRateEmployer: 0.95,
+    workersCompensationRate: 0.25
+  }
+};
+
+/**
+ * 標準報酬月額の等級表（令和6年度版）
+ * 実際の月額給与から標準報酬月額を求める
+ */
+const STANDARD_SALARY_GRADES = [
+  { from: 0, to: 93000, standard: 88000 },
+  { from: 93000, to: 101000, standard: 98000 },
+  { from: 101000, to: 107000, standard: 104000 },
+  { from: 107000, to: 114000, standard: 110000 },
+  { from: 114000, to: 122000, standard: 118000 },
+  { from: 122000, to: 130000, standard: 126000 },
+  { from: 130000, to: 138000, standard: 134000 },
+  { from: 138000, to: 146000, standard: 142000 },
+  { from: 146000, to: 155000, standard: 150000 },
+  { from: 155000, to: 165000, standard: 160000 },
+  { from: 165000, to: 175000, standard: 170000 },
+  { from: 175000, to: 185000, standard: 180000 },
+  { from: 185000, to: 195000, standard: 190000 },
+  { from: 195000, to: 210000, standard: 200000 },
+  { from: 210000, to: 230000, standard: 220000 },
+  { from: 230000, to: 250000, standard: 240000 },
+  { from: 250000, to: 270000, standard: 260000 },
+  { from: 270000, to: 290000, standard: 280000 },
+  { from: 290000, to: 310000, standard: 300000 },
+  { from: 310000, to: 330000, standard: 320000 },
+  { from: 330000, to: 350000, standard: 340000 },
+  { from: 350000, to: 370000, standard: 360000 },
+  { from: 370000, to: 395000, standard: 380000 },
+  { from: 395000, to: 425000, standard: 410000 },
+  { from: 425000, to: 455000, standard: 440000 },
+  { from: 455000, to: 485000, standard: 470000 },
+  { from: 485000, to: 515000, standard: 500000 },
+  { from: 515000, to: 545000, standard: 530000 },
+  { from: 545000, to: 575000, standard: 560000 },
+  { from: 575000, to: 605000, standard: 590000 },
+  { from: 605000, to: 635000, standard: 620000 },
+  { from: 635000, to: Number.MAX_SAFE_INTEGER, standard: 650000 } // 最高等級
+];
+
+/**
+ * 月額給与から標準報酬月額を算出
+ */
+function calculateStandardSalary(monthlySalary: number): number {
+  const grade = STANDARD_SALARY_GRADES.find(
+    (grade) => monthlySalary >= grade.from && monthlySalary < grade.to
+  );
+  return grade ? grade.standard : 650000; // 見つからない場合は最高等級
+}
+
+/**
+ * 社会保険料を計算する
+ */
+export function calculateSocialInsurance(
+  data: SalaryCalculationData
+): SocialInsuranceResult | null {
+  // 社会保障費計算が無効の場合はnullを返す
+  if (!data.enableSocialInsurance || !data.prefecture) {
+    return null;
+  }
+
+  const prefecture = data.prefecture;
+  const rates = PREFECTURE_RATES[prefecture] || PREFECTURE_RATES['全国平均'];
+
+  // 月額給与を計算
+  let monthlySalary = data.salaryAmount;
+  if (data.salaryType === 'annual') {
+    monthlySalary = data.salaryAmount / 12;
+  }
+
+  // 手当を含める
+  if (data.enableBenefits && data.welfareInputMethod === 'individual') {
+    let monthlyAllowances = 0;
+    if (data.welfareType === 'monthly') {
+      monthlyAllowances = 
+        data.housingAllowance + 
+        data.regionalAllowance + 
+        data.familyAllowance + 
+        data.qualificationAllowance + 
+        data.otherAllowance;
+    } else if (data.welfareType === 'annual') {
+      monthlyAllowances = (
+        data.housingAllowance + 
+        data.regionalAllowance + 
+        data.familyAllowance + 
+        data.qualificationAllowance + 
+        data.otherAllowance
+      ) / 12;
+    }
+    monthlySalary += monthlyAllowances;
+  }
+
+  // 標準報酬月額を算出
+  const standardSalary = calculateStandardSalary(monthlySalary);
+
+  // 健康保険料計算
+  const healthInsuranceTotal = Math.floor(standardSalary * (rates.healthInsuranceRate / 100));
+  const healthInsuranceEmployee = Math.floor(healthInsuranceTotal / 2);
+  const healthInsuranceEmployer = Math.floor(healthInsuranceTotal / 2);
+
+  // 厚生年金保険料計算
+  const pensionInsuranceTotal = Math.floor(standardSalary * (rates.pensionInsuranceRate / 100));
+  const pensionInsuranceEmployee = Math.floor(pensionInsuranceTotal / 2);
+  const pensionInsuranceEmployer = Math.floor(pensionInsuranceTotal / 2);
+
+  // 雇用保険料計算
+  const employmentInsuranceEmployee = Math.floor(monthlySalary * (rates.employmentInsuranceRateEmployee / 100));
+  const employmentInsuranceEmployer = Math.floor(monthlySalary * (rates.employmentInsuranceRateEmployer / 100));
+
+  // 労災保険料計算（事業主負担のみ）
+  const workersCompensation = Math.floor(monthlySalary * (rates.workersCompensationRate / 100));
+
+  // 合計計算
+  const totalEmployeeContribution = healthInsuranceEmployee + pensionInsuranceEmployee + employmentInsuranceEmployee;
+  const totalEmployerContribution = healthInsuranceEmployer + pensionInsuranceEmployer + employmentInsuranceEmployer + workersCompensation;
+  const totalContribution = totalEmployeeContribution + totalEmployerContribution;
+  const totalLaborCost = monthlySalary + totalEmployerContribution;
+
+  return {
+    healthInsurance: {
+      employeeContribution: healthInsuranceEmployee,
+      employerContribution: healthInsuranceEmployer,
+      rate: rates.healthInsuranceRate / 2
+    },
+    pensionInsurance: {
+      employeeContribution: pensionInsuranceEmployee,
+      employerContribution: pensionInsuranceEmployer,
+      rate: rates.pensionInsuranceRate / 2
+    },
+    employmentInsurance: {
+      employeeContribution: employmentInsuranceEmployee,
+      employerContribution: employmentInsuranceEmployer,
+      employeeRate: rates.employmentInsuranceRateEmployee,
+      employerRate: rates.employmentInsuranceRateEmployer
+    },
+    workersCompensation: {
+      employerContribution: workersCompensation,
+      rate: rates.workersCompensationRate
+    },
+    totalEmployeeContribution,
+    totalEmployerContribution,
+    totalContribution,
+    totalLaborCost
+  };
+}
+
+/**
+ * 利用可能な都道府県一覧を取得
+ */
+export function getAvailablePrefectures(): string[] {
+  return Object.keys(PREFECTURE_RATES).filter(p => p !== '全国平均');
+}
+
+/**
+ * 通貨フォーマット（既存のユーティリティと整合性を保つ）
+ */
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'currency',
+    currency: 'JPY',
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+/**
+ * パーセンテージフォーマット
+ */
+export function formatPercentage(rate: number): string {
+  return `${rate.toFixed(2)}%`;
+}

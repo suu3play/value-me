@@ -1,6 +1,6 @@
 import React from 'react';
-import { Typography, Box, Divider, Button } from '@mui/material';
-import { Save as SaveIcon } from '@mui/icons-material';
+import { Typography, Box, Divider, Button, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { Save as SaveIcon, ExpandMore as ExpandMoreIcon, BusinessCenter as BusinessCenterIcon } from '@mui/icons-material';
 import type { CalculationResult } from '../types';
 import { formatCurrency, formatNumber } from '../utils/calculations';
 
@@ -202,6 +202,137 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                     <Typography variant="body2">
                         給与額と労働時間を入力してください
                     </Typography>
+                </Box>
+            )}
+
+            {/* 社会保障費表示 */}
+            {result.socialInsurance && (
+                <Box sx={{ width: '100%', mt: 2 }}>
+                    <Accordion 
+                        sx={{ 
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            '&:before': { display: 'none' },
+                            boxShadow: 'none',
+                            borderRadius: '8px !important',
+                        }}
+                    >
+                        <AccordionSummary
+                            expandIcon={<ExpandMoreIcon sx={{ color: 'inherit' }} />}
+                            aria-controls="social-insurance-content"
+                            id="social-insurance-header"
+                        >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <BusinessCenterIcon sx={{ fontSize: '1.2rem' }} />
+                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                    社会保障費詳細
+                                </Typography>
+                                <Typography variant="body2" sx={{ ml: 2, opacity: 0.8 }}>
+                                    総人件費: {formatCurrency(result.socialInsurance.totalLaborCost)}
+                                </Typography>
+                            </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                {/* 概要表示 */}
+                                <Box sx={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-around',
+                                    textAlign: 'center',
+                                    mb: 2,
+                                    flexWrap: 'wrap',
+                                    gap: 2
+                                }}>
+                                    <Box>
+                                        <Typography variant="caption">従業員負担</Typography>
+                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ff9800' }}>
+                                            {formatCurrency(result.socialInsurance.totalEmployeeContribution)}
+                                        </Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption">会社負担</Typography>
+                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
+                                            {formatCurrency(result.socialInsurance.totalEmployerContribution)}
+                                        </Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption">合計</Typography>
+                                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                            {formatCurrency(result.socialInsurance.totalContribution)}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+
+                                {/* 詳細内訳 */}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    {/* 健康保険 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                            健康保険 ({result.socialInsurance.healthInsurance.rate.toFixed(2)}%)
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Typography variant="body2" sx={{ color: '#ff9800' }}>
+                                                従業員: {formatCurrency(result.socialInsurance.healthInsurance.employeeContribution)}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: '#4caf50' }}>
+                                                会社: {formatCurrency(result.socialInsurance.healthInsurance.employerContribution)}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+
+                                    {/* 厚生年金 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                            厚生年金 ({result.socialInsurance.pensionInsurance.rate.toFixed(2)}%)
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Typography variant="body2" sx={{ color: '#ff9800' }}>
+                                                従業員: {formatCurrency(result.socialInsurance.pensionInsurance.employeeContribution)}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: '#4caf50' }}>
+                                                会社: {formatCurrency(result.socialInsurance.pensionInsurance.employerContribution)}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+
+                                    {/* 雇用保険 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                            雇用保険 ({result.socialInsurance.employmentInsurance.employeeRate.toFixed(2)}% / {result.socialInsurance.employmentInsurance.employerRate.toFixed(2)}%)
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Typography variant="body2" sx={{ color: '#ff9800' }}>
+                                                従業員: {formatCurrency(result.socialInsurance.employmentInsurance.employeeContribution)}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: '#4caf50' }}>
+                                                会社: {formatCurrency(result.socialInsurance.employmentInsurance.employerContribution)}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+
+                                    {/* 労災保険 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                            労災保険 ({result.socialInsurance.workersCompensation.rate.toFixed(2)}%)
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Typography variant="body2" sx={{ color: '#666' }}>
+                                                従業員: -
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: '#4caf50' }}>
+                                                会社: {formatCurrency(result.socialInsurance.workersCompensation.employerContribution)}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+
+                                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.3)', my: 1 }} />
+                                
+                                <Typography variant="caption" sx={{ opacity: 0.8, textAlign: 'center' }}>
+                                    ※ 社会保険料は標準報酬月額に基づいて計算されます。実際の料率は加入組合や業種により異なる場合があります。
+                                </Typography>
+                            </Box>
+                        </AccordionDetails>
+                    </Accordion>
                 </Box>
             )}
         </Box>
