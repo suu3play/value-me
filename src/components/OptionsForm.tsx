@@ -411,6 +411,7 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                         </Box>
                     </Box>
                 </Paper>
+
             </Box>
         </Box>
     );

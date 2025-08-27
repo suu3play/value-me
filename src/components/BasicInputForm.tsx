@@ -7,6 +7,10 @@ import {
     Box,
     Checkbox,
     FormControlLabel,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@mui/material';
 import type { SalaryCalculationData, HolidayShortcut } from '../types';
 import YearSelector from './YearSelector';
@@ -16,8 +20,9 @@ import {
     validateSalary,
     validateHolidays,
     validateWorkingHours,
-    validateCustomHolidays
+    validateCustomHolidays,
 } from '../utils/validation';
+import { getAvailablePrefectures } from '../utils/socialInsuranceCalculations';
 
 interface BasicInputFormProps {
     data: SalaryCalculationData;
@@ -30,34 +35,50 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
     const getHolidayShortcuts = (): HolidayShortcut[] => {
         if (data.useDynamicHolidays && holidayTypeCount) {
             return [
-                { 
-                    label: '週休二日制（土日）', 
+                {
+                    label: '週休二日制（土日）',
                     days: holidayTypeCount.weeklyTwoDay,
-                    description: '基本土日休み、月1回土日出勤、祝日は出勤'
+                    description: '基本土日休み、月1回土日出勤、祝日は出勤',
                 },
-                { 
-                    label: '週休二日制（土日祝）', 
+                {
+                    label: '週休二日制（土日祝）',
                     days: holidayTypeCount.weeklyTwoDayWithHolidays,
-                    description: '基本土日祝休み、月1回土日出勤'
+                    description: '基本土日祝休み、月1回土日出勤',
                 },
-                { 
-                    label: '完全週休二日制（土日）', 
+                {
+                    label: '完全週休二日制（土日）',
                     days: holidayTypeCount.fullWeekendOnly,
-                    description: '完全土日休み、祝日は出勤'
+                    description: '完全土日休み、祝日は出勤',
                 },
-                { 
-                    label: '完全週休二日制（土日祝）', 
+                {
+                    label: '完全週休二日制（土日祝）',
                     days: holidayTypeCount.fullWeekendWithHolidays,
-                    description: '完全土日祝休み'
+                    description: '完全土日祝休み',
                 },
             ];
         } else {
             // フォールバック（従来の固定値）
             return [
-                { label: '週休二日制（土日）', days: 97, description: '推定値' },
-                { label: '週休二日制（土日祝）', days: 110, description: '推定値' },
-                { label: '完全週休二日制（土日）', days: 104, description: '推定値' },
-                { label: '完全週休二日制（土日祝）', days: 120, description: '推定値' },
+                {
+                    label: '週休二日制（土日）',
+                    days: 97,
+                    description: '推定値',
+                },
+                {
+                    label: '週休二日制（土日祝）',
+                    days: 110,
+                    description: '推定値',
+                },
+                {
+                    label: '完全週休二日制（土日）',
+                    days: 104,
+                    description: '推定値',
+                },
+                {
+                    label: '完全週休二日制（土日祝）',
+                    days: 120,
+                    description: '推定値',
+                },
             ];
         }
     };
@@ -98,8 +119,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
         return total;
     };
 
-
-
     const handleSalaryTypeChange = (
         _: React.MouseEvent<HTMLElement>,
         newSalaryType: 'monthly' | 'annual' | null
@@ -108,7 +127,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
             onChange({ ...data, salaryType: newSalaryType });
         }
     };
-
 
     const handleWorkingHoursTypeChange = (
         _: React.MouseEvent<HTMLElement>,
@@ -189,7 +207,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
             onChange({ ...data, [field]: event.target.checked });
         };
 
-
     return (
         <Box>
             <Typography
@@ -200,8 +217,13 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                 基本情報
             </Typography>
 
-
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: { xs: 2, sm: 3 },
+                }}
+            >
                 {/* 給与種別選択 */}
                 <Box>
                     <Typography variant="h6" gutterBottom>
@@ -216,7 +238,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                         sx={{
                             '& .MuiToggleButton-root': {
                                 minHeight: { xs: 48, sm: 44 },
-                            }
+                            },
                         }}
                     >
                         <ToggleButton value="monthly" aria-label="monthly">
@@ -234,7 +256,9 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                         id="salary-amount"
                         label={data.salaryType === 'monthly' ? '月収' : '年収'}
                         value={data.salaryAmount}
-                        onChange={(value) => onChange({ ...data, salaryAmount: value })}
+                        onChange={(value) =>
+                            onChange({ ...data, salaryAmount: value })
+                        }
                         validator={validateSalary}
                         type="integer"
                         step={data.salaryType === 'monthly' ? 1000 : 10000}
@@ -251,16 +275,16 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                 {/* 年間休日 */}
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="h6">
-                            年間休日
-                        </Typography>
+                        <Typography variant="h6">年間休日</Typography>
                         <YearSelector data={data} onChange={onChange} />
                     </Box>
                     <ValidatedInput
                         id="annual-holidays"
                         label="年間休日"
                         value={data.annualHolidays}
-                        onChange={(value) => onChange({ ...data, annualHolidays: value })}
+                        onChange={(value) =>
+                            onChange({ ...data, annualHolidays: value })
+                        }
                         validator={validateHolidays}
                         type="integer"
                         unit="日"
@@ -285,30 +309,46 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                                 mb: 1,
                             }}
                         >
-                            総休日数: {calculateTotalHolidays()}日 
-                            <Typography component="span" variant="body2" sx={{ opacity: 0.7, ml: 1 }}>
+                            総休日数: {calculateTotalHolidays()}日
+                            <Typography
+                                component="span"
+                                variant="body2"
+                                sx={{ opacity: 0.7, ml: 1 }}
+                            >
                                 (基本{data.annualHolidays}日
                                 {data.goldenWeekHolidays && (
                                     <>
-                                        + GW{(() => {
+                                        + GW
+                                        {(() => {
                                             let gwDays = 10;
-                                            if (data.annualHolidays === 120 || data.annualHolidays === 119) gwDays = 6;
-                                            if (data.annualHolidays === 119) gwDays = 4;
+                                            if (
+                                                data.annualHolidays === 120 ||
+                                                data.annualHolidays === 119
+                                            )
+                                                gwDays = 6;
+                                            if (data.annualHolidays === 119)
+                                                gwDays = 4;
                                             return gwDays;
-                                        })()}日
+                                        })()}
+                                        日
                                     </>
                                 )}
-                                {data.obon && (
-                                    <> + お盆5日</>
-                                )}
+                                {data.obon && <> + お盆5日</>}
                                 {data.yearEndNewYear && (
                                     <>
-                                        + 年末年始{(() => {
+                                        + 年末年始
+                                        {(() => {
                                             let yearEndDays = 6;
-                                            if (data.annualHolidays === 120 || data.annualHolidays === 119) yearEndDays = 4;
-                                            if (data.annualHolidays === 119) yearEndDays = 3;
+                                            if (
+                                                data.annualHolidays === 120 ||
+                                                data.annualHolidays === 119
+                                            )
+                                                yearEndDays = 4;
+                                            if (data.annualHolidays === 119)
+                                                yearEndDays = 3;
                                             return yearEndDays;
-                                        })()}日
+                                        })()}
+                                        日
                                     </>
                                 )}
                                 {data.customHolidays > 0 && (
@@ -322,15 +362,22 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                     {/* ショートカットボタン */}
                     <Box sx={{ mb: 2 }}>
                         {loading && (
-                            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ mb: 1, display: 'block' }}
+                            >
                                 休日日数を計算中...
                             </Typography>
                         )}
-                        <Box 
-                            sx={{ 
-                                display: 'grid', 
-                                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, 
-                                gap: { xs: 1, sm: 1 } 
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: '1fr 1fr',
+                                },
+                                gap: { xs: 1, sm: 1 },
                             }}
                         >
                             {holidayShortcuts.map((shortcut) => (
@@ -350,7 +397,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                                             ? 'primary'
                                             : 'inherit'
                                     }
-                                    sx={{ 
+                                    sx={{
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
@@ -358,14 +405,36 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                                         px: 1,
                                         py: 1.5,
                                         minHeight: 70,
-                                        justifyContent: 'center'
+                                        justifyContent: 'center',
                                     }}
                                 >
-                                    <Typography variant="body2" sx={{ fontWeight: 'bold', lineHeight: 1.2, fontSize: '0.8rem' }}>
-                                        {shortcut.label} <span style={{ color: 'var(--mui-palette-primary-main)' }}>{shortcut.days}日</span>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            lineHeight: 1.2,
+                                            fontSize: '0.8rem',
+                                        }}
+                                    >
+                                        {shortcut.label}{' '}
+                                        <span
+                                            style={{
+                                                color: 'var(--mui-palette-primary-main)',
+                                            }}
+                                        >
+                                            {shortcut.days}日
+                                        </span>
                                     </Typography>
                                     {shortcut.description && (
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.5, lineHeight: 1.2 }}>
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{
+                                                fontSize: '0.7rem',
+                                                mt: 0.5,
+                                                lineHeight: 1.2,
+                                            }}
+                                        >
                                             {shortcut.description}
                                         </Typography>
                                     )}
@@ -411,7 +480,9 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                             id="custom-holidays"
                             label="その他特別休暇"
                             value={data.customHolidays}
-                            onChange={(value) => onChange({ ...data, customHolidays: value })}
+                            onChange={(value) =>
+                                onChange({ ...data, customHolidays: value })
+                            }
                             validator={validateCustomHolidays}
                             type="integer"
                             unit="日"
@@ -437,7 +508,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                             sx={{
                                 '& .MuiToggleButton-root': {
                                     minHeight: { xs: 44, sm: 40 },
-                                }
+                                },
                             }}
                         >
                             <ToggleButton value="daily" aria-label="daily">
@@ -461,7 +532,9 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                                 : '1ヶ月の労働時間'
                         }
                         value={getDisplayWorkingHours()}
-                        onChange={(value) => onChange({ ...data, dailyWorkingHours: value })}
+                        onChange={(value) =>
+                            onChange({ ...data, dailyWorkingHours: value })
+                        }
                         validator={validateWorkingHours}
                         type="float"
                         step={data.workingHoursType === 'daily' ? 0.5 : 1}
@@ -478,6 +551,206 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
                 </Box>
             </Box>
 
+            {/* 社会保障費計算セクション */}
+            <Box
+                sx={{
+                    mt: 4,
+                    p: 3,
+                    borderRadius: 2,
+                    bgcolor: 'grey.50',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                <Typography
+                    variant="h5"
+                    gutterBottom
+                    sx={{ fontWeight: 'bold', mb: 3 }}
+                >
+                    社会保障費計算
+                </Typography>
+
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: { xs: 2, sm: 3 },
+                    }}
+                >
+                    {/* 社会保障費計算トグル */}
+                    <Box>
+                        <Typography variant="h6" gutterBottom>
+                            計算方法
+                        </Typography>
+                        <ToggleButtonGroup
+                            value={
+                                data.enableSocialInsurance
+                                    ? 'enabled'
+                                    : 'disabled'
+                            }
+                            exclusive
+                            onChange={(_, value) => {
+                                if (value !== null) {
+                                    onChange({
+                                        ...data,
+                                        enableSocialInsurance:
+                                            value === 'enabled',
+                                    });
+                                }
+                            }}
+                            aria-label="social insurance calculation"
+                            fullWidth
+                            sx={{
+                                '& .MuiToggleButton-root': {
+                                    minHeight: { xs: 48, sm: 44 },
+                                },
+                            }}
+                        >
+                            <ToggleButton
+                                value="disabled"
+                                aria-label="disabled"
+                            >
+                                給与計算のみ
+                            </ToggleButton>
+                            <ToggleButton value="enabled" aria-label="enabled">
+                                社会保障費込み
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    </Box>
+
+                    {data.enableSocialInsurance && (
+                        <>
+                            {/* 都道府県、年齢、扶養人数を横一列に */}
+                            <Box>
+                                <Typography variant="h6" gutterBottom>
+                                    詳細設定
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        gap: 2,
+                                        flexDirection: {
+                                            xs: 'column',
+                                            sm: 'row',
+                                        },
+                                        alignItems: 'flex-end',
+                                    }}
+                                >
+                                    {/* 都道府県選択 */}
+                                    <Box sx={{ flex: { xs: 1, sm: 2 } }}>
+                                        <FormControl fullWidth>
+                                            <InputLabel>都道府県</InputLabel>
+                                            <Select
+                                                value={
+                                                    data.prefecture || '東京都'
+                                                }
+                                                onChange={(e) =>
+                                                    onChange({
+                                                        ...data,
+                                                        prefecture:
+                                                            e.target.value,
+                                                    })
+                                                }
+                                                label="都道府県"
+                                                size="medium"
+                                            >
+                                                {getAvailablePrefectures().map(
+                                                    (prefecture) => (
+                                                        <MenuItem
+                                                            key={prefecture}
+                                                            value={prefecture}
+                                                        >
+                                                            {prefecture}
+                                                        </MenuItem>
+                                                    )
+                                                )}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+
+                                    {/* 年齢 */}
+                                    <Box
+                                        sx={{
+                                            flex: 1,
+                                            minWidth: { xs: '100%', sm: 120 },
+                                        }}
+                                    >
+                                        <ValidatedInput
+                                            id="age"
+                                            label="年齢"
+                                            value={data.age || 30}
+                                            onChange={(value) =>
+                                                onChange({
+                                                    ...data,
+                                                    age: value,
+                                                })
+                                            }
+                                            validator={(value) => {
+                                                if (value < 0 || value > 120) {
+                                                    return {
+                                                        isValid: false,
+                                                        message:
+                                                            '年齢は0歳から120歳の範囲で入力してください',
+                                                    };
+                                                }
+                                                return { isValid: true };
+                                            }}
+                                            type="integer"
+                                            step={1}
+                                            unit="歳"
+                                            showIncrementButtons
+                                            fullWidth={false}
+                                        />
+                                    </Box>
+
+                                    {/* 扶養人数 */}
+                                    <Box
+                                        sx={{
+                                            flex: 1,
+                                            minWidth: { xs: '100%', sm: 120 },
+                                        }}
+                                    >
+                                        <ValidatedInput
+                                            id="dependents"
+                                            label="扶養人数"
+                                            value={data.dependents || 0}
+                                            onChange={(value) =>
+                                                onChange({
+                                                    ...data,
+                                                    dependents: value,
+                                                })
+                                            }
+                                            validator={(value) => {
+                                                if (value < 0 || value > 20) {
+                                                    return {
+                                                        isValid: false,
+                                                        message:
+                                                            '扶養人数は0人から20人の範囲で入力してください',
+                                                    };
+                                                }
+                                                return { isValid: true };
+                                            }}
+                                            type="integer"
+                                            step={1}
+                                            unit="人"
+                                            showIncrementButtons
+                                            fullWidth={false}
+                                        />
+                                    </Box>
+                                </Box>
+                                <Typography
+                                    variant="caption"
+                                    color="textSecondary"
+                                    sx={{ mt: 1, display: 'block' }}
+                                >
+                                    ※
+                                    社会保険料と住民税の計算に使用されます。扶養人数は所得税法上の扶養親族の人数です。
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
+                </Box>
+            </Box>
         </Box>
     );
 };

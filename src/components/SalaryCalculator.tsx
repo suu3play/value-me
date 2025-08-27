@@ -49,7 +49,7 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onR
           flexDirection: { 
             xs: 'column', 
             lg: 'row',
-            '@media (max-height: 600px) and (orientation: landscape) and (min-width: 768px)': 'row'
+            '@media (maxHeight: 600px) and (orientation: landscape) and (minWidth: 768px)': 'row'
           }, 
           gap: { xs: 2, sm: 3 },
           width: '100%',
