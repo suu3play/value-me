@@ -412,60 +412,6 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
                     </Box>
                 </Paper>
 
-                {/* 社会保障費詳細設定 */}
-                <Paper elevation={1} sx={{ p: { xs: 2, sm: 3 }, bgcolor: 'grey.50' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                        社会保障費詳細設定
-                    </Typography>
-                    
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            gap: 2,
-                            flexWrap: 'wrap',
-                        }}
-                    >
-                        <ValidatedInput
-                            id="age"
-                            label="年齢"
-                            value={data.age || 30}
-                            onChange={(value) => onChange({ ...data, age: value })}
-                            validator={(value) => {
-                                if (value < 18 || value > 75) {
-                                    return { isValid: false, message: '年齢は18歳から75歳までで入力してください' };
-                                }
-                                return { isValid: true };
-                            }}
-                            type="integer"
-                            unit="歳"
-                            helperText="年齢を入力してください（18～75歳）"
-                            sx={{ minWidth: 150, flex: 1 }}
-                            fullWidth={false}
-                        />
-
-                        <ValidatedInput
-                            id="dependents"
-                            label="扶養者数"
-                            value={data.dependents || 0}
-                            onChange={(value) => onChange({ ...data, dependents: value })}
-                            validator={(value) => {
-                                if (value < 0 || value > 10) {
-                                    return { isValid: false, message: '扶養者数は0～10人で入力してください' };
-                                }
-                                return { isValid: true };
-                            }}
-                            type="integer"
-                            unit="人"
-                            helperText="扶養者数を入力してください（0～10人）"
-                            sx={{ minWidth: 150, flex: 1 }}
-                            fullWidth={false}
-                        />
-                    </Box>
-                    
-                    <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 2 }}>
-                        ※ 社会保険料率は令和6年度の料率を使用しています。実際の料率は勤務先の健康保険組合や業種により異なる場合があります。
-                    </Typography>
-                </Paper>
             </Box>
         </Box>
     );
