@@ -161,7 +161,6 @@ export const calculateHourlyWage = (
     // 社会保障費の計算
     const socialInsurance = calculateSocialInsurance(data);
 
-
     return {
         hourlyWage: isNaN(hourlyWage) ? 0 : Math.round(hourlyWage),
         actualAnnualIncome: isNaN(actualAnnualIncome)
@@ -176,7 +175,7 @@ export const calculateHourlyWage = (
         totalAnnualHolidays: isNaN(totalAnnualHolidays)
             ? 0
             : totalAnnualHolidays,
-        socialInsurance: socialInsurance,
+        socialInsurance: socialInsurance || undefined,
     };
 };
 
