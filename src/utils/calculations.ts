@@ -1,5 +1,4 @@
 import type { SalaryCalculationData, CalculationResult } from '../types';
-import { calculateSocialInsurance } from './socialInsuranceCalculations';
 
 export const calculateHourlyWage = (
     data: SalaryCalculationData
@@ -158,8 +157,6 @@ export const calculateHourlyWage = (
     const hourlyWage =
         totalWorkingHours > 0 ? actualAnnualIncome / totalWorkingHours : 0;
 
-    // 社会保障費の計算
-    const socialInsurance = calculateSocialInsurance(data);
 
     return {
         hourlyWage: isNaN(hourlyWage) ? 0 : Math.round(hourlyWage),
@@ -175,7 +172,6 @@ export const calculateHourlyWage = (
         totalAnnualHolidays: isNaN(totalAnnualHolidays)
             ? 0
             : totalAnnualHolidays,
-        socialInsurance: socialInsurance || undefined,
     };
 };
 
