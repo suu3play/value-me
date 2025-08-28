@@ -1,6 +1,5 @@
 import type { SalaryCalculationData, CalculationResult } from '../types';
 import { holidayService, type HolidayCount } from '../services/holidayService';
-import { calculateSocialInsurance } from './socialInsuranceCalculations';
 
 export interface DynamicHolidayOptions {
   year?: number;
@@ -91,8 +90,6 @@ export const calculateHourlyWageWithDynamicHolidays = async (
   const totalWorkingHours = workingDays * actualDailyWorkingHours;
   const hourlyWage = totalWorkingHours > 0 ? actualAnnualIncome / totalWorkingHours : 0;
 
-  // 社会保障費の計算
-  const socialInsurance = calculateSocialInsurance(data);
   
 
   return {
@@ -101,7 +98,6 @@ export const calculateHourlyWageWithDynamicHolidays = async (
     actualMonthlyIncome: isNaN(actualAnnualIncome) ? 0 : Math.round(actualAnnualIncome / 12),
     totalWorkingHours: isNaN(totalWorkingHours) ? 0 : Math.round(totalWorkingHours),
     totalAnnualHolidays: isNaN(totalAnnualHolidays) ? 0 : totalAnnualHolidays,
-    socialInsurance: socialInsurance
   };
 };
 
