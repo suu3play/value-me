@@ -14,10 +14,11 @@ export const calculateAnnualExecutions = (task: TaskDefinition): number => {
     case 'daily':
       return 365 / (frequency.interval || 1);
     
-    case 'weekly':
+    case 'weekly': {
       const weeklyInterval = frequency.interval || 1;
       const daysInWeek = frequency.daysOfWeek?.length || 1;
       return (52 / weeklyInterval) * daysInWeek;
+    }
     
     case 'monthly':
       return 12 / (frequency.interval || 1);
@@ -245,14 +246,16 @@ export const generateFrequencyDescription = (task: TaskDefinition): string => {
       }
       return interval === 1 ? '毎週' : `${interval}週に1回`;
     
-    case 'monthly':
+    case 'monthly': {
       const dayText = frequency.dayOfMonth ? `${frequency.dayOfMonth}日` : '';
       return interval === 1 ? `毎月${dayText}` : `${interval}ヶ月に1回${dayText}`;
+    }
     
-    case 'yearly':
+    case 'yearly': {
       const monthText = frequency.monthOfYear ? `${frequency.monthOfYear}月` : '';
       const dayInMonthText = frequency.dayOfMonth ? `${frequency.dayOfMonth}日` : '';
       return interval === 1 ? `毎年${monthText}${dayInMonthText}` : `${interval}年に1回${monthText}${dayInMonthText}`;
+    }
     
     default:
       return '不明';

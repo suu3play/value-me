@@ -92,7 +92,11 @@ export const WorkItemManager: React.FC<WorkItemManagerProps> = ({ workItems, onC
     onChange(workItems.filter(w => w.id !== itemId));
   };
 
-  const handleWorkItemChange = (itemId: string, field: keyof WorkItem, value: any) => {
+  const handleWorkItemChange = (
+    itemId: string, 
+    field: keyof WorkItem, 
+    value: WorkItem[keyof WorkItem]
+  ) => {
     onChange(workItems.map(w => 
       w.id === itemId ? { ...w, [field]: value } : w
     ));
@@ -277,7 +281,7 @@ export const WorkItemManager: React.FC<WorkItemManagerProps> = ({ workItems, onC
             <Select
               value={formData.frequency}
               label="実行頻度"
-              onChange={(e) => setFormData({ ...formData, frequency: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, frequency: e.target.value as WorkItem['frequency'] })}
             >
               <MenuItem value="daily">日次</MenuItem>
               <MenuItem value="weekly">週次</MenuItem>

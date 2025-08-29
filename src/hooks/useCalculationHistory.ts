@@ -116,14 +116,16 @@ export const useCalculationHistory = (): UseCalculationHistoryReturn => {
       // 同じ計算結果の重複チェック（最新エントリのみチェック）
       if (prevHistory.length > 0) {
         const latestEntry = prevHistory[0];
-        const isSameResult = 
-          latestEntry.result.hourlyWage === result.hourlyWage &&
-          latestEntry.result.actualAnnualIncome === result.actualAnnualIncome &&
-          latestEntry.result.actualMonthlyIncome === result.actualMonthlyIncome;
+        if (latestEntry) {
+          const isSameResult = 
+            latestEntry.result.hourlyWage === result.hourlyWage &&
+            latestEntry.result.actualAnnualIncome === result.actualAnnualIncome &&
+            latestEntry.result.actualMonthlyIncome === result.actualMonthlyIncome;
         
-        if (isSameResult) {
-          console.log('重複した計算結果のため履歴追加をスキップしました');
-          return prevHistory; // 重複の場合は追加しない
+          if (isSameResult) {
+            console.log('重複した計算結果のため履歴追加をスキップしました');
+            return prevHistory; // 重複の場合は追加しない
+          }
         }
       }
 

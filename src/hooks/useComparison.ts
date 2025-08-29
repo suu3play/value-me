@@ -153,7 +153,7 @@ export const useComparison = (singleCalculationData?: SalaryCalculationData) => 
   const removeItem = useCallback((id: string) => {
     const newItems = state.items.filter(item => item.id !== id);
     const newActiveItemId = state.activeItemId === id 
-      ? (newItems.length > 0 ? newItems[0].id : null)
+      ? (newItems.length > 0 ? newItems[0]?.id || null : null)
       : state.activeItemId;
 
     const newState = {

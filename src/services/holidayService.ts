@@ -13,6 +13,19 @@ export interface HolidayCount {
   compensationHolidays: number;
 }
 
+// 型ガード関数
+function isHolidayObject(holiday: unknown): holiday is { name?: string; name_en?: string } {
+  return (
+    typeof holiday === 'object' &&
+    holiday !== null &&
+    ('name' in holiday || 'name_en' in holiday)
+  );
+}
+
+function hasStringProperty(obj: object, prop: string): obj is Record<string, string> {
+  return prop in obj && typeof (obj as Record<string, unknown>)[prop] === 'string';
+}
+
 class HolidayService {
   private cache: Map<string, Holiday[]> = new Map();
   private fallbackHolidays: Map<string, Holiday[]> = new Map();
@@ -142,13 +155,12 @@ class HolidayService {
               let name = '祝日';
               let nameEn = 'Holiday';
               
-              if (typeof holiday === 'object' && holiday !== null) {
-                const holidayObj = holiday as Record<string, unknown>;
-                if ('name' in holidayObj && typeof holidayObj.name === 'string') {
-                  name = holidayObj.name;
+              if (isHolidayObject(holiday)) {
+                if (hasStringProperty(holiday, 'name')) {
+                  name = holiday.name || '祝日';
                 }
-                if ('name_en' in holidayObj && typeof holidayObj.name_en === 'string') {
-                  nameEn = holidayObj.name_en;
+                if (hasStringProperty(holiday, 'name_en')) {
+                  nameEn = holiday.name_en || 'Holiday';
                 }
               }
               

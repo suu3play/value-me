@@ -49,7 +49,7 @@ export const calculateTeamCost = (
       totalAnnualCost = memberResults.reduce((sum, item) => sum + item.result.actualAnnualIncome, 0);
       break;
 
-    case 'average':
+    case 'average': {
       // 平均計算: 平均単価 × 人数
       const avgHourlyWage = memberResults.reduce((sum, item) => sum + item.result.hourlyWage, 0) / memberResults.length;
       const avgMonthlyIncome = memberResults.reduce((sum, item) => sum + item.result.actualMonthlyIncome, 0) / memberResults.length;
@@ -59,28 +59,30 @@ export const calculateTeamCost = (
       totalMonthlyCost = avgMonthlyIncome * activeMembers.length;
       totalAnnualCost = avgAnnualIncome * activeMembers.length;
       break;
+    }
 
-    case 'byRole':
+    case 'byRole': {
       // 役割別計算: 役割ごとの平均単価 × 人数
       const roleGroups = activeMembers.reduce((groups, member) => {
         if (!groups[member.role]) {
           groups[member.role] = [];
         }
-        groups[member.role].push(member);
+        groups[member.role]?.push(member);
         return groups;
       }, {} as Record<string, TeamMember[]>);
 
       Object.entries(roleGroups).forEach(([, members]) => {
-        const roleResults = members.map(member => calculateMemberCost(member));
+        const roleResults = members?.map(member => calculateMemberCost(member)) || [];
         const roleAvgHourlyWage = roleResults.reduce((sum, result) => sum + result.hourlyWage, 0) / roleResults.length;
         const roleAvgMonthlyIncome = roleResults.reduce((sum, result) => sum + result.actualMonthlyIncome, 0) / roleResults.length;
         const roleAvgAnnualIncome = roleResults.reduce((sum, result) => sum + result.actualAnnualIncome, 0) / roleResults.length;
         
-        totalHourlyCost += roleAvgHourlyWage * members.length;
-        totalMonthlyCost += roleAvgMonthlyIncome * members.length;
-        totalAnnualCost += roleAvgAnnualIncome * members.length;
+        totalHourlyCost += roleAvgHourlyWage * (members?.length || 0);
+        totalMonthlyCost += roleAvgMonthlyIncome * (members?.length || 0);
+        totalAnnualCost += roleAvgAnnualIncome * (members?.length || 0);
       });
       break;
+    }
   }
 
   // メンバー別の詳細情報
@@ -142,24 +144,25 @@ export const getTeamRoleStatistics = (team: Team) => {
     if (!groups[member.role]) {
       groups[member.role] = [];
     }
-    groups[member.role].push(member);
+    groups[member.role]?.push(member);
     return groups;
   }, {} as Record<string, TeamMember[]>);
 
   return Object.entries(roleGroups).map(([role, members]) => {
-    const memberResults = members.map(member => calculateMemberCost(member));
+    const memberResults = members?.map(member => calculateMemberCost(member)) || [];
     
     const totalHourlyWage = memberResults.reduce((sum, result) => sum + result.hourlyWage, 0);
     const totalMonthlyIncome = memberResults.reduce((sum, result) => sum + result.actualMonthlyIncome, 0);
     const totalAnnualIncome = memberResults.reduce((sum, result) => sum + result.actualAnnualIncome, 0);
     
-    const avgHourlyWage = totalHourlyWage / members.length;
-    const avgMonthlyIncome = totalMonthlyIncome / members.length;
-    const avgAnnualIncome = totalAnnualIncome / members.length;
+    const membersLength = members?.length || 0;
+    const avgHourlyWage = membersLength > 0 ? totalHourlyWage / membersLength : 0;
+    const avgMonthlyIncome = membersLength > 0 ? totalMonthlyIncome / membersLength : 0;
+    const avgAnnualIncome = membersLength > 0 ? totalAnnualIncome / membersLength : 0;
 
     return {
       role,
-      memberCount: members.length,
+      memberCount: membersLength,
       totalHourlyWage,
       totalMonthlyIncome,
       totalAnnualIncome,
@@ -167,7 +170,7 @@ export const getTeamRoleStatistics = (team: Team) => {
       avgMonthlyIncome,
       avgAnnualIncome,
       members: memberResults.map((result, index) => ({
-        ...members[index],
+        ...(members?.[index] || {}),
         calculationResult: result,
       })),
     };
