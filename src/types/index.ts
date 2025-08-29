@@ -86,7 +86,9 @@ export interface ComparisonResult {
   };
   differences: {
     maxHourlyWageDiff: number;
+    maxHourlyWageDiffPercent: number;
     maxAnnualIncomeDiff: number;
+    maxAnnualIncomeDiffPercent: number;
   };
 }
 

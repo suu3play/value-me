@@ -105,6 +105,14 @@ export const useComparison = (singleCalculationData?: SalaryCalculationData) => 
       const maxHourlyWageDiff = highestHourlyWage.value - lowestHourlyWage.value;
       const maxAnnualIncomeDiff = highestAnnualIncome.value - lowestAnnualIncome.value;
 
+      // パーセンテージ計算
+      const maxHourlyWageDiffPercent = lowestHourlyWage.value > 0 
+        ? (maxHourlyWageDiff / lowestHourlyWage.value) * 100 
+        : 0;
+      const maxAnnualIncomeDiffPercent = lowestAnnualIncome.value > 0 
+        ? (maxAnnualIncomeDiff / lowestAnnualIncome.value) * 100 
+        : 0;
+
       const result: ComparisonResult = {
         items: itemsWithResults,
         highest: {
@@ -117,7 +125,9 @@ export const useComparison = (singleCalculationData?: SalaryCalculationData) => 
         },
         differences: {
           maxHourlyWageDiff,
+          maxHourlyWageDiffPercent,
           maxAnnualIncomeDiff,
+          maxAnnualIncomeDiffPercent,
         },
       };
 
