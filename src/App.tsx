@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
@@ -25,14 +25,34 @@ import type { SalaryCalculationData, CalculationResult } from './types';
 import type { CostCalculationResult } from './types/teamCost';
 import { useCalculationHistory } from './hooks/useCalculationHistory';
 import { useComparison } from './hooks/useComparison';
+import { LiveRegion } from './components/LiveRegion';
+import { ScreenReaderOnly } from './components/ScreenReaderOnly';
 
 const theme = createTheme({
     palette: {
         primary: {
-            main: '#2196F3',
+            main: '#1976d2', // より高いコントラスト比のため青を暗く
+            contrastText: '#ffffff',
         },
         secondary: {
-            main: '#4CAF50',
+            main: '#388e3c', // より高いコントラスト比のため緑を暗く
+            contrastText: '#ffffff',
+        },
+        error: {
+            main: '#d32f2f',
+            contrastText: '#ffffff',
+        },
+        warning: {
+            main: '#f57c00',
+            contrastText: '#ffffff',
+        },
+        info: {
+            main: '#1976d2',
+            contrastText: '#ffffff',
+        },
+        success: {
+            main: '#388e3c',
+            contrastText: '#ffffff',
         },
     },
     typography: {
@@ -63,6 +83,12 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     minHeight: 44,
+                    fontWeight: 600, // より読みやすいフォント太さ
+                    '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: '#1976d2',
+                        outlineOffset: '2px',
+                    },
                     '@media (max-width:600px)': {
                         minHeight: 48,
                         fontSize: '1rem',
@@ -71,9 +97,46 @@ const theme = createTheme({
                 },
             },
         },
+        MuiToggleButton: {
+            styleOverrides: {
+                root: {
+                    '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: '#1976d2',
+                        outlineOffset: '2px',
+                    },
+                    '&.Mui-selected': {
+                        backgroundColor: '#1976d2',
+                        color: '#ffffff',
+                        '&:hover': {
+                            backgroundColor: '#1565c0',
+                        },
+                    },
+                },
+            },
+        },
+        MuiFab: {
+            styleOverrides: {
+                root: {
+                    '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: '#1976d2',
+                        outlineOffset: '2px',
+                    },
+                },
+            },
+        },
         MuiTextField: {
             styleOverrides: {
                 root: {
+                    '& .MuiInputBase-root': {
+                        '&:focus-within': {
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderWidth: '2px',
+                                borderColor: '#1976d2',
+                            },
+                        },
+                    },
                     '@media (max-width:600px)': {
                         '& .MuiInputBase-root': {
                             minHeight: 48,
@@ -85,6 +148,14 @@ const theme = createTheme({
         MuiFormControl: {
             styleOverrides: {
                 root: {
+                    '& .MuiInputBase-root': {
+                        '&:focus-within': {
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderWidth: '2px',
+                                borderColor: '#1976d2',
+                            },
+                        },
+                    },
                     '@media (max-width:600px)': {
                         '& .MuiInputBase-root': {
                             minHeight: 48,
@@ -92,6 +163,46 @@ const theme = createTheme({
                     },
                 },
             },
+        },
+        MuiAlert: {
+            styleOverrides: {
+                root: {
+                    fontSize: '0.95rem',
+                    '& .MuiAlert-message': {
+                        color: 'inherit',
+                    },
+                },
+                standardWarning: {
+                    backgroundColor: '#fff3e0',
+                    color: '#e65100',
+                    border: '1px solid #ffb74d',
+                },
+                standardInfo: {
+                    backgroundColor: '#e3f2fd',
+                    color: '#0d47a1',
+                    border: '1px solid #64b5f6',
+                },
+                standardError: {
+                    backgroundColor: '#ffebee',
+                    color: '#c62828',
+                    border: '1px solid #ef5350',
+                },
+                standardSuccess: {
+                    backgroundColor: '#e8f5e8',
+                    color: '#2e7d32',
+                    border: '1px solid #81c784',
+                },
+            },
+        },
+    },
+    // カスタムブレークポイント追加
+    breakpoints: {
+        values: {
+            xs: 0,
+            sm: 600,
+            md: 960,
+            lg: 1280,
+            xl: 1920,
         },
     },
 });
@@ -139,6 +250,7 @@ function App() {
     // チームコスト計算の状態
     const [teamCostResult, setTeamCostResult] = useState<CostCalculationResult | null>(null);
     const [teamCostErrors, setTeamCostErrors] = useState<string[]>([]);
+    const [liveMessage, setLiveMessage] = useState<string>('');
 
     const calculationHistory = useCalculationHistory();
     const comparison = useComparison(calculationData);
@@ -151,6 +263,14 @@ function App() {
     // 計算結果更新時の処理
     const handleResultChange = useCallback((result: CalculationResult) => {
         setCalculationResult(result);
+        
+        // スクリーンリーダー向けに計算結果を通知
+        const formattedWage = new Intl.NumberFormat('ja-JP', {
+            style: 'currency',
+            currency: 'JPY',
+            maximumFractionDigits: 0,
+        }).format(result.hourlyWage);
+        setLiveMessage(`時給が計算されました。${formattedWage}です。`);
     }, []);
 
     // 手動で履歴に保存する処理（デバウンス付き）
@@ -213,6 +333,10 @@ function App() {
 
     const [currentMode, setCurrentMode] = useState<'hourly-calculation' | 'hourly-comparison' | 'team-cost'>('hourly-calculation');
 
+    // フォーカス管理のためのref
+    const mainContentRef = useRef<HTMLDivElement>(null);
+    const modeToggleRef = useRef<HTMLDivElement>(null);
+
     // 機能モード切り替え
     const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'hourly-calculation' | 'hourly-comparison' | 'team-cost' | null) => {
         if (newMode !== null) {
@@ -223,7 +347,54 @@ function App() {
             } else if (newMode === 'hourly-comparison') {
                 comparison.setMode('comparison');
             }
+            
+            // モード変更後、メインコンテンツにフォーカスを移動
+            setTimeout(() => {
+                if (mainContentRef.current) {
+                    mainContentRef.current.focus();
+                }
+            }, 100);
+            
+            // モード変更をスクリーンリーダーに通知
+            const modeNames = {
+                'hourly-calculation': '時給計算',
+                'hourly-comparison': '時給比較',
+                'team-cost': 'チームコスト計算'
+            };
+            setLiveMessage(`${modeNames[newMode]}モードに切り替えました。`);
         }
+    }, [comparison]);
+
+    // キーボードショートカット処理
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            // Alt + 数字キーでモード切り替え
+            if (event.altKey && !event.ctrlKey && !event.shiftKey) {
+                switch (event.key) {
+                    case '1':
+                        event.preventDefault();
+                        setCurrentMode('hourly-calculation');
+                        comparison.setMode('single');
+                        break;
+                    case '2':
+                        event.preventDefault();
+                        setCurrentMode('hourly-comparison');
+                        comparison.setMode('comparison');
+                        break;
+                    case '3':
+                        event.preventDefault();
+                        setCurrentMode('team-cost');
+                        break;
+                    case 'h':
+                        event.preventDefault();
+                        handleHistoryOpen();
+                        break;
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
     }, [comparison]);
 
     // 通貨フォーマット関数
@@ -239,6 +410,7 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Box
+                component="main"
                 sx={{
                     minHeight: '100vh',
                     width: '100%',
@@ -250,8 +422,38 @@ function App() {
                     },
                 }}
             >
+                {/* スキップリンク */}
+                <Box
+                    component="a"
+                    href="#main-content"
+                    sx={{
+                        position: 'absolute',
+                        left: '-9999px',
+                        width: '1px',
+                        height: '1px',
+                        overflow: 'hidden',
+                        '&:focus': {
+                            position: 'fixed',
+                            top: '10px',
+                            left: '10px',
+                            width: 'auto',
+                            height: 'auto',
+                            padding: '8px 16px',
+                            bgcolor: 'primary.main',
+                            color: 'primary.contrastText',
+                            textDecoration: 'none',
+                            borderRadius: 1,
+                            zIndex: 9999,
+                        },
+                    }}
+                >
+                    メインコンテンツへスキップ
+                </Box>
+
                 {/* 固定ヘッダー */}
                 <Box
+                    component="header"
+                    role="banner"
                     sx={{
                         position: 'sticky',
                         top: 0,
@@ -301,6 +503,10 @@ function App() {
 
                             {/* 機能選択ナビゲーション */}
                             <Box 
+                                component="nav"
+                                role="navigation"
+                                aria-label="機能選択"
+                                ref={modeToggleRef}
                                 sx={{ 
                                     display: 'flex', 
                                     justifyContent: 'center', 
@@ -315,29 +521,56 @@ function App() {
                                         value={currentMode}
                                         exclusive
                                         onChange={handleModeChange}
-                                        aria-label="function selection"
+                                        aria-label="機能を選択してください (Alt+1: 時給計算, Alt+2: 時給比較, Alt+3: チームコスト)"
                                         size="small"
                                     >
-                                        <ToggleButton value="hourly-calculation" aria-label="hourly calculation">
-                                            <CalculateIcon sx={{ mr: 1 }} />
+                                        <ToggleButton 
+                                            value="hourly-calculation" 
+                                            aria-label="時給計算モード Alt+1で切り替え"
+                                        >
+                                            <CalculateIcon sx={{ mr: 1 }} aria-hidden="true" />
                                             時給計算
                                         </ToggleButton>
-                                        <ToggleButton value="hourly-comparison" aria-label="hourly comparison">
-                                            <CompareIcon sx={{ mr: 1 }} />
+                                        <ToggleButton 
+                                            value="hourly-comparison" 
+                                            aria-label="時給比較モード Alt+2で切り替え"
+                                        >
+                                            <CompareIcon sx={{ mr: 1 }} aria-hidden="true" />
                                             時給比較
                                         </ToggleButton>
-                                        <ToggleButton value="team-cost" aria-label="team cost">
-                                            <GroupIcon sx={{ mr: 1 }} />
+                                        <ToggleButton 
+                                            value="team-cost" 
+                                            aria-label="チームコストモード Alt+3で切り替え"
+                                        >
+                                            <GroupIcon sx={{ mr: 1 }} aria-hidden="true" />
                                             チームコスト
                                         </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Paper>
+                                <Box 
+                                    component="span" 
+                                    sx={{ 
+                                        fontSize: '0.75rem', 
+                                        color: 'text.secondary',
+                                        textAlign: 'center',
+                                        display: { xs: 'none', md: 'block' }
+                                    }}
+                                    aria-label="キーボードショートカット説明"
+                                >
+                                    Alt+数字キーで切り替え可能
+                                    <ScreenReaderOnly>
+                                        キーボードショートカットを使用できます。Alt+1で時給計算、Alt+2で時給比較、Alt+3でチームコスト、Alt+Hで履歴を開けます。
+                                    </ScreenReaderOnly>
+                                </Box>
                             </Box>
                         </Box>
 
                         {/* 計算結果表示 */}
                         {currentMode === 'hourly-calculation' && calculationResult && (
                             <Box
+                                component="section"
+                                aria-label="時給計算結果"
+                                role="region"
                                 sx={{
                                     bgcolor: 'primary.main',
                                     color: 'primary.contrastText',
@@ -357,6 +590,9 @@ function App() {
                         {/* 比較結果表示 */}
                         {currentMode === 'hourly-comparison' && comparison.comparisonResult && (
                             <Box
+                                component="section"
+                                aria-label="時給比較結果"
+                                role="region"
                                 sx={{
                                     bgcolor: 'primary.main',
                                     color: 'primary.contrastText',
@@ -412,7 +648,12 @@ function App() {
                         {/* チームコスト計算結果表示 */}
                         {currentMode === 'team-cost' && (
                             teamCostErrors.length > 0 ? (
-                                <Alert severity="warning" sx={{ mb: { xs: 1, sm: 2 } }}>
+                                <Alert 
+                                    severity="warning" 
+                                    sx={{ mb: { xs: 1, sm: 2 } }}
+                                    role="alert"
+                                    aria-live="polite"
+                                >
                                     <Typography variant="subtitle2" gutterBottom>
                                         設定を完了してください:
                                     </Typography>
@@ -424,6 +665,10 @@ function App() {
                                 </Alert>
                             ) : teamCostResult ? (
                                 <Box
+                                    component="section"
+                                    aria-label="チームコスト計算結果"
+                                    role="region"
+                                    aria-live="polite"
                                     sx={{
                                         bgcolor: 'primary.main',
                                         color: 'primary.contrastText',
@@ -472,7 +717,12 @@ function App() {
                                     </Box>
                                 </Box>
                             ) : (
-                                <Alert severity="info" sx={{ mb: { xs: 1, sm: 2 } }}>
+                                <Alert 
+                                    severity="info" 
+                                    sx={{ mb: { xs: 1, sm: 2 } }}
+                                    role="status"
+                                    aria-live="polite"
+                                >
                                     設定を完了すると計算結果が表示されます
                                 </Alert>
                             )
@@ -482,6 +732,10 @@ function App() {
 
                 {/* メインコンテンツ */}
                 <Container
+                    component="section"
+                    id="main-content"
+                    ref={mainContentRef}
+                    tabIndex={-1}
                     maxWidth="lg"
                     sx={{
                         flex: 1,
@@ -491,6 +745,9 @@ function App() {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'flex-start',
+                        '&:focus': {
+                            outline: 'none',
+                        },
                     }}
                 >
                     <Box
@@ -539,10 +796,11 @@ function App() {
                 >
                     <Fab
                         color="primary"
-                        aria-label="calculation history"
+                        aria-label={`計算履歴を開く (${calculationHistory.history.length}件保存済み) Alt+Hで開けます`}
                         onClick={handleHistoryOpen}
+                        title="計算履歴を開く Alt+H"
                     >
-                        <HistoryIcon />
+                        <HistoryIcon aria-hidden="true" />
                     </Fab>
                 </Badge>
 
@@ -556,6 +814,9 @@ function App() {
                     onClearHistory={calculationHistory.clearHistory}
                     isSupported={calculationHistory.isSupported}
                 />
+                
+                {/* スクリーンリーダー向けライブリージョン */}
+                <LiveRegion message={liveMessage} priority="polite" />
             </Box>
         </ThemeProvider>
     );
