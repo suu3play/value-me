@@ -30,7 +30,7 @@ export const TeamCostCalculatorV2: React.FC<TeamCostCalculatorV2Props> = ({
       try {
         const calculationResult = calculateTeamCost(teamData);
         onResultChange?.(calculationResult);
-      } catch (error) {
+      } catch {
         onResultChange?.(null);
       }
     } else {

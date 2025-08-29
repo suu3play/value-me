@@ -37,7 +37,7 @@ export const TeamCostCalculator: React.FC = () => {
       try {
         const calculationResult = calculateTeamCost(teamData);
         setResult(calculationResult);
-      } catch (error) {
+      } catch {
         setResult(null);
       }
     } else {
