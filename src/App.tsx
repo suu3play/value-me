@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -27,185 +27,8 @@ import { useCalculationHistory } from './hooks/useCalculationHistory';
 import { useComparison } from './hooks/useComparison';
 import { LiveRegion } from './components/LiveRegion';
 import { ScreenReaderOnly } from './components/ScreenReaderOnly';
+import { appTheme } from './theme';
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#1976d2', // より高いコントラスト比のため青を暗く
-            contrastText: '#ffffff',
-        },
-        secondary: {
-            main: '#388e3c', // より高いコントラスト比のため緑を暗く
-            contrastText: '#ffffff',
-        },
-        error: {
-            main: '#d32f2f',
-            contrastText: '#ffffff',
-        },
-        warning: {
-            main: '#f57c00',
-            contrastText: '#ffffff',
-        },
-        info: {
-            main: '#1976d2',
-            contrastText: '#ffffff',
-        },
-        success: {
-            main: '#388e3c',
-            contrastText: '#ffffff',
-        },
-    },
-    typography: {
-        fontFamily: [
-            '-apple-system',
-            'BlinkMacSystemFont',
-            '"Noto Sans JP"',
-            '"Segoe UI"',
-            'Roboto',
-            'sans-serif',
-        ].join(','),
-        h4: {
-            '@media (max-width:600px)': {
-                fontSize: '1.75rem',
-            },
-        },
-        subtitle1: {
-            '@media (max-width:600px)': {
-                fontSize: '0.9rem',
-            },
-        },
-    },
-    shape: {
-        borderRadius: 12,
-    },
-    components: {
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    minHeight: 44,
-                    fontWeight: 600, // より読みやすいフォント太さ
-                    '&:focus-visible': {
-                        outline: '3px solid',
-                        outlineColor: '#1976d2',
-                        outlineOffset: '2px',
-                    },
-                    '@media (max-width:600px)': {
-                        minHeight: 48,
-                        fontSize: '1rem',
-                        padding: '12px 16px',
-                    },
-                },
-            },
-        },
-        MuiToggleButton: {
-            styleOverrides: {
-                root: {
-                    '&:focus-visible': {
-                        outline: '3px solid',
-                        outlineColor: '#1976d2',
-                        outlineOffset: '2px',
-                    },
-                    '&.Mui-selected': {
-                        backgroundColor: '#1976d2',
-                        color: '#ffffff',
-                        '&:hover': {
-                            backgroundColor: '#1565c0',
-                        },
-                    },
-                },
-            },
-        },
-        MuiFab: {
-            styleOverrides: {
-                root: {
-                    '&:focus-visible': {
-                        outline: '3px solid',
-                        outlineColor: '#1976d2',
-                        outlineOffset: '2px',
-                    },
-                },
-            },
-        },
-        MuiTextField: {
-            styleOverrides: {
-                root: {
-                    '& .MuiInputBase-root': {
-                        '&:focus-within': {
-                            '& .MuiOutlinedInput-notchedOutline': {
-                                borderWidth: '2px',
-                                borderColor: '#1976d2',
-                            },
-                        },
-                    },
-                    '@media (max-width:600px)': {
-                        '& .MuiInputBase-root': {
-                            minHeight: 48,
-                        },
-                    },
-                },
-            },
-        },
-        MuiFormControl: {
-            styleOverrides: {
-                root: {
-                    '& .MuiInputBase-root': {
-                        '&:focus-within': {
-                            '& .MuiOutlinedInput-notchedOutline': {
-                                borderWidth: '2px',
-                                borderColor: '#1976d2',
-                            },
-                        },
-                    },
-                    '@media (max-width:600px)': {
-                        '& .MuiInputBase-root': {
-                            minHeight: 48,
-                        },
-                    },
-                },
-            },
-        },
-        MuiAlert: {
-            styleOverrides: {
-                root: {
-                    fontSize: '0.95rem',
-                    '& .MuiAlert-message': {
-                        color: 'inherit',
-                    },
-                },
-                standardWarning: {
-                    backgroundColor: '#fff3e0',
-                    color: '#e65100',
-                    border: '1px solid #ffb74d',
-                },
-                standardInfo: {
-                    backgroundColor: '#e3f2fd',
-                    color: '#0d47a1',
-                    border: '1px solid #64b5f6',
-                },
-                standardError: {
-                    backgroundColor: '#ffebee',
-                    color: '#c62828',
-                    border: '1px solid #ef5350',
-                },
-                standardSuccess: {
-                    backgroundColor: '#e8f5e8',
-                    color: '#2e7d32',
-                    border: '1px solid #81c784',
-                },
-            },
-        },
-    },
-    // カスタムブレークポイント追加
-    breakpoints: {
-        values: {
-            xs: 0,
-            sm: 600,
-            md: 960,
-            lg: 1280,
-            xl: 1920,
-        },
-    },
-});
 
 const initialData: SalaryCalculationData = {
     salaryType: 'monthly',
@@ -273,7 +96,7 @@ function App() {
         setLiveMessage(`時給が計算されました。${formattedWage}です。`);
     }, []);
 
-    // 手動で履歴に保存する処理（デバウンス付き）
+    // 手動で履歴に保存する処理（デバウンス付き）をuseCallbackで最適化
     const handleSaveToHistory = useCallback(async () => {
         if (calculationHistory.isSupported && !isSaving) {
             setIsSaving(true);
@@ -319,7 +142,7 @@ function App() {
         }
     }, [calculationData, calculationHistory, isSaving]);
 
-    // 履歴からのデータ復元処理
+    // 履歴からのデータ復元処理をuseCallbackで最適化
     const handleRestoreFromHistory = useCallback(
         (data: SalaryCalculationData) => {
             setCalculationData(data);
@@ -327,9 +150,9 @@ function App() {
         []
     );
 
-    // 履歴ドロワーの開閉
-    const handleHistoryOpen = () => setHistoryOpen(true);
-    const handleHistoryClose = () => setHistoryOpen(false);
+    // 履歴ドロワーの開閉をuseCallbackで最適化
+    const handleHistoryOpen = useCallback(() => setHistoryOpen(true), []);
+    const handleHistoryClose = useCallback(() => setHistoryOpen(false), []);
 
     const [currentMode, setCurrentMode] = useState<'hourly-calculation' | 'hourly-comparison' | 'team-cost'>('hourly-calculation');
 
@@ -395,24 +218,24 @@ function App() {
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [comparison]);
+    }, [comparison, handleHistoryOpen]);
 
-    // 通貨フォーマット関数
-    const formatCurrency = (amount: number): string => {
+    // 通貨フォーマット関数をuseMemoで最適化
+    const formatCurrency = useMemo(() => (amount: number): string => {
         return new Intl.NumberFormat('ja-JP', {
             style: 'currency',
             currency: 'JPY',
             maximumFractionDigits: 0,
         }).format(amount);
-    };
+    }, []);
 
-    // パーセンテージフォーマット関数
-    const formatPercentage = (percentage: number): string => {
+    // パーセンテージフォーマット関数をuseMemoで最適化
+    const formatPercentage = useMemo(() => (percentage: number): string => {
         return `(${percentage.toFixed(1)}%)`;
-    };
+    }, []);
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={appTheme}>
             <CssBaseline />
             <Box
                 component="main"

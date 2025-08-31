@@ -28,7 +28,7 @@ interface ComparisonFormProps {
     maxItems?: number;
 }
 
-const ComparisonForm: React.FC<ComparisonFormProps> = ({
+const ComparisonForm: React.FC<ComparisonFormProps> = React.memo(({
     items,
     onAddItem,
     onUpdateItem,
@@ -367,6 +367,6 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({
             </Dialog>
         </Box>
     );
-};
+});
 
 export default ComparisonForm;
