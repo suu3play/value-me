@@ -24,7 +24,7 @@ interface BasicInputFormProps {
     onChange: (data: SalaryCalculationData) => void;
 }
 
-const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
+const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChange }) => {
     const { holidayTypeCount, loading } = useHolidayCount(data);
 
     const getHolidayShortcuts = (): HolidayShortcut[] => {
@@ -547,6 +547,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = ({ data, onChange }) => {
             </Box>
         </Box>
     );
-};
+});
 
 export default BasicInputForm;

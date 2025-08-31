@@ -19,7 +19,7 @@ interface OptionsFormProps {
     onChange: (data: SalaryCalculationData) => void;
 }
 
-const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
+const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) => {
     const handleWelfareTypeChange = (
         _: React.MouseEvent<HTMLElement>,
         newWelfareType: 'monthly' | 'annual' | null
@@ -415,6 +415,6 @@ const OptionsForm: React.FC<OptionsFormProps> = ({ data, onChange }) => {
             </Box>
         </Box>
     );
-};
+});
 
 export default OptionsForm;

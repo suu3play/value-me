@@ -14,7 +14,7 @@ interface SalaryCalculatorProps {
   hideDynamicHolidaySettings?: boolean;
 }
 
-const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onResultChange, hideDynamicHolidaySettings = false }) => {
+const SalaryCalculator: React.FC<SalaryCalculatorProps> = React.memo(({ data, onChange, onResultChange, hideDynamicHolidaySettings = false }) => {
   const [useDynamicHolidays, setUseDynamicHolidays] = useState(true);
 
   useEffect(() => {
@@ -87,6 +87,6 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ data, onChange, onR
       </Box>
     </Box>
   );
-};
+});
 
 export default SalaryCalculator;
