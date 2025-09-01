@@ -171,12 +171,12 @@ const ComparisonForm: React.FC<ComparisonFormProps> = React.memo(({
                     </Typography>
                 </Box>
 
-                {/* 横並び比較フォーム */}
+                {/* 比較元・比較先2列並び比較フォーム */}
                 <Box sx={{ p: 2 }}>
                     <Box
                         sx={{
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
+                            flexDirection: { xs: 'column', sm: 'row' },
                             gap: 3,
                         }}
                     >

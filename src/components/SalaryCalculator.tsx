@@ -12,9 +12,10 @@ interface SalaryCalculatorProps {
   onChange: (data: SalaryCalculationData) => void;
   onResultChange: (result: CalculationResult) => void;
   hideDynamicHolidaySettings?: boolean;
+  layout?: 'horizontal' | 'vertical';
 }
 
-const SalaryCalculator: React.FC<SalaryCalculatorProps> = React.memo(({ data, onChange, onResultChange, hideDynamicHolidaySettings = false }) => {
+const SalaryCalculator: React.FC<SalaryCalculatorProps> = React.memo(({ data, onChange, onResultChange, hideDynamicHolidaySettings = false, layout = 'vertical' }) => {
   const [useDynamicHolidays, setUseDynamicHolidays] = useState(true);
 
   useEffect(() => {
@@ -46,44 +47,76 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = React.memo(({ data, on
       <Box 
         sx={{ 
           display: 'flex', 
-          flexDirection: { 
+          flexDirection: layout === 'horizontal' ? { 
             xs: 'column', 
             lg: 'row',
             '@media (maxHeight: 600px) and (orientation: landscape) and (minWidth: 768px)': 'row'
-          }, 
+          } : 'column',
           gap: { xs: 2, sm: 3 },
           width: '100%',
         }}
       >
-        <Box sx={{ flex: 1, width: '100%' }}>
-          <Paper 
-            elevation={2} 
-            sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              borderRadius: 2, 
-              mb: { xs: 2, sm: 3 },
-              width: '100%',
-            }}
-          >
-            <BasicInputForm data={data} onChange={onChange} />
-          </Paper>
-        </Box>
-        <Box sx={{ flex: 1, width: '100%' }}>
-          <Paper 
-            elevation={2} 
-            sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              borderRadius: 2, 
-              mb: { xs: 2, sm: 2 },
-              width: '100%',
-            }}
-          >
-            <OptionsForm data={data} onChange={onChange} />
-          </Paper>
-          {!hideDynamicHolidaySettings && (
-            <DynamicHolidaySettings data={data} onChange={onChange} />
-          )}
-        </Box>
+        {layout === 'horizontal' ? (
+          <>
+            <Box sx={{ flex: 1, width: '100%' }}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: { xs: 2, sm: 3 }, 
+                  borderRadius: 2, 
+                  mb: { xs: 2, sm: 3 },
+                  width: '100%',
+                }}
+              >
+                <BasicInputForm data={data} onChange={onChange} />
+              </Paper>
+            </Box>
+            <Box sx={{ flex: 1, width: '100%' }}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: { xs: 2, sm: 3 }, 
+                  borderRadius: 2, 
+                  mb: { xs: 2, sm: 2 },
+                  width: '100%',
+                }}
+              >
+                <OptionsForm data={data} onChange={onChange} />
+              </Paper>
+              {!hideDynamicHolidaySettings && (
+                <DynamicHolidaySettings data={data} onChange={onChange} />
+              )}
+            </Box>
+          </>
+        ) : (
+          <>
+            <Paper 
+              elevation={2} 
+              sx={{ 
+                p: { xs: 2, sm: 3 }, 
+                borderRadius: 2, 
+                width: '100%',
+              }}
+            >
+              <BasicInputForm data={data} onChange={onChange} />
+            </Paper>
+            
+            <Paper 
+              elevation={2} 
+              sx={{ 
+                p: { xs: 2, sm: 3 }, 
+                borderRadius: 2, 
+                width: '100%',
+              }}
+            >
+              <OptionsForm data={data} onChange={onChange} />
+            </Paper>
+            
+            {!hideDynamicHolidaySettings && (
+              <DynamicHolidaySettings data={data} onChange={onChange} />
+            )}
+          </>
+        )}
       </Box>
     </Box>
   );
