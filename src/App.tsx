@@ -429,10 +429,10 @@ function App() {
                                     mb: { xs: 1, sm: 2 },
                                 }}
                             >
-                                {/* 比較元・比較先の時給と年収を横並び表示 */}
+                                {/* 比較元・比較先の時給と年収を横1行表示 */}
                                 <Box sx={{ 
                                     display: 'flex', 
-                                    flexDirection: { xs: 'column', md: 'row' },
+                                    flexDirection: { xs: 'column', sm: 'row' },
                                     gap: { xs: 2, sm: 3 },
                                     alignItems: 'stretch',
                                     textAlign: 'center'
@@ -443,7 +443,7 @@ function App() {
                                         display: 'flex', 
                                         flexDirection: 'column', 
                                         justifyContent: 'center',
-                                        minHeight: { xs: 'auto', md: '120px' }
+                                        minHeight: 'auto'
                                     }}>
                                         <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
                                             {comparison.comparisonResult.items[0]?.label || '比較元'}
@@ -462,7 +462,7 @@ function App() {
                                         display: 'flex', 
                                         flexDirection: 'column', 
                                         justifyContent: 'center',
-                                        minHeight: { xs: 'auto', md: '120px' }
+                                        minHeight: 'auto'
                                     }}>
                                         <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
                                             {comparison.comparisonResult.items[1]?.label || '比較先'}
@@ -481,7 +481,7 @@ function App() {
                                         display: 'flex', 
                                         flexDirection: 'column', 
                                         justifyContent: 'center',
-                                        minHeight: { xs: 'auto', md: '120px' }
+                                        minHeight: 'auto'
                                     }}>
                                         <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
                                             差額
@@ -613,6 +613,7 @@ function App() {
                                 data={calculationData}
                                 onChange={handleDataChange}
                                 onResultChange={handleResultChange}
+                                layout="horizontal"
                             />
                         ) : currentMode === 'hourly-comparison' ? (
                             <ComparisonForm
