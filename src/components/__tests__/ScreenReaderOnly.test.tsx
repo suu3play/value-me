@@ -43,7 +43,7 @@ describe('ScreenReaderOnly', () => {
   });
 
   test('空のコンテンツでもエラーにならない', () => {
-    render(<ScreenReaderOnly></ScreenReaderOnly>);
+    render(<ScreenReaderOnly>{null}</ScreenReaderOnly>);
     
     // エラーが発生しないことを確認
     expect(document.body).toBeInTheDocument();

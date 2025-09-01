@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { LiveRegion } from '../LiveRegion';
 
@@ -70,8 +70,8 @@ describe('LiveRegion', () => {
   });
 
   test('clearDelayを0に設定するとタイマーが設定されない', async () => {
-    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
-    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
     
     render(<LiveRegion message="テストメッセージ" clearDelay={0} />);
     
@@ -83,7 +83,7 @@ describe('LiveRegion', () => {
   });
 
   test('コンポーネントがアンマウントされるとタイマーがクリアされる', () => {
-    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
     
     const { unmount } = render(<LiveRegion message="テストメッセージ" clearDelay={2000} />);
     
@@ -95,7 +95,7 @@ describe('LiveRegion', () => {
   });
 
   test('同じメッセージが連続で設定された場合、重複処理されない', () => {
-    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
     
     const { rerender } = render(<LiveRegion message="同じメッセージ" />);
     
