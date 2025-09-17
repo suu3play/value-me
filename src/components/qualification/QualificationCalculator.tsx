@@ -19,11 +19,10 @@ import {
 import {
   School as SchoolIcon,
   TrendingUp as TrendingUpIcon,
-  AccessTime as AccessTimeIcon,
   MonetizationOn as MonetizationOnIcon
 } from '@mui/icons-material';
 import type { QualificationData, QualificationResult } from '../../types/qualification';
-import { QUALIFICATION_PRESETS } from '../../types/qualification';
+import { JOB_CATEGORIES, getQualificationsByCategory } from '../../types/qualificationData';
 import { calculateQualificationROI, evaluateQualificationInvestment } from '../../utils/qualificationCalculations';
 
 interface QualificationCalculatorProps {
@@ -56,6 +55,8 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
   });
   const [result, setResult] = useState<QualificationResult | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('it-engineer');
+  const [availableQualifications, setAvailableQualifications] = useState(getQualificationsByCategory('it-engineer'));
 
   // 時給が変更された時にデータを更新
   useEffect(() => {
@@ -79,18 +80,43 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
     handleCalculate();
   }, [handleCalculate]);
 
+  // 職種変更時の処理
+  const handleCategoryChange = useCallback((categoryId: string) => {
+    setSelectedCategory(categoryId);
+    const qualifications = getQualificationsByCategory(categoryId);
+    setAvailableQualifications(qualifications);
+    setSelectedPreset(''); // 資格選択をリセット
+    setData(prev => ({
+      ...prev,
+      name: '',
+      studyHours: 0,
+      examFee: 0,
+      materialCost: 0,
+      courseFee: 0,
+      expectedAllowance: prev.currentAllowance,
+      salaryIncrease: 0,
+      jobChangeIncrease: 0
+    }));
+  }, []);
+
   // プリセット選択時の処理
   const handlePresetChange = useCallback((presetId: string) => {
     setSelectedPreset(presetId);
-    const preset = QUALIFICATION_PRESETS.find(p => p.id === presetId);
+    const preset = availableQualifications.find(p => p.id === presetId);
     if (preset) {
       setData(prev => ({
         ...prev,
         name: preset.name,
-        studyHours: preset.estimatedHours
+        studyHours: preset.estimatedHours,
+        examFee: preset.estimatedCost.examFee,
+        materialCost: preset.estimatedCost.materialCost,
+        courseFee: preset.estimatedCost.courseFee || 0,
+        expectedAllowance: prev.currentAllowance + preset.marketValue.allowanceIncrease,
+        salaryIncrease: preset.marketValue.salaryIncrease,
+        jobChangeIncrease: preset.marketValue.jobChangeIncrease
       }));
     }
-  }, []);
+  }, [availableQualifications]);
 
   // フィールド更新処理
   const updateField = useCallback((field: keyof QualificationData, value: string | number) => {
@@ -120,6 +146,17 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
     }
   };
 
+  // 難易度の日本語表示
+  const getDifficultyLabel = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner': return '初級';
+      case 'intermediate': return '中級';
+      case 'advanced': return '上級';
+      case 'expert': return 'エキスパート';
+      default: return '不明';
+    }
+  };
+
   const evaluation = result ? evaluateQualificationInvestment(result) : null;
 
   return (
@@ -133,6 +170,29 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
               資格情報
             </Typography>
 
+            {/* 職種選択 */}
+            <FormControl fullWidth margin="normal">
+              <InputLabel>職種カテゴリ</InputLabel>
+              <Select
+                value={selectedCategory}
+                label="職種カテゴリ"
+                onChange={(e) => handleCategoryChange(e.target.value)}
+              >
+                {JOB_CATEGORIES.map(category => (
+                  <MenuItem key={category.id} value={category.id}>
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold">
+                        {category.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {category.description}
+                      </Typography>
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
             {/* 資格プリセット選択 */}
             <FormControl fullWidth margin="normal">
               <InputLabel>資格を選択</InputLabel>
@@ -140,14 +200,36 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
                 value={selectedPreset}
                 label="資格を選択"
                 onChange={(e) => handlePresetChange(e.target.value)}
+                disabled={availableQualifications.length === 0}
               >
-                {QUALIFICATION_PRESETS.map(preset => (
+                <MenuItem value="">
+                  <em>選択してください</em>
+                </MenuItem>
+                {availableQualifications.map(preset => (
                   <MenuItem key={preset.id} value={preset.id}>
-                    {preset.name} ({preset.estimatedHours}時間目安)
+                    <Box sx={{ width: '100%' }}>
+                      <Typography variant="body2" fontWeight="bold">
+                        {preset.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {preset.estimatedHours}時間目安 · 難易度: {getDifficultyLabel(preset.difficulty)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        試験料: {formatCurrency(preset.estimatedCost.examFee)}
+                        {preset.estimatedCost.courseFee && ` · 講座料: ${formatCurrency(preset.estimatedCost.courseFee)}`}
+                      </Typography>
+                    </Box>
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
+
+            {/* 現在の職種統計表示 */}
+            {selectedCategory && (
+              <Alert severity="info" sx={{ mt: 2, mb: 2 }}>
+                {JOB_CATEGORIES.find(c => c.id === selectedCategory)?.name}の資格: {availableQualifications.length}個
+              </Alert>
+            )}
 
             {/* 資格名 */}
             <TextField
@@ -188,61 +270,60 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
 
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <MonetizationOnIcon />
-              費用情報
+              費用
             </Typography>
 
-            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="受験料"
-                  value={data.examFee}
-                  onChange={(e) => updateField('examFee', e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">¥</InputAdornment>
-                  }}
-                />
-              </Box>
-              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="教材費"
-                  value={data.materialCost}
-                  onChange={(e) => updateField('materialCost', e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">¥</InputAdornment>
-                  }}
-                />
-              </Box>
-            </Stack>
-            <Stack direction="row" spacing={2} sx={{ mt: 2, flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="講座・スクール費用"
-                  value={data.courseFee}
-                  onChange={(e) => updateField('courseFee', e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">¥</InputAdornment>
-                  }}
-                />
-              </Box>
-              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="その他費用"
-                  value={data.otherCosts}
-                  onChange={(e) => updateField('otherCosts', e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">¥</InputAdornment>
-                  }}
-                />
-              </Box>
-            </Stack>
+            {/* 試験料 */}
+            <TextField
+              fullWidth
+              type="number"
+              label="試験料"
+              value={data.examFee}
+              onChange={(e) => updateField('examFee', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">¥</InputAdornment>
+              }}
+              margin="normal"
+            />
+
+            {/* 教材費 */}
+            <TextField
+              fullWidth
+              type="number"
+              label="教材費"
+              value={data.materialCost}
+              onChange={(e) => updateField('materialCost', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">¥</InputAdornment>
+              }}
+              margin="normal"
+            />
+
+            {/* 講座・研修費 */}
+            <TextField
+              fullWidth
+              type="number"
+              label="講座・研修費"
+              value={data.courseFee}
+              onChange={(e) => updateField('courseFee', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">¥</InputAdornment>
+              }}
+              margin="normal"
+            />
+
+            {/* その他費用 */}
+            <TextField
+              fullWidth
+              type="number"
+              label="その他費用"
+              value={data.otherCosts}
+              onChange={(e) => updateField('otherCosts', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">¥</InputAdornment>
+              }}
+              margin="normal"
+            />
 
             <Divider sx={{ my: 2 }} />
 
@@ -251,180 +332,171 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
               効果予測
             </Typography>
 
-            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="現在の資格手当"
-                  value={data.currentAllowance}
-                  onChange={(e) => updateField('currentAllowance', e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">¥</InputAdornment>,
-                    endAdornment: <InputAdornment position="end">/月</InputAdornment>
-                  }}
-                />
-              </Box>
-              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="取得後の資格手当"
-                  value={data.expectedAllowance}
-                  onChange={(e) => updateField('expectedAllowance', e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">¥</InputAdornment>,
-                    endAdornment: <InputAdornment position="end">/月</InputAdornment>
-                  }}
-                />
-              </Box>
-            </Stack>
-            <Stack direction="row" spacing={2} sx={{ mt: 2, flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="昇給・昇進効果"
-                  value={data.salaryIncrease}
-                  onChange={(e) => updateField('salaryIncrease', e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">¥</InputAdornment>,
-                    endAdornment: <InputAdornment position="end">/年</InputAdornment>
-                  }}
-                />
-              </Box>
-              <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="転職時年収増加"
-                  value={data.jobChangeIncrease}
-                  onChange={(e) => updateField('jobChangeIncrease', e.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">¥</InputAdornment>,
-                    endAdornment: <InputAdornment position="end">/年</InputAdornment>
-                  }}
-                />
-              </Box>
-            </Stack>
+            {/* 現在の資格手当 */}
+            <TextField
+              fullWidth
+              type="number"
+              label="現在の資格手当 (月額)"
+              value={data.currentAllowance}
+              onChange={(e) => updateField('currentAllowance', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">¥</InputAdornment>
+              }}
+              margin="normal"
+            />
+
+            {/* 期待される資格手当 */}
+            <TextField
+              fullWidth
+              type="number"
+              label="期待される資格手当 (月額)"
+              value={data.expectedAllowance}
+              onChange={(e) => updateField('expectedAllowance', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">¥</InputAdornment>
+              }}
+              margin="normal"
+            />
+
+            {/* 昇給効果 */}
+            <TextField
+              fullWidth
+              type="number"
+              label="昇給効果 (年額)"
+              value={data.salaryIncrease}
+              onChange={(e) => updateField('salaryIncrease', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">¥</InputAdornment>
+              }}
+              margin="normal"
+            />
+
+            {/* 転職時年収アップ */}
+            <TextField
+              fullWidth
+              type="number"
+              label="転職時年収アップ"
+              value={data.jobChangeIncrease}
+              onChange={(e) => updateField('jobChangeIncrease', e.target.value)}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">¥</InputAdornment>
+              }}
+              margin="normal"
+            />
           </Paper>
         </Box>
 
-        {/* 計算結果 */}
+        {/* 結果表示 */}
         <Box sx={{ flex: 1 }}>
-          <Paper elevation={2} sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AccessTimeIcon />
-              投資効果分析
-            </Typography>
+          {result ? (
+            <Stack spacing={2}>
+              {/* 投資効果サマリー */}
+              <Card elevation={2}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TrendingUpIcon color="primary" />
+                    投資効果サマリー
+                  </Typography>
 
-            {currentHourlyWage > 0 ? (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                現在の時給: {formatCurrency(currentHourlyWage)}を使用して機会コストを計算
-              </Alert>
-            ) : (
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                時給計算を先に実行すると、より正確な機会コストが算出されます
-              </Alert>
-            )}
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, mt: 2 }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">ROI</Typography>
+                      <Typography variant="h4" color="primary" fontWeight="bold">
+                        {result.roi.toFixed(1)}%
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">回収期間</Typography>
+                      <Typography variant="h4" color="primary" fontWeight="bold">
+                        {isFinite(result.paybackPeriod) ? `${result.paybackPeriod.toFixed(1)}年` : '∞'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">総投資額</Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        {formatCurrency(result.totalInvestment)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">年間効果</Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        {formatCurrency(result.totalAnnualBenefit)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
 
-            {result && (
-              <Box>
-                {/* 評価指標 */}
-                {evaluation && (
-                  <Box sx={{ mb: 2 }}>
+              {/* 詳細分析 */}
+              <Card elevation={2}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>詳細分析</Typography>
+
+                  <Stack spacing={2}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">投資内訳</Typography>
+                      <Typography variant="body1">機会コスト: {formatCurrency(result.opportunityCost)}</Typography>
+                      <Typography variant="body1">直接費用: {formatCurrency(result.directCosts)}</Typography>
+                    </Box>
+
+                    <Divider />
+
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">効果内訳</Typography>
+                      <Typography variant="body1">
+                        資格手当増: {formatCurrency(result.annualAllowanceIncrease)}
+                      </Typography>
+                      <Typography variant="body1">
+                        昇給効果: {formatCurrency(result.annualSalaryIncrease)}
+                      </Typography>
+                      <Typography variant="body1">
+                        転職効果: {formatCurrency(result.annualJobChangeIncrease)}
+                      </Typography>
+                    </Box>
+
+                    <Divider />
+
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">長期効果</Typography>
+                      <Typography variant="body1">
+                        10年累積効果: {formatCurrency(result.tenYearBenefit)}
+                      </Typography>
+                      <Typography variant="body1">
+                        NPV (5%割引): {formatCurrency(result.npv)}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+
+              {/* 投資評価 */}
+              {evaluation && (
+                <Card elevation={2}>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>投資評価</Typography>
                     <Chip
-                      label={evaluation.message}
+                      label={evaluation.level === 'excellent' ? '優秀' :
+                             evaluation.level === 'good' ? '良好' :
+                             evaluation.level === 'fair' ? '普通' : '要検討'}
                       color={getEvaluationColor(evaluation.level) as 'success' | 'info' | 'warning' | 'error' | 'default'}
                       sx={{ mb: 1 }}
                     />
-                  </Box>
-                )}
-
-                {/* 投資額内訳 */}
-                <Card variant="outlined" sx={{ mb: 2 }}>
-                  <CardContent>
-                    <Typography variant="subtitle2" gutterBottom color="text.secondary">
-                      投資額内訳
+                    <Typography variant="body2" color="text.secondary">
+                      {evaluation.message}
                     </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">機会コスト</Typography>
-                      <Typography variant="body2">{formatCurrency(result.opportunityCost)}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">直接費用</Typography>
-                      <Typography variant="body2">{formatCurrency(result.directCosts)}</Typography>
-                    </Box>
-                    <Divider sx={{ my: 1 }} />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body1" fontWeight="bold">総投資額</Typography>
-                      <Typography variant="body1" fontWeight="bold">{formatCurrency(result.totalInvestment)}</Typography>
-                    </Box>
                   </CardContent>
                 </Card>
-
-                {/* 効果予測 */}
-                <Card variant="outlined" sx={{ mb: 2 }}>
-                  <CardContent>
-                    <Typography variant="subtitle2" gutterBottom color="text.secondary">
-                      年間効果
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">資格手当増加</Typography>
-                      <Typography variant="body2">{formatCurrency(result.annualAllowanceIncrease * 12)}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">昇給効果</Typography>
-                      <Typography variant="body2">{formatCurrency(result.annualSalaryIncrease)}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">転職効果</Typography>
-                      <Typography variant="body2">{formatCurrency(result.annualJobChangeIncrease)}</Typography>
-                    </Box>
-                    <Divider sx={{ my: 1 }} />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body1" fontWeight="bold">年間効果合計</Typography>
-                      <Typography variant="body1" fontWeight="bold">{formatCurrency(result.totalAnnualBenefit)}</Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-
-                {/* ROI指標 */}
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle2" gutterBottom color="text.secondary">
-                      投資指標
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">投資収益率 (ROI)</Typography>
-                      <Typography variant="body2">{result.roi.toFixed(1)}%</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">回収期間</Typography>
-                      <Typography variant="body2">
-                        {isFinite(result.paybackPeriod) ? `${result.paybackPeriod.toFixed(1)}年` : '計算不可'}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">10年累積効果</Typography>
-                      <Typography variant="body2">{formatCurrency(result.tenYearBenefit)}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2">正味現在価値 (NPV)</Typography>
-                      <Typography
-                        variant="body2"
-                        color={result.npv >= 0 ? 'success.main' : 'error.main'}
-                      >
-                        {formatCurrency(result.npv)}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-            )}
-          </Paper>
+              )}
+            </Stack>
+          ) : (
+            <Alert severity="info">
+              資格情報を入力すると投資効果を分析できます
+            </Alert>
+          )}
         </Box>
       </Stack>
     </Box>
   );
 };
+
+export default QualificationCalculator;
