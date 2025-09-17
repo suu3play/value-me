@@ -59,7 +59,7 @@ describe('teamCostCalculations', () => {
     });
 
     test('無効なタイプの場合', () => {
-      const result = calculateAnnualSalary(100, 'invalid' as any);
+      const result = calculateAnnualSalary(100, 'invalid' as unknown as 'monthly' | 'annual');
       expect(result).toBe(0);
     });
   });

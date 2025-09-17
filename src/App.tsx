@@ -10,19 +10,22 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
-import { 
+import {
   History as HistoryIcon,
   Calculate as CalculateIcon,
   Compare as CompareIcon,
   Group as GroupIcon,
+  School as SchoolIcon,
 } from '@mui/icons-material';
 import SalaryCalculator from './components/SalaryCalculator';
 import ComparisonForm from './components/ComparisonForm';
 import { CalculationHistory } from './components/CalculationHistory';
 import ResultDisplay from './components/ResultDisplay';
 import { TeamCostCalculatorV2 } from './components/teamcost/TeamCostCalculatorV2';
+import { QualificationCalculator } from './components/qualification/QualificationCalculator';
 import type { SalaryCalculationData, CalculationResult } from './types';
 import type { CostCalculationResult } from './types/teamCost';
+import type { QualificationResult } from './types/qualification';
 import { useCalculationHistory } from './hooks/useCalculationHistory';
 import { useComparison } from './hooks/useComparison';
 import { LiveRegion } from './components/LiveRegion';
@@ -74,6 +77,9 @@ function App() {
     const [teamCostResult, setTeamCostResult] = useState<CostCalculationResult | null>(null);
     const [teamCostErrors, setTeamCostErrors] = useState<string[]>([]);
     const [liveMessage, setLiveMessage] = useState<string>('');
+
+    // 資格計算の状態
+    const [qualificationResult, setQualificationResult] = useState<QualificationResult | null>(null);
 
     const calculationHistory = useCalculationHistory();
     const comparison = useComparison(calculationData);
@@ -154,14 +160,14 @@ function App() {
     const handleHistoryOpen = useCallback(() => setHistoryOpen(true), []);
     const handleHistoryClose = useCallback(() => setHistoryOpen(false), []);
 
-    const [currentMode, setCurrentMode] = useState<'hourly-calculation' | 'hourly-comparison' | 'team-cost'>('hourly-calculation');
+    const [currentMode, setCurrentMode] = useState<'hourly-calculation' | 'hourly-comparison' | 'team-cost' | 'qualification'>('hourly-calculation');
 
     // フォーカス管理のためのref
     const mainContentRef = useRef<HTMLDivElement>(null);
     const modeToggleRef = useRef<HTMLDivElement>(null);
 
     // 機能モード切り替え
-    const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'hourly-calculation' | 'hourly-comparison' | 'team-cost' | null) => {
+    const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'hourly-calculation' | 'hourly-comparison' | 'team-cost' | 'qualification' | null) => {
         if (newMode !== null) {
             setCurrentMode(newMode);
             // 既存のcomparison状態も更新
@@ -182,7 +188,8 @@ function App() {
             const modeNames = {
                 'hourly-calculation': '時給計算',
                 'hourly-comparison': '時給比較',
-                'team-cost': 'チームコスト計算'
+                'team-cost': 'チームコスト計算',
+                'qualification': '資格投資計算'
             };
             setLiveMessage(`${modeNames[newMode]}モードに切り替えました。`);
         }
@@ -207,6 +214,10 @@ function App() {
                     case '3':
                         event.preventDefault();
                         setCurrentMode('team-cost');
+                        break;
+                    case '4':
+                        event.preventDefault();
+                        setCurrentMode('qualification');
                         break;
                     case 'h':
                         event.preventDefault();
@@ -324,9 +335,10 @@ function App() {
                                     mb: 2,
                                 }}
                             >
-                                {currentMode === 'hourly-calculation' ? 'あなたの時給を正確に計算しましょう' : 
-                                 currentMode === 'hourly-comparison' ? '複数の条件で時給を比較できます' : 
-                                 'チームの作業コストを自動計算'}
+                                {currentMode === 'hourly-calculation' ? 'あなたの時給を正確に計算しましょう' :
+                                 currentMode === 'hourly-comparison' ? '複数の条件で時給を比較できます' :
+                                 currentMode === 'team-cost' ? 'チームの作業コストを自動計算' :
+                                 '資格取得の投資効果を分析できます'}
                             </Typography>
 
                             {/* 機能選択ナビゲーション */}
@@ -349,7 +361,7 @@ function App() {
                                         value={currentMode}
                                         exclusive
                                         onChange={handleModeChange}
-                                        aria-label="機能を選択してください (Alt+1: 時給計算, Alt+2: 時給比較, Alt+3: チームコスト)"
+                                        aria-label="機能を選択してください (Alt+1: 時給計算, Alt+2: 時給比較, Alt+3: チームコスト, Alt+4: 資格投資)"
                                         size="small"
                                     >
                                         <ToggleButton 
@@ -366,12 +378,19 @@ function App() {
                                             <CompareIcon sx={{ mr: 1 }} aria-hidden="true" />
                                             時給比較
                                         </ToggleButton>
-                                        <ToggleButton 
-                                            value="team-cost" 
+                                        <ToggleButton
+                                            value="team-cost"
                                             aria-label="チームコストモード Alt+3で切り替え"
                                         >
                                             <GroupIcon sx={{ mr: 1 }} aria-hidden="true" />
                                             チームコスト
+                                        </ToggleButton>
+                                        <ToggleButton
+                                          value="qualification"
+                                          aria-label="資格投資モード Alt+4で切り替え"
+                                        >
+                                          <SchoolIcon sx={{ mr: 1 }} aria-hidden="true" />
+                                          資格投資
                                         </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Paper>
@@ -387,7 +406,7 @@ function App() {
                                 >
                                     Alt+数字キーで切り替え可能
                                     <ScreenReaderOnly>
-                                        キーボードショートカットを使用できます。Alt+1で時給計算、Alt+2で時給比較、Alt+3でチームコスト、Alt+Hで履歴を開けます。
+                                        キーボードショートカットを使用できます。Alt+1で時給計算、Alt+2で時給比較、Alt+3でチームコスト、Alt+4で資格投資、Alt+Hで履歴を開けます。
                                     </ScreenReaderOnly>
                                 </Box>
                             </Box>
@@ -579,6 +598,63 @@ function App() {
                                 </Alert>
                             )
                         )}
+
+                        {/* 資格計算結果表示 */}
+                        {currentMode === 'qualification' && qualificationResult && (
+                          <Box
+                            component="section"
+                            aria-label="資格投資計算結果"
+                            role="region"
+                            sx={{
+                              bgcolor: 'primary.main',
+                              color: 'primary.contrastText',
+                              borderRadius: 2,
+                              p: { xs: 1, sm: 2 },
+                              mb: { xs: 1, sm: 2 },
+                            }}
+                          >
+                            {/* ROI指標表示 */}
+                            <Box sx={{
+                              display: 'flex',
+                              flexDirection: { xs: 'column', md: 'row' },
+                              gap: 3,
+                              alignItems: 'center',
+                              textAlign: 'center'
+                            }}>
+                              <Box sx={{ flex: 1 }}>
+                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                  投資収益率 (ROI)
+                                </Typography>
+                                <Typography variant="h3" fontWeight="bold">
+                                  {qualificationResult.roi.toFixed(1)}%
+                                </Typography>
+                              </Box>
+                              <Box sx={{ flex: 1 }}>
+                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                  回収期間
+                                </Typography>
+                                <Typography variant="h5">
+                                  {isFinite(qualificationResult.paybackPeriod) ?
+                                    `${qualificationResult.paybackPeriod.toFixed(1)}年` : '計算不可'}
+                                </Typography>
+                                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                  総投資額: {formatCurrency(qualificationResult.totalInvestment)}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ flex: 1 }}>
+                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                  年間効果
+                                </Typography>
+                                <Typography variant="h5">
+                                  {formatCurrency(qualificationResult.totalAnnualBenefit)}
+                                </Typography>
+                                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                  NPV: {formatCurrency(qualificationResult.npv)}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Box>
+                        )}
                     </Container>
                 </Box>
 
@@ -626,10 +702,16 @@ function App() {
                                 onSetActiveItem={comparison.setActiveItem}
                                 maxItems={2}
                             />
-                        ) : (
-                            <TeamCostCalculatorV2 
+                        ) : currentMode === 'team-cost' ? (
+                            <TeamCostCalculatorV2
                                 onResultChange={setTeamCostResult}
                                 onErrorsChange={setTeamCostErrors}
+                            />
+                        ) : (
+                            // 資格計算モード追加
+                            <QualificationCalculator
+                                currentHourlyWage={calculationResult?.hourlyWage || 0}
+                                onResultChange={setQualificationResult}
                             />
                         )}
                     </Box>

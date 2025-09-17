@@ -42,9 +42,9 @@ export function isSafeUrl(url: string): boolean {
  * 文字列から潜在的に危険な文字を削除します
  */
 export function sanitizeInput(input: string): string {
-  // eslint-disable-next-line security/detect-unsafe-regex
+  // eslint-disable-next-line security/detect-unsafe-regex, security/detect-non-literal-regexp
   return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<script[^>]*>.*?<\/script>/gi, '')
     .replace(/javascript:/gi, '')
     .replace(/on\w+\s*=\s*"[^"]*"/gi, '')
     .replace(/on\w+\s*=\s*'[^']*'/gi, '')
