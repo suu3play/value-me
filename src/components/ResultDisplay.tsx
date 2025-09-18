@@ -60,13 +60,19 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                 <Box
                     sx={{
                         display: 'flex',
-                        flexWrap: 'nowrap',
-                        gap: { xs: 1, sm: 2 },
-                        alignItems: 'center',
-                        overflow: 'hidden',
+                        flexWrap: 'wrap',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        gap: { xs: 2, sm: 2, md: 1 },
+                        alignItems: { xs: 'stretch', sm: 'center' },
+                        justifyContent: { xs: 'center', sm: 'flex-start' },
                     }}
                 >
-                    <Box sx={{ minWidth: { xs: 80, sm: 120 }, flex: 1 }}>
+                    <Box sx={{
+                        minWidth: { xs: 'auto', sm: 120, md: 120 },
+                        flex: { xs: 'none', sm: 1 },
+                        width: { xs: '100%', sm: 'auto' },
+                        textAlign: { xs: 'center', sm: 'left' }
+                    }}>
                         <Typography variant="caption">実質年収</Typography>
                         <Typography
                             variant="caption"
@@ -93,7 +99,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                                 variant="body1"
                                 sx={{
                                     fontWeight: 'bold',
-                                    fontSize: { xs: '0.9rem', sm: '1.3rem' },
+                                    fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
                                 }}
                             >
                                 {formatCurrency(result.actualAnnualIncome)}
@@ -101,7 +107,12 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                         </Box>
                     </Box>
 
-                    <Box sx={{ minWidth: { xs: 70, sm: 120 }, flex: 1 }}>
+                    <Box sx={{
+                        minWidth: { xs: 'auto', sm: 120, md: 120 },
+                        flex: { xs: 'none', sm: 1 },
+                        width: { xs: '100%', sm: 'auto' },
+                        textAlign: { xs: 'center', sm: 'left' }
+                    }}>
                         <Typography variant="caption">実質月収</Typography>
                         <Typography
                             variant="caption"
@@ -120,33 +131,43 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                             variant="body1"
                             sx={{
                                 fontWeight: 'bold',
-                                fontSize: { xs: '0.9rem', sm: '1.3rem' },
+                                fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
                             }}
                         >
                             {formatCurrency(result.actualMonthlyIncome)}
                         </Typography>
                     </Box>
 
-                    <Box sx={{ minWidth: { xs: 70, sm: 120 }, flex: 1 }}>
+                    <Box sx={{
+                        minWidth: { xs: 'auto', sm: 120, md: 120 },
+                        flex: { xs: 'none', sm: 1 },
+                        width: { xs: '100%', sm: 'auto' },
+                        textAlign: { xs: 'center', sm: 'left' }
+                    }}>
                         <Typography variant="caption">年間労働時間</Typography>
                         <Typography
                             variant="body1"
                             sx={{
                                 fontWeight: 'bold',
-                                fontSize: { xs: '0.9rem', sm: '1.3rem' },
+                                fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
                             }}
                         >
                             {formatNumber(result.totalWorkingHours)}時間
                         </Typography>
                     </Box>
 
-                    <Box sx={{ minWidth: { xs: 60, sm: 100 }, flex: 1 }}>
+                    <Box sx={{
+                        minWidth: { xs: 'auto', sm: 100, md: 100 },
+                        flex: { xs: 'none', sm: 1 },
+                        width: { xs: '100%', sm: 'auto' },
+                        textAlign: { xs: 'center', sm: 'left' }
+                    }}>
                         <Typography variant="caption">年間休日</Typography>
                         <Typography
                             variant="body1"
                             sx={{
                                 fontWeight: 'bold',
-                                fontSize: { xs: '0.9rem', sm: '1.3rem' },
+                                fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
                             }}
                         >
                             {formatNumber(result.totalAnnualHolidays)}日
@@ -157,8 +178,12 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                     {result.hourlyWage > 0 && onSaveToHistory && (
                         <Box
                             sx={{
-                                minWidth: { xs: 80, sm: 120 },
+                                minWidth: { xs: 'auto', sm: 120 },
                                 flexShrink: 0,
+                                width: { xs: '100%', sm: 'auto' },
+                                display: 'flex',
+                                justifyContent: { xs: 'center', sm: 'flex-start' },
+                                mt: { xs: 1, sm: 0 }
                             }}
                         >
                             <Button
