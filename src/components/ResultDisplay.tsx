@@ -27,16 +27,28 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
             sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 4,
+                gap: { xs: 2, sm: 4 },
                 flexWrap: 'wrap',
+                flexDirection: { xs: 'column', md: 'row' },
             }}
         >
             {/* 時給表示 */}
-            <Box sx={{ textAlign: 'center', minWidth: 200 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+            <Box sx={{
+                textAlign: 'center',
+                minWidth: { xs: 'auto', md: 200 },
+                width: { xs: '100%', md: 'auto' }
+            }}>
+                <Typography variant="h6" sx={{
+                    fontWeight: 'bold',
+                    mb: { xs: 0.3, sm: 0.5 },
+                    fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}>
                     あなたの時給
                 </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h3" sx={{
+                    fontWeight: 'bold',
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
+                }}>
                     {formatCurrency(result.hourlyWage)}
                 </Typography>
             </Box>
@@ -44,15 +56,27 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
             <Divider
                 orientation="vertical"
                 flexItem
-                sx={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}
+                sx={{
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    display: { xs: 'none', md: 'block' }
+                }}
             />
 
             {/* 内訳 */}
-            <Box sx={{ flex: 1, minWidth: 300 }}>
+            <Box sx={{
+                flex: 1,
+                minWidth: { xs: 'auto', md: 300 },
+                width: { xs: '100%', md: 'auto' }
+            }}>
                 <Typography
                     variant="h6"
                     gutterBottom
-                    sx={{ fontWeight: 'bold' }}
+                    sx={{
+                        fontWeight: 'bold',
+                        fontSize: { xs: '1rem', sm: '1.25rem' },
+                        mb: { xs: 1, sm: 2 },
+                        textAlign: { xs: 'center', md: 'left' }
+                    }}
                 >
                     内訳
                 </Typography>
