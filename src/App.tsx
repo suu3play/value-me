@@ -16,6 +16,7 @@ import {
   Compare as CompareIcon,
   Group as GroupIcon,
   School as SchoolIcon,
+  SentimentSatisfiedAlt as HappinessIcon,
 } from '@mui/icons-material';
 import SalaryCalculator from './components/SalaryCalculator';
 import ComparisonForm from './components/ComparisonForm';
@@ -23,9 +24,12 @@ import { CalculationHistory } from './components/CalculationHistory';
 import ResultDisplay from './components/ResultDisplay';
 import { TeamCostCalculatorV2 } from './components/teamcost/TeamCostCalculatorV2';
 import { QualificationCalculator } from './components/qualification/QualificationCalculator';
+import { HappinessCalculator } from './components/happiness/HappinessCalculator';
+import { HappinessRadarChart } from './components/happiness/HappinessRadarChart';
 import type { SalaryCalculationData, CalculationResult } from './types';
 import type { CostCalculationResult } from './types/teamCost';
 import type { QualificationResult } from './types/qualification';
+import type { HappinessResult } from './types/happiness';
 import { useCalculationHistory } from './hooks/useCalculationHistory';
 import { useComparison } from './hooks/useComparison';
 import { LiveRegion } from './components/LiveRegion';
@@ -80,6 +84,9 @@ function App() {
 
     // 資格計算の状態
     const [qualificationResult, setQualificationResult] = useState<QualificationResult | null>(null);
+
+    // 幸福度計算の状態
+    const [happinessResult, setHappinessResult] = useState<HappinessResult | null>(null);
 
     const calculationHistory = useCalculationHistory();
     const comparison = useComparison(calculationData);
@@ -160,14 +167,14 @@ function App() {
     const handleHistoryOpen = useCallback(() => setHistoryOpen(true), []);
     const handleHistoryClose = useCallback(() => setHistoryOpen(false), []);
 
-    const [currentMode, setCurrentMode] = useState<'hourly-calculation' | 'hourly-comparison' | 'team-cost' | 'qualification'>('hourly-calculation');
+    const [currentMode, setCurrentMode] = useState<'hourly-calculation' | 'hourly-comparison' | 'team-cost' | 'qualification' | 'happiness'>('hourly-calculation');
 
     // フォーカス管理のためのref
     const mainContentRef = useRef<HTMLDivElement>(null);
     const modeToggleRef = useRef<HTMLDivElement>(null);
 
     // 機能モード切り替え
-    const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'hourly-calculation' | 'hourly-comparison' | 'team-cost' | 'qualification' | null) => {
+    const handleModeChange = useCallback((_: React.MouseEvent<HTMLElement>, newMode: 'hourly-calculation' | 'hourly-comparison' | 'team-cost' | 'qualification' | 'happiness' | null) => {
         if (newMode !== null) {
             setCurrentMode(newMode);
             // 既存のcomparison状態も更新
@@ -189,7 +196,8 @@ function App() {
                 'hourly-calculation': '時給計算',
                 'hourly-comparison': '時給比較',
                 'team-cost': 'チームコスト計算',
-                'qualification': '資格投資計算'
+                'qualification': '資格投資計算',
+                'happiness': '幸福度換算'
             };
             setLiveMessage(`${modeNames[newMode]}モードに切り替えました。`);
         }
@@ -218,6 +226,10 @@ function App() {
                     case '4':
                         event.preventDefault();
                         setCurrentMode('qualification');
+                        break;
+                    case '5':
+                        event.preventDefault();
+                        setCurrentMode('happiness');
                         break;
                     case 'h':
                         event.preventDefault();
@@ -338,7 +350,8 @@ function App() {
                                 {currentMode === 'hourly-calculation' ? 'あなたの時給を正確に計算しましょう' :
                                  currentMode === 'hourly-comparison' ? '複数の条件で時給を比較できます' :
                                  currentMode === 'team-cost' ? 'チームの作業コストを自動計算' :
-                                 '資格取得の投資効果を分析できます'}
+                                 currentMode === 'qualification' ? '資格取得の投資効果を分析できます' :
+                                 '働く環境や生活の質を時給に反映させましょう'}
                             </Typography>
 
                             {/* 機能選択ナビゲーション */}
@@ -361,7 +374,7 @@ function App() {
                                         value={currentMode}
                                         exclusive
                                         onChange={handleModeChange}
-                                        aria-label="機能を選択してください (Alt+1: 時給計算, Alt+2: 時給比較, Alt+3: チームコスト, Alt+4: 資格投資)"
+                                        aria-label="機能を選択してください (Alt+1: 時給計算, Alt+2: 時給比較, Alt+3: チームコスト, Alt+4: 資格投資, Alt+5: 幸福度換算)"
                                         size="small"
                                     >
                                         <ToggleButton 
@@ -392,6 +405,13 @@ function App() {
                                           <SchoolIcon sx={{ mr: 1 }} aria-hidden="true" />
                                           資格投資
                                         </ToggleButton>
+                                        <ToggleButton
+                                          value="happiness"
+                                          aria-label="幸福度換算モード Alt+5で切り替え"
+                                        >
+                                          <HappinessIcon sx={{ mr: 1 }} aria-hidden="true" />
+                                          幸福度換算
+                                        </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Paper>
                                 <Box 
@@ -406,7 +426,7 @@ function App() {
                                 >
                                     Alt+数字キーで切り替え可能
                                     <ScreenReaderOnly>
-                                        キーボードショートカットを使用できます。Alt+1で時給計算、Alt+2で時給比較、Alt+3でチームコスト、Alt+4で資格投資、Alt+Hで履歴を開けます。
+                                        キーボードショートカットを使用できます。Alt+1で時給計算、Alt+2で時給比較、Alt+3でチームコスト、Alt+4で資格投資、Alt+5で幸福度換算、Alt+Hで履歴を開けます。
                                     </ScreenReaderOnly>
                                 </Box>
                             </Box>
@@ -655,6 +675,92 @@ function App() {
                             </Box>
                           </Box>
                         )}
+
+                        {/* 幸福度計算結果表示 */}
+                        {currentMode === 'happiness' && happinessResult && (
+                          <Box
+                            component="section"
+                            aria-label="幸福度計算結果"
+                            role="region"
+                            sx={{
+                              bgcolor: 'primary.main',
+                              color: 'primary.contrastText',
+                              borderRadius: 2,
+                              p: { xs: 1, sm: 2 },
+                              mb: { xs: 1, sm: 2 },
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3, alignItems: 'center' }}>
+                              {/* スコア情報 */}
+                              <Box sx={{ flex: 1 }}>
+                                <Box sx={{
+                                  display: 'flex',
+                                  flexDirection: { xs: 'column', sm: 'row' },
+                                  gap: 1.5,
+                                  alignItems: 'center',
+                                  textAlign: 'center'
+                                }}>
+                                  <Box sx={{ flex: 1 }}>
+                                    <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.75rem' }}>
+                                      調整済み時給
+                                    </Typography>
+                                    <Typography variant="h5" fontWeight="bold">
+                                      {formatCurrency(happinessResult.adjustedHourlyWage)}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ flex: 1 }}>
+                                    <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.75rem' }}>
+                                      ボーナス
+                                    </Typography>
+                                    <Typography variant="h6">
+                                      {happinessResult.happinessBonus >= 0 ? '+' : ''}{happinessResult.happinessBonus.toFixed(1)}%
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ opacity: 0.8, fontSize: '0.7rem' }}>
+                                      スコア: {happinessResult.totalScore.toFixed(1)}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ flex: 1 }}>
+                                    <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.75rem' }}>
+                                      年収換算
+                                    </Typography>
+                                    <Typography variant="h6">
+                                      {formatCurrency(happinessResult.adjustedHourlyWage * (calculationResult?.totalWorkingHours || 2000))}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ opacity: 0.8, fontSize: '0.7rem' }}>
+                                      基本: {formatCurrency(calculationResult?.hourlyWage || 0)}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+
+                              {/* レーダーチャート */}
+                              <Box sx={{
+                                flex: { xs: 1, lg: 1.2 },
+                                minWidth: { xs: '100%', lg: '320px' },
+                                display: 'flex',
+                                justifyContent: 'center'
+                              }}>
+                                <Box sx={{
+                                  bgcolor: 'rgba(255, 255, 255, 0.15)',
+                                  borderRadius: 3,
+                                  p: 1.5,
+                                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                                  textAlign: 'center',
+                                  width: '100%',
+                                  maxWidth: '320px',
+                                  backdropFilter: 'blur(10px)'
+                                }}>
+                                  <HappinessRadarChart
+                                    result={happinessResult}
+                                    compact={true}
+                                    targetScore={happinessResult.targetScore}
+                                  />
+                                </Box>
+                              </Box>
+                            </Box>
+                          </Box>
+                        )}
                     </Container>
                 </Box>
 
@@ -707,11 +813,17 @@ function App() {
                                 onResultChange={setTeamCostResult}
                                 onErrorsChange={setTeamCostErrors}
                             />
-                        ) : (
-                            // 資格計算モード追加
+                        ) : currentMode === 'qualification' ? (
+                            // 資格計算モード
                             <QualificationCalculator
                                 currentHourlyWage={calculationResult?.hourlyWage || 0}
                                 onResultChange={setQualificationResult}
+                            />
+                        ) : (
+                            // 幸福度計算モード
+                            <HappinessCalculator
+                                baseHourlyWage={calculationResult?.hourlyWage || 0}
+                                onResultChange={setHappinessResult}
                             />
                         )}
                     </Box>
