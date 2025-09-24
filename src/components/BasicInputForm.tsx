@@ -401,20 +401,35 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                                         py: 1.5,
                                         minHeight: 70,
                                         justifyContent: 'center',
+                                        '&:hover': {
+                                            '@media (hover: hover)': {
+                                                '& .shortcut-label': {
+                                                    fontWeight: 'bold',
+                                                },
+                                                '& .shortcut-days': {
+                                                    transform: 'scale(1.1)',
+                                                },
+                                            },
+                                        },
                                     }}
                                 >
                                     <Typography
                                         variant="body2"
+                                        className="shortcut-label"
                                         sx={{
                                             fontWeight: 'bold',
                                             lineHeight: 1.2,
                                             fontSize: '0.8rem',
+                                            transition: 'font-weight 0.2s ease',
                                         }}
                                     >
                                         {shortcut.label}{' '}
                                         <span
+                                            className="shortcut-days"
                                             style={{
                                                 color: 'var(--mui-palette-primary-main)',
+                                                display: 'inline-block',
+                                                transition: 'transform 0.2s ease',
                                             }}
                                         >
                                             {shortcut.days}日

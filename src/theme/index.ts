@@ -55,7 +55,18 @@ export const appTheme = createTheme({
             styleOverrides: {
                 root: {
                     minHeight: 44,
-                    fontWeight: 600, // より読みやすいフォント太さ
+                    fontWeight: 600,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                        '@media (hover: hover)': {
+                            transform: 'translateY(-1px)',
+                            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                        },
+                    },
+                    '&:active': {
+                        transform: 'translateY(0px)',
+                        transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
                     '&:focus-visible': {
                         outline: '3px solid',
                         outlineColor: '#1976d2',
@@ -67,11 +78,47 @@ export const appTheme = createTheme({
                         padding: '12px 16px',
                     },
                 },
+                contained: {
+                    '&:hover': {
+                        '@media (hover: hover)': {
+                            transform: 'translateY(-1px)',
+                            boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+                        },
+                    },
+                },
+                outlined: {
+                    '&:hover': {
+                        '@media (hover: hover)': {
+                            transform: 'translateY(-1px)',
+                            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.15)',
+                            borderColor: '#1565c0',
+                        },
+                    },
+                },
+                text: {
+                    '&:hover': {
+                        '@media (hover: hover)': {
+                            transform: 'translateY(-1px)',
+                            backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                        },
+                    },
+                },
             },
         },
         MuiToggleButton: {
             styleOverrides: {
                 root: {
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                        '@media (hover: hover)': {
+                            transform: 'translateY(-1px)',
+                            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.2)',
+                        },
+                    },
+                    '&:active': {
+                        transform: 'translateY(0px)',
+                        transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
                     '&:focus-visible': {
                         outline: '3px solid',
                         outlineColor: '#1976d2',
@@ -81,7 +128,11 @@ export const appTheme = createTheme({
                         backgroundColor: '#1976d2',
                         color: '#ffffff',
                         '&:hover': {
-                            backgroundColor: '#1565c0',
+                            '@media (hover: hover)': {
+                                backgroundColor: '#1565c0',
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 6px 16px rgba(21, 101, 192, 0.4)',
+                            },
                         },
                     },
                 },
@@ -90,6 +141,17 @@ export const appTheme = createTheme({
         MuiFab: {
             styleOverrides: {
                 root: {
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                        '@media (hover: hover)': {
+                            transform: 'translateY(-2px) scale(1.05)',
+                            boxShadow: '0 8px 20px rgba(25, 118, 210, 0.4)',
+                        },
+                    },
+                    '&:active': {
+                        transform: 'translateY(0px) scale(1.02)',
+                        transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
                     '&:focus-visible': {
                         outline: '3px solid',
                         outlineColor: '#1976d2',
