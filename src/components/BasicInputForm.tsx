@@ -216,7 +216,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: { xs: 2, sm: 3 },
+                    gap: { xs: 2.5, sm: 3 },
                 }}
             >
                 {/* 給与種別選択 */}
@@ -372,7 +372,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                                     xs: '1fr',
                                     sm: '1fr 1fr',
                                 },
-                                gap: { xs: 1, sm: 1 },
+                                gap: { xs: 1.5, sm: 1 },
                             }}
                         >
                             {holidayShortcuts.map((shortcut) => (
