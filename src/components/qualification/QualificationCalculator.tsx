@@ -24,6 +24,8 @@ import {
 import type { QualificationData, QualificationResult } from '../../types/qualification';
 import { JOB_CATEGORIES, getQualificationsByCategory } from '../../types/qualificationData';
 import { calculateQualificationROI, evaluateQualificationInvestment } from '../../utils/qualificationCalculations';
+import ValidatedInput from '../ValidatedInput';
+import { validateSalary } from '../../utils/validation';
 
 interface QualificationCalculatorProps {
   currentHourlyWage?: number;
@@ -274,55 +276,63 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
             </Typography>
 
             {/* 試験料 */}
-            <TextField
-              fullWidth
-              type="number"
+            <ValidatedInput
+              id="exam-fee"
               label="試験料"
               value={data.examFee}
-              onChange={(e) => updateField('examFee', e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">¥</InputAdornment>
-              }}
-              margin="normal"
+              onChange={(value) => updateField('examFee', value)}
+              validator={validateSalary}
+              type="integer"
+              step={1000}
+              unit="円"
+              showIncrementButtons
+              helperText="試験料を入力してください（0円～1億円）"
+              sx={{ mt: 2 }}
             />
 
             {/* 教材費 */}
-            <TextField
-              fullWidth
-              type="number"
+            <ValidatedInput
+              id="material-cost"
               label="教材費"
               value={data.materialCost}
-              onChange={(e) => updateField('materialCost', e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">¥</InputAdornment>
-              }}
-              margin="normal"
+              onChange={(value) => updateField('materialCost', value)}
+              validator={validateSalary}
+              type="integer"
+              step={1000}
+              unit="円"
+              showIncrementButtons
+              helperText="教材費を入力してください（0円～1億円）"
+              sx={{ mt: 2 }}
             />
 
             {/* 講座・研修費 */}
-            <TextField
-              fullWidth
-              type="number"
+            <ValidatedInput
+              id="course-fee"
               label="講座・研修費"
               value={data.courseFee}
-              onChange={(e) => updateField('courseFee', e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">¥</InputAdornment>
-              }}
-              margin="normal"
+              onChange={(value) => updateField('courseFee', value)}
+              validator={validateSalary}
+              type="integer"
+              step={1000}
+              unit="円"
+              showIncrementButtons
+              helperText="講座・研修費を入力してください（0円～1億円）"
+              sx={{ mt: 2 }}
             />
 
             {/* その他費用 */}
-            <TextField
-              fullWidth
-              type="number"
+            <ValidatedInput
+              id="other-costs"
               label="その他費用"
               value={data.otherCosts}
-              onChange={(e) => updateField('otherCosts', e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">¥</InputAdornment>
-              }}
-              margin="normal"
+              onChange={(value) => updateField('otherCosts', value)}
+              validator={validateSalary}
+              type="integer"
+              step={1000}
+              unit="円"
+              showIncrementButtons
+              helperText="その他費用を入力してください（0円～1億円）"
+              sx={{ mt: 2 }}
             />
 
             <Divider sx={{ my: 2 }} />
@@ -333,55 +343,63 @@ export const QualificationCalculator: React.FC<QualificationCalculatorProps> = (
             </Typography>
 
             {/* 現在の資格手当 */}
-            <TextField
-              fullWidth
-              type="number"
+            <ValidatedInput
+              id="current-allowance"
               label="現在の資格手当 (月額)"
               value={data.currentAllowance}
-              onChange={(e) => updateField('currentAllowance', e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">¥</InputAdornment>
-              }}
-              margin="normal"
+              onChange={(value) => updateField('currentAllowance', value)}
+              validator={validateSalary}
+              type="integer"
+              step={1000}
+              unit="円"
+              showIncrementButtons
+              helperText="現在の資格手当を入力してください（0円～1億円）"
+              sx={{ mt: 2 }}
             />
 
             {/* 期待される資格手当 */}
-            <TextField
-              fullWidth
-              type="number"
+            <ValidatedInput
+              id="expected-allowance"
               label="期待される資格手当 (月額)"
               value={data.expectedAllowance}
-              onChange={(e) => updateField('expectedAllowance', e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">¥</InputAdornment>
-              }}
-              margin="normal"
+              onChange={(value) => updateField('expectedAllowance', value)}
+              validator={validateSalary}
+              type="integer"
+              step={1000}
+              unit="円"
+              showIncrementButtons
+              helperText="期待される資格手当を入力してください（0円～1億円）"
+              sx={{ mt: 2 }}
             />
 
             {/* 昇給効果 */}
-            <TextField
-              fullWidth
-              type="number"
+            <ValidatedInput
+              id="salary-increase"
               label="昇給効果 (年額)"
               value={data.salaryIncrease}
-              onChange={(e) => updateField('salaryIncrease', e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">¥</InputAdornment>
-              }}
-              margin="normal"
+              onChange={(value) => updateField('salaryIncrease', value)}
+              validator={validateSalary}
+              type="integer"
+              step={1000}
+              unit="円"
+              showIncrementButtons
+              helperText="昇給効果を入力してください（0円～1億円）"
+              sx={{ mt: 2 }}
             />
 
             {/* 転職時年収アップ */}
-            <TextField
-              fullWidth
-              type="number"
+            <ValidatedInput
+              id="job-change-increase"
               label="転職時年収アップ"
               value={data.jobChangeIncrease}
-              onChange={(e) => updateField('jobChangeIncrease', e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">¥</InputAdornment>
-              }}
-              margin="normal"
+              onChange={(value) => updateField('jobChangeIncrease', value)}
+              validator={validateSalary}
+              type="integer"
+              step={1000}
+              unit="円"
+              showIncrementButtons
+              helperText="転職時年収アップを入力してください（0円～1億円）"
+              sx={{ mt: 2 }}
             />
           </Paper>
         </Box>
