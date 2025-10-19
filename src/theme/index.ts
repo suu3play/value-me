@@ -228,6 +228,52 @@ export const appTheme = createTheme({
                 },
             },
         },
+        MuiCheckbox: {
+            styleOverrides: {
+                root: {
+                    '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: '#1976d2',
+                        outlineOffset: '2px',
+                    },
+                },
+            },
+        },
+        MuiIconButton: {
+            styleOverrides: {
+                root: {
+                    '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: '#1976d2',
+                        outlineOffset: '2px',
+                    },
+                },
+            },
+        },
+        MuiRadio: {
+            styleOverrides: {
+                root: {
+                    '&:focus-visible': {
+                        outline: '3px solid',
+                        outlineColor: '#1976d2',
+                        outlineOffset: '2px',
+                    },
+                },
+            },
+        },
+        MuiSwitch: {
+            styleOverrides: {
+                root: {
+                    '& .MuiSwitch-switchBase': {
+                        '&:focus-visible': {
+                            outline: '3px solid',
+                            outlineColor: '#1976d2',
+                            outlineOffset: '2px',
+                        },
+                    },
+                },
+            },
+        },
     },
     // カスタムブレークポイント追加
     breakpoints: {
