@@ -153,47 +153,49 @@ export const calculateHourlyWage = (
 
     const totalWorkingHours = workingDays * actualDailyWorkingHours;
 
-    // 残業時間を月間に変換
-    let monthlyOvertimeHours = data.overtimeHours || 0;
-    let monthlyNightOvertimeHours = data.nightOvertimeHours || 0;
+    // 月平均労働日数の計算（年間労働日数から算出）
+    const monthlyAverageWorkingDays = workingDays / 12;
+
+    // 残業時間を年間に変換
+    let annualOvertimeHours = 0;
+    let annualNightOvertimeHours = 0;
 
     switch (data.workingHoursType) {
         case 'daily':
-            monthlyOvertimeHours = (data.overtimeHours || 0) * 22; // 月22日勤務と仮定
-            monthlyNightOvertimeHours = (data.nightOvertimeHours || 0) * 22;
+            // 日単位：年間労働日数を掛ける
+            annualOvertimeHours = (data.overtimeHours || 0) * workingDays;
+            annualNightOvertimeHours = (data.nightOvertimeHours || 0) * workingDays;
             break;
         case 'weekly':
-            monthlyOvertimeHours = (data.overtimeHours || 0) * 4.4; // 1ヶ月約4.4週
-            monthlyNightOvertimeHours = (data.nightOvertimeHours || 0) * 4.4;
+            // 週単位：年間週数（約52.14週）を掛ける
+            annualOvertimeHours = (data.overtimeHours || 0) * 52.14;
+            annualNightOvertimeHours = (data.nightOvertimeHours || 0) * 52.14;
             break;
         default: // monthly
-            monthlyOvertimeHours = data.overtimeHours || 0;
-            monthlyNightOvertimeHours = data.nightOvertimeHours || 0;
+            // 月単位：12ヶ月を掛ける
+            annualOvertimeHours = (data.overtimeHours || 0) * 12;
+            annualNightOvertimeHours = (data.nightOvertimeHours || 0) * 12;
     }
 
-    // 残業代の計算
-    const overtimeHours = isNaN(monthlyOvertimeHours) || monthlyOvertimeHours < 0 ? 0 : monthlyOvertimeHours;
-    const nightOvertimeHours = isNaN(monthlyNightOvertimeHours) || monthlyNightOvertimeHours < 0 ? 0 : monthlyNightOvertimeHours;
-    const totalOvertimeHours = overtimeHours + nightOvertimeHours;
+    // 残業時間の合計
+    const totalAnnualOvertimeHours = (isNaN(annualOvertimeHours) || annualOvertimeHours < 0 ? 0 : annualOvertimeHours) +
+                                     (isNaN(annualNightOvertimeHours) || annualNightOvertimeHours < 0 ? 0 : annualNightOvertimeHours);
 
     // 基本時給の計算（残業代を除く月給ベース）
-    // 月平均勤務日数を21.7日として計算
     const monthlyBaseSalary = data.salaryType === 'monthly' ? salaryAmount : salaryAmount / 12;
-    const monthlyBaseWorkingHours = actualDailyWorkingHours * 21.7;
+    const monthlyBaseWorkingHours = actualDailyWorkingHours * monthlyAverageWorkingDays;
     const baseHourlyWage = monthlyBaseWorkingHours > 0 ? monthlyBaseSalary / monthlyBaseWorkingHours : 0;
 
     // 残業代の計算（割増率適用）
-    const normalOvertimePay = baseHourlyWage * 1.25 * overtimeHours;  // 通常残業：1.25倍
-    const nightOvertimePay = baseHourlyWage * 1.5 * nightOvertimeHours;  // 深夜残業：1.5倍
-    const monthlyOvertimePay = normalOvertimePay + nightOvertimePay;
+    const normalOvertimePay = baseHourlyWage * 1.25 * annualOvertimeHours;  // 通常残業：1.25倍
+    const nightOvertimePay = baseHourlyWage * 1.5 * annualNightOvertimeHours;  // 深夜残業：1.5倍
+    const annualOvertimePay = normalOvertimePay + nightOvertimePay;
 
     // 残業代を年収に加算
-    const annualOvertimePay = monthlyOvertimePay * 12;
     actualAnnualIncome += annualOvertimePay;
 
     // 残業時間を年間労働時間に加算
-    const annualOvertimeHours = totalOvertimeHours * 12;
-    const totalWorkingHoursWithOvertime = totalWorkingHours + annualOvertimeHours;
+    const totalWorkingHoursWithOvertime = totalWorkingHours + totalAnnualOvertimeHours;
 
     // 時給の計算（残業代・残業時間を含む）
     const hourlyWage =
@@ -214,9 +216,9 @@ export const calculateHourlyWage = (
         totalAnnualHolidays: isNaN(totalAnnualHolidays)
             ? 0
             : totalAnnualHolidays,
-        baseHourlyWage: totalOvertimeHours > 0 ? Math.round(baseHourlyWage) : undefined,
-        overtimePay: totalOvertimeHours > 0 ? Math.round(monthlyOvertimePay) : undefined,
-        totalOvertimeHours: totalOvertimeHours > 0 ? totalOvertimeHours : undefined,
+        baseHourlyWage: totalAnnualOvertimeHours > 0 ? Math.round(baseHourlyWage) : undefined,
+        overtimePay: totalAnnualOvertimeHours > 0 ? Math.round(annualOvertimePay / 12) : undefined,
+        totalOvertimeHours: totalAnnualOvertimeHours > 0 ? Math.round(totalAnnualOvertimeHours / 12) : undefined,
     };
 };
 
