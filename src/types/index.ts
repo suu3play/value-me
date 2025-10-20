@@ -34,7 +34,11 @@ export interface SalaryCalculationData {
   obon: boolean;
   yearEndNewYear: boolean;
   customHolidays: number;
-  
+
+  // 残業時間（月間）
+  overtimeHours?: number;          // 通常残業時間
+  nightOvertimeHours?: number;     // 深夜残業時間（22時〜5時）
+
 }
 
 export interface CalculationResult {
@@ -43,6 +47,9 @@ export interface CalculationResult {
   actualMonthlyIncome: number;
   totalWorkingHours: number;
   totalAnnualHolidays: number;
+  baseHourlyWage?: number;         // 基本時給（残業代計算用）
+  overtimePay?: number;            // 月間残業代合計
+  totalOvertimeHours?: number;     // 月間残業時間合計
 }
 
 

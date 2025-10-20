@@ -51,6 +51,22 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                 }}>
                     {formatCurrency(result.hourlyWage)}
                 </Typography>
+                {result.baseHourlyWage && (
+                    <Box sx={{ mt: 1 }}>
+                        <Typography variant="caption" sx={{
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            fontSize: '0.75rem'
+                        }}>
+                            基本時給
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                            fontWeight: 'bold',
+                            fontSize: '0.9rem'
+                        }}>
+                            {formatCurrency(result.baseHourlyWage)}
+                        </Typography>
+                    </Box>
+                )}
             </Box>
 
             <Divider
@@ -168,7 +184,21 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                         width: { xs: '100%', sm: 'auto' },
                         textAlign: { xs: 'center', sm: 'left' }
                     }}>
-                        <Typography variant="caption">年間労働時間</Typography>
+                        <Typography variant="caption">
+                            {result.totalOvertimeHours ? '年間総労働時間' : '年間労働時間'}
+                        </Typography>
+                        {result.totalOvertimeHours && (
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    fontSize: '0.7rem',
+                                    display: 'block',
+                                }}
+                            >
+                                （残業：{formatNumber(result.totalOvertimeHours * 12)}h）
+                            </Typography>
+                        )}
                         <Typography
                             variant="body1"
                             sx={{
