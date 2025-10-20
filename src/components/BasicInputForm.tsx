@@ -559,6 +559,54 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                         1日あたり: {getDailyWorkingHours().toFixed(1)}時間
                     </Typography>
                 </Box>
+
+                {/* 残業時間 */}
+                <Box>
+                    <Typography variant="h6" gutterBottom>
+                        残業時間（月間）
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        月間の残業時間を入力すると、残業代が自動計算されて時給に反映されます
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                        <ValidatedInput
+                            id="overtime-hours"
+                            label="通常残業時間"
+                            value={data.overtimeHours || 0}
+                            onChange={(value) => onChange({ ...data, overtimeHours: value })}
+                            validator={(value) => {
+                                if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
+                                if (value > 200) return { isValid: false, message: '200時間以下を入力してください' };
+                                return { isValid: true };
+                            }}
+                            type="float"
+                            step={1}
+                            unit="時間"
+                            showIncrementButtons
+                            helperText="通常残業時間（割増率1.25倍）"
+                            sx={{ minWidth: 200, flex: 1 }}
+                            fullWidth={false}
+                        />
+                        <ValidatedInput
+                            id="night-overtime-hours"
+                            label="深夜残業時間"
+                            value={data.nightOvertimeHours || 0}
+                            onChange={(value) => onChange({ ...data, nightOvertimeHours: value })}
+                            validator={(value) => {
+                                if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
+                                if (value > 200) return { isValid: false, message: '200時間以下を入力してください' };
+                                return { isValid: true };
+                            }}
+                            type="float"
+                            step={1}
+                            unit="時間"
+                            showIncrementButtons
+                            helperText="深夜残業時間（22時〜5時、割増率1.5倍）"
+                            sx={{ minWidth: 200, flex: 1 }}
+                            fullWidth={false}
+                        />
+                    </Box>
+                </Box>
             </Box>
         </Box>
     );
