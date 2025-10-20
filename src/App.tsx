@@ -70,6 +70,8 @@ const initialData: SalaryCalculationData = {
     obon: false,
     yearEndNewYear: false,
     customHolidays: 0,
+    overtimeHours: 0,
+    nightOvertimeHours: 0,
 };
 
 function App() {

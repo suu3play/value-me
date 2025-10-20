@@ -153,9 +153,33 @@ export const calculateHourlyWage = (
 
     const totalWorkingHours = workingDays * actualDailyWorkingHours;
 
-    // 時給の計算
+    // 残業代の計算
+    const overtimeHours = isNaN(data.overtimeHours || 0) || (data.overtimeHours || 0) < 0 ? 0 : (data.overtimeHours || 0);
+    const nightOvertimeHours = isNaN(data.nightOvertimeHours || 0) || (data.nightOvertimeHours || 0) < 0 ? 0 : (data.nightOvertimeHours || 0);
+    const totalOvertimeHours = overtimeHours + nightOvertimeHours;
+
+    // 基本時給の計算（残業代を除く月給ベース）
+    // 月平均勤務日数を21.7日として計算
+    const monthlyBaseSalary = data.salaryType === 'monthly' ? salaryAmount : salaryAmount / 12;
+    const monthlyBaseWorkingHours = actualDailyWorkingHours * 21.7;
+    const baseHourlyWage = monthlyBaseWorkingHours > 0 ? monthlyBaseSalary / monthlyBaseWorkingHours : 0;
+
+    // 残業代の計算（割増率適用）
+    const normalOvertimePay = baseHourlyWage * 1.25 * overtimeHours;  // 通常残業：1.25倍
+    const nightOvertimePay = baseHourlyWage * 1.5 * nightOvertimeHours;  // 深夜残業：1.5倍
+    const monthlyOvertimePay = normalOvertimePay + nightOvertimePay;
+
+    // 残業代を年収に加算
+    const annualOvertimePay = monthlyOvertimePay * 12;
+    actualAnnualIncome += annualOvertimePay;
+
+    // 残業時間を年間労働時間に加算
+    const annualOvertimeHours = totalOvertimeHours * 12;
+    const totalWorkingHoursWithOvertime = totalWorkingHours + annualOvertimeHours;
+
+    // 時給の計算（残業代・残業時間を含む）
     const hourlyWage =
-        totalWorkingHours > 0 ? actualAnnualIncome / totalWorkingHours : 0;
+        totalWorkingHoursWithOvertime > 0 ? actualAnnualIncome / totalWorkingHoursWithOvertime : 0;
 
 
     return {
@@ -166,12 +190,15 @@ export const calculateHourlyWage = (
         actualMonthlyIncome: isNaN(actualAnnualIncome)
             ? 0
             : Math.round(actualAnnualIncome / 12),
-        totalWorkingHours: isNaN(totalWorkingHours)
+        totalWorkingHours: isNaN(totalWorkingHoursWithOvertime)
             ? 0
-            : Math.round(totalWorkingHours),
+            : Math.round(totalWorkingHoursWithOvertime),
         totalAnnualHolidays: isNaN(totalAnnualHolidays)
             ? 0
             : totalAnnualHolidays,
+        baseHourlyWage: totalOvertimeHours > 0 ? Math.round(baseHourlyWage) : undefined,
+        overtimePay: totalOvertimeHours > 0 ? Math.round(monthlyOvertimePay) : undefined,
+        totalOvertimeHours: totalOvertimeHours > 0 ? totalOvertimeHours : undefined,
     };
 };
 

@@ -162,13 +162,67 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                         </Typography>
                     </Box>
 
+                    {result.baseHourlyWage && result.overtimePay && (
+                        <Box sx={{
+                            minWidth: { xs: 'auto', sm: 120, md: 120 },
+                            flex: { xs: 'none', sm: 1 },
+                            width: { xs: '100%', sm: 'auto' },
+                            textAlign: { xs: 'center', sm: 'left' }
+                        }}>
+                            <Typography variant="caption">基本時給</Typography>
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    fontWeight: 'bold',
+                                    fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
+                                }}
+                            >
+                                {formatCurrency(result.baseHourlyWage)}
+                            </Typography>
+                        </Box>
+                    )}
+
+                    {result.overtimePay && (
+                        <Box sx={{
+                            minWidth: { xs: 'auto', sm: 120, md: 120 },
+                            flex: { xs: 'none', sm: 1 },
+                            width: { xs: '100%', sm: 'auto' },
+                            textAlign: { xs: 'center', sm: 'left' }
+                        }}>
+                            <Typography variant="caption">月間残業代</Typography>
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    fontWeight: 'bold',
+                                    fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
+                                }}
+                            >
+                                {formatCurrency(result.overtimePay)}
+                            </Typography>
+                        </Box>
+                    )}
+
                     <Box sx={{
                         minWidth: { xs: 'auto', sm: 120, md: 120 },
                         flex: { xs: 'none', sm: 1 },
                         width: { xs: '100%', sm: 'auto' },
                         textAlign: { xs: 'center', sm: 'left' }
                     }}>
-                        <Typography variant="caption">年間労働時間</Typography>
+                        <Typography variant="caption">
+                            {result.totalOvertimeHours ? '年間総労働時間' : '年間労働時間'}
+                        </Typography>
+                        {result.totalOvertimeHours && (
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    fontSize: '0.7rem',
+                                    display: 'block',
+                                }}
+                            >
+                                （残業：{formatNumber(result.totalOvertimeHours * 12)}h）
+                            </Typography>
+                        )}
                         <Typography
                             variant="body1"
                             sx={{
