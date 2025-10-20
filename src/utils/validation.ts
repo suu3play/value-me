@@ -41,21 +41,21 @@ export const validateHolidays = (value: number): ValidationResult => {
   return { isValid: true };
 };
 
-export const validateWorkingHours = (value: number): ValidationResult => {
+export const validateWorkingHours = (value: number, maxHours: number = 24): ValidationResult => {
   if (isNaN(value) || value < 0.5) {
     return {
       isValid: false,
       errorMessage: '労働時間は0.5時間以上で入力してください'
     };
   }
-  
-  if (value > 24) {
+
+  if (value > maxHours) {
     return {
       isValid: false,
-      errorMessage: '労働時間は24時間以下で入力してください'
+      errorMessage: `労働時間は${maxHours}時間以下で入力してください`
     };
   }
-  
+
   return { isValid: true };
 };
 

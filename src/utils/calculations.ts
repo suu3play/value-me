@@ -153,9 +153,27 @@ export const calculateHourlyWage = (
 
     const totalWorkingHours = workingDays * actualDailyWorkingHours;
 
+    // 残業時間を月間に変換
+    let monthlyOvertimeHours = data.overtimeHours || 0;
+    let monthlyNightOvertimeHours = data.nightOvertimeHours || 0;
+
+    switch (data.workingHoursType) {
+        case 'daily':
+            monthlyOvertimeHours = (data.overtimeHours || 0) * 22; // 月22日勤務と仮定
+            monthlyNightOvertimeHours = (data.nightOvertimeHours || 0) * 22;
+            break;
+        case 'weekly':
+            monthlyOvertimeHours = (data.overtimeHours || 0) * 4.4; // 1ヶ月約4.4週
+            monthlyNightOvertimeHours = (data.nightOvertimeHours || 0) * 4.4;
+            break;
+        default: // monthly
+            monthlyOvertimeHours = data.overtimeHours || 0;
+            monthlyNightOvertimeHours = data.nightOvertimeHours || 0;
+    }
+
     // 残業代の計算
-    const overtimeHours = isNaN(data.overtimeHours || 0) || (data.overtimeHours || 0) < 0 ? 0 : (data.overtimeHours || 0);
-    const nightOvertimeHours = isNaN(data.nightOvertimeHours || 0) || (data.nightOvertimeHours || 0) < 0 ? 0 : (data.nightOvertimeHours || 0);
+    const overtimeHours = isNaN(monthlyOvertimeHours) || monthlyOvertimeHours < 0 ? 0 : monthlyOvertimeHours;
+    const nightOvertimeHours = isNaN(monthlyNightOvertimeHours) || monthlyNightOvertimeHours < 0 ? 0 : monthlyNightOvertimeHours;
     const totalOvertimeHours = overtimeHours + nightOvertimeHours;
 
     // 基本時給の計算（残業代を除く月給ベース）

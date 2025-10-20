@@ -130,40 +130,56 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
         if (newType) {
             // 単位変更時に値を適切に変換
             let convertedHours = data.dailyWorkingHours;
+            let convertedOvertime = data.overtimeHours || 0;
+            let convertedNightOvertime = data.nightOvertimeHours || 0;
 
             if (data.workingHoursType === 'daily' && newType === 'weekly') {
                 convertedHours = data.dailyWorkingHours * 5; // 週5日勤務と仮定
+                convertedOvertime = (data.overtimeHours || 0) * 5;
+                convertedNightOvertime = (data.nightOvertimeHours || 0) * 5;
             } else if (
                 data.workingHoursType === 'daily' &&
                 newType === 'monthly'
             ) {
                 convertedHours = data.dailyWorkingHours * 22; // 月22日勤務と仮定
+                convertedOvertime = (data.overtimeHours || 0) * 22;
+                convertedNightOvertime = (data.nightOvertimeHours || 0) * 22;
             } else if (
                 data.workingHoursType === 'weekly' &&
                 newType === 'daily'
             ) {
                 convertedHours = data.dailyWorkingHours / 5;
+                convertedOvertime = (data.overtimeHours || 0) / 5;
+                convertedNightOvertime = (data.nightOvertimeHours || 0) / 5;
             } else if (
                 data.workingHoursType === 'weekly' &&
                 newType === 'monthly'
             ) {
                 convertedHours = data.dailyWorkingHours * 4.4; // 1ヶ月約4.4週
+                convertedOvertime = (data.overtimeHours || 0) * 4.4;
+                convertedNightOvertime = (data.nightOvertimeHours || 0) * 4.4;
             } else if (
                 data.workingHoursType === 'monthly' &&
                 newType === 'daily'
             ) {
                 convertedHours = data.dailyWorkingHours / 22;
+                convertedOvertime = (data.overtimeHours || 0) / 22;
+                convertedNightOvertime = (data.nightOvertimeHours || 0) / 22;
             } else if (
                 data.workingHoursType === 'monthly' &&
                 newType === 'weekly'
             ) {
                 convertedHours = data.dailyWorkingHours / 4.4;
+                convertedOvertime = (data.overtimeHours || 0) / 4.4;
+                convertedNightOvertime = (data.nightOvertimeHours || 0) / 4.4;
             }
 
             onChange({
                 ...data,
                 workingHoursType: newType,
                 dailyWorkingHours: Math.round(convertedHours * 10) / 10, // 小数点1桁で四捨五入
+                overtimeHours: Math.round(convertedOvertime * 10) / 10,
+                nightOvertimeHours: Math.round(convertedNightOvertime * 10) / 10,
             });
         }
     };
@@ -503,10 +519,10 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                     </Box>
                 </Box>
 
-                {/* 労働時間 */}
+                {/* 労働時間と残業時間 */}
                 <Box>
                     <Typography variant="h6" gutterBottom>
-                        労働時間
+                        労働時間・残業時間
                     </Typography>
                     <Box sx={{ mb: 2 }}>
                         <ToggleButtonGroup
@@ -532,55 +548,62 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                             </ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
-                    <ValidatedInput
-                        id="working-hours"
-                        label={
-                            data.workingHoursType === 'daily'
-                                ? '1日の労働時間'
-                                : data.workingHoursType === 'weekly'
-                                ? '1週の労働時間'
-                                : '1ヶ月の労働時間'
-                        }
-                        value={getDisplayWorkingHours()}
-                        onChange={(value) =>
-                            onChange({ ...data, dailyWorkingHours: value })
-                        }
-                        validator={validateWorkingHours}
-                        type="float"
-                        step={data.workingHoursType === 'daily' ? 0.5 : 1}
-                        unit="時間"
-                        helperText="労働時間を入力してください（0.5～24時間）"
-                    />
-                    <Typography
-                        variant="caption"
-                        color="textSecondary"
-                        sx={{ ml: 1, mt: 0.5 }}
-                    >
-                        1日あたり: {getDailyWorkingHours().toFixed(1)}時間
-                    </Typography>
-                </Box>
-
-                {/* 残業時間 */}
-                <Box>
-                    <Typography variant="h6" gutterBottom>
-                        残業時間（月間）
-                    </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        月間の残業時間を入力すると、残業代が自動計算されて時給に反映されます
+                        残業時間を入力すると、残業代が自動計算されて時給に反映されます
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                         <ValidatedInput
+                            id="working-hours"
+                            label={
+                                data.workingHoursType === 'daily'
+                                    ? '1日の労働時間'
+                                    : data.workingHoursType === 'weekly'
+                                    ? '1週の労働時間'
+                                    : '1ヶ月の労働時間'
+                            }
+                            value={getDisplayWorkingHours()}
+                            onChange={(value) =>
+                                onChange({ ...data, dailyWorkingHours: value })
+                            }
+                            validator={(value) => validateWorkingHours(
+                                value,
+                                data.workingHoursType === 'daily' ? 24 :
+                                data.workingHoursType === 'weekly' ? 168 :
+                                744 // monthly
+                            )}
+                            type="float"
+                            step={data.workingHoursType === 'daily' ? 0.5 : 1}
+                            unit="時間"
+                            helperText={
+                                data.workingHoursType === 'daily'
+                                    ? '労働時間を入力してください（0.5～24時間）'
+                                    : data.workingHoursType === 'weekly'
+                                    ? '労働時間を入力してください（0.5～168時間）'
+                                    : '労働時間を入力してください（0.5～744時間）'
+                            }
+                            sx={{ minWidth: 200, flex: 1 }}
+                            fullWidth={false}
+                        />
+                        <ValidatedInput
                             id="overtime-hours"
-                            label="通常残業時間"
+                            label={
+                                data.workingHoursType === 'daily'
+                                    ? '1日の通常残業時間'
+                                    : data.workingHoursType === 'weekly'
+                                    ? '1週の通常残業時間'
+                                    : '1ヶ月の通常残業時間'
+                            }
                             value={data.overtimeHours || 0}
                             onChange={(value) => onChange({ ...data, overtimeHours: value })}
                             validator={(value) => {
+                                const maxHours = data.workingHoursType === 'daily' ? 24 :
+                                                data.workingHoursType === 'weekly' ? 168 : 744;
                                 if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
-                                if (value > 200) return { isValid: false, message: '200時間以下を入力してください' };
+                                if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
                                 return { isValid: true };
                             }}
                             type="float"
-                            step={1}
+                            step={data.workingHoursType === 'daily' ? 0.5 : 1}
                             unit="時間"
                             showIncrementButtons
                             helperText="通常残業時間（割増率1.25倍）"
@@ -589,16 +612,24 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                         />
                         <ValidatedInput
                             id="night-overtime-hours"
-                            label="深夜残業時間"
+                            label={
+                                data.workingHoursType === 'daily'
+                                    ? '1日の深夜残業時間'
+                                    : data.workingHoursType === 'weekly'
+                                    ? '1週の深夜残業時間'
+                                    : '1ヶ月の深夜残業時間'
+                            }
                             value={data.nightOvertimeHours || 0}
                             onChange={(value) => onChange({ ...data, nightOvertimeHours: value })}
                             validator={(value) => {
+                                const maxHours = data.workingHoursType === 'daily' ? 24 :
+                                                data.workingHoursType === 'weekly' ? 168 : 744;
                                 if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
-                                if (value > 200) return { isValid: false, message: '200時間以下を入力してください' };
+                                if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
                                 return { isValid: true };
                             }}
                             type="float"
-                            step={1}
+                            step={data.workingHoursType === 'daily' ? 0.5 : 1}
                             unit="時間"
                             showIncrementButtons
                             helperText="深夜残業時間（22時〜5時、割増率1.5倍）"
@@ -606,6 +637,13 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                             fullWidth={false}
                         />
                     </Box>
+                    <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ ml: 1, mt: 1, display: 'block' }}
+                    >
+                        1日あたり: {getDailyWorkingHours().toFixed(1)}時間
+                    </Typography>
                 </Box>
             </Box>
         </Box>
