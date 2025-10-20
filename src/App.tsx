@@ -36,6 +36,9 @@ import { LiveRegion } from './components/LiveRegion';
 import { ScreenReaderOnly } from './components/ScreenReaderOnly';
 import { appTheme } from './theme';
 
+// 機能の有効/無効を制御するフラグ
+const ENABLE_QUALIFICATION = false;  // 資格投資機能
+const ENABLE_HAPPINESS = false;      // 幸福度換算機能
 
 const initialData: SalaryCalculationData = {
     salaryType: 'monthly',
@@ -224,12 +227,16 @@ function App() {
                         setCurrentMode('team-cost');
                         break;
                     case '4':
-                        event.preventDefault();
-                        setCurrentMode('qualification');
+                        if (ENABLE_QUALIFICATION) {
+                            event.preventDefault();
+                            setCurrentMode('qualification');
+                        }
                         break;
                     case '5':
-                        event.preventDefault();
-                        setCurrentMode('happiness');
+                        if (ENABLE_HAPPINESS) {
+                            event.preventDefault();
+                            setCurrentMode('happiness');
+                        }
                         break;
                     case 'h':
                         event.preventDefault();
@@ -350,8 +357,9 @@ function App() {
                                 {currentMode === 'hourly-calculation' ? 'あなたの時給を正確に計算しましょう' :
                                  currentMode === 'hourly-comparison' ? '複数の条件で時給を比較できます' :
                                  currentMode === 'team-cost' ? 'チームの作業コストを自動計算' :
-                                 currentMode === 'qualification' ? '資格取得の投資効果を分析できます' :
-                                 '働く環境や生活の質を時給に反映させましょう'}
+                                 ENABLE_QUALIFICATION && currentMode === 'qualification' ? '資格取得の投資効果を分析できます' :
+                                 ENABLE_HAPPINESS && currentMode === 'happiness' ? '働く環境や生活の質を時給に反映させましょう' :
+                                 'あなたの時給を正確に計算しましょう'}
                             </Typography>
 
                             {/* 機能選択ナビゲーション */}
@@ -374,7 +382,7 @@ function App() {
                                         value={currentMode}
                                         exclusive
                                         onChange={handleModeChange}
-                                        aria-label="機能を選択してください (Alt+1: 時給計算, Alt+2: 時給比較, Alt+3: チームコスト, Alt+4: 資格投資, Alt+5: 幸福度換算)"
+                                        aria-label={`機能を選択してください (Alt+1: 時給計算, Alt+2: 時給比較, Alt+3: チームコスト${ENABLE_QUALIFICATION ? ', Alt+4: 資格投資' : ''}${ENABLE_HAPPINESS ? ', Alt+5: 幸福度換算' : ''})`}
                                         size="small"
                                     >
                                         <ToggleButton 
@@ -398,20 +406,24 @@ function App() {
                                             <GroupIcon sx={{ mr: 1 }} aria-hidden="true" />
                                             チームコスト
                                         </ToggleButton>
-                                        <ToggleButton
-                                          value="qualification"
-                                          aria-label="資格投資モード Alt+4で切り替え"
-                                        >
-                                          <SchoolIcon sx={{ mr: 1 }} aria-hidden="true" />
-                                          資格投資
-                                        </ToggleButton>
-                                        <ToggleButton
-                                          value="happiness"
-                                          aria-label="幸福度換算モード Alt+5で切り替え"
-                                        >
-                                          <HappinessIcon sx={{ mr: 1 }} aria-hidden="true" />
-                                          幸福度換算
-                                        </ToggleButton>
+                                        {ENABLE_QUALIFICATION && (
+                                            <ToggleButton
+                                              value="qualification"
+                                              aria-label="資格投資モード Alt+4で切り替え"
+                                            >
+                                              <SchoolIcon sx={{ mr: 1 }} aria-hidden="true" />
+                                              資格投資
+                                            </ToggleButton>
+                                        )}
+                                        {ENABLE_HAPPINESS && (
+                                            <ToggleButton
+                                              value="happiness"
+                                              aria-label="幸福度換算モード Alt+5で切り替え"
+                                            >
+                                              <HappinessIcon sx={{ mr: 1 }} aria-hidden="true" />
+                                              幸福度換算
+                                            </ToggleButton>
+                                        )}
                                     </ToggleButtonGroup>
                                 </Paper>
                                 <Box 
@@ -426,7 +438,7 @@ function App() {
                                 >
                                     Alt+数字キーで切り替え可能
                                     <ScreenReaderOnly>
-                                        キーボードショートカットを使用できます。Alt+1で時給計算、Alt+2で時給比較、Alt+3でチームコスト、Alt+4で資格投資、Alt+5で幸福度換算、Alt+Hで履歴を開けます。
+                                        {`キーボードショートカットを使用できます。Alt+1で時給計算、Alt+2で時給比較、Alt+3でチームコスト${ENABLE_QUALIFICATION ? '、Alt+4で資格投資' : ''}${ENABLE_HAPPINESS ? '、Alt+5で幸福度換算' : ''}、Alt+Hで履歴を開けます。`}
                                     </ScreenReaderOnly>
                                 </Box>
                             </Box>
@@ -620,7 +632,7 @@ function App() {
                         )}
 
                         {/* 資格計算結果表示 */}
-                        {currentMode === 'qualification' && qualificationResult && (
+                        {ENABLE_QUALIFICATION && currentMode === 'qualification' && qualificationResult && (
                           <Box
                             component="section"
                             aria-label="資格投資計算結果"
@@ -677,7 +689,7 @@ function App() {
                         )}
 
                         {/* 幸福度計算結果表示 */}
-                        {currentMode === 'happiness' && happinessResult && (
+                        {ENABLE_HAPPINESS && currentMode === 'happiness' && happinessResult && (
                           <Box
                             component="section"
                             aria-label="幸福度計算結果"
@@ -813,19 +825,19 @@ function App() {
                                 onResultChange={setTeamCostResult}
                                 onErrorsChange={setTeamCostErrors}
                             />
-                        ) : currentMode === 'qualification' ? (
+                        ) : ENABLE_QUALIFICATION && currentMode === 'qualification' ? (
                             // 資格計算モード
                             <QualificationCalculator
                                 currentHourlyWage={calculationResult?.hourlyWage || 0}
                                 onResultChange={setQualificationResult}
                             />
-                        ) : (
+                        ) : ENABLE_HAPPINESS && currentMode === 'happiness' ? (
                             // 幸福度計算モード
                             <HappinessCalculator
                                 baseHourlyWage={calculationResult?.hourlyWage || 0}
                                 onResultChange={setHappinessResult}
                             />
-                        )}
+                        ) : null}
                     </Box>
                 </Container>
 
