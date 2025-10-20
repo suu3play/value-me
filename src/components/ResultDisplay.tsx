@@ -51,6 +51,22 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                 }}>
                     {formatCurrency(result.hourlyWage)}
                 </Typography>
+                {result.baseHourlyWage && (
+                    <Box sx={{ mt: 1 }}>
+                        <Typography variant="caption" sx={{
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            fontSize: '0.75rem'
+                        }}>
+                            基本時給
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                            fontWeight: 'bold',
+                            fontSize: '0.9rem'
+                        }}>
+                            {formatCurrency(result.baseHourlyWage)}
+                        </Typography>
+                    </Box>
+                )}
             </Box>
 
             <Divider
@@ -161,46 +177,6 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                             {formatCurrency(result.actualMonthlyIncome)}
                         </Typography>
                     </Box>
-
-                    {result.baseHourlyWage && result.overtimePay && (
-                        <Box sx={{
-                            minWidth: { xs: 'auto', sm: 120, md: 120 },
-                            flex: { xs: 'none', sm: 1 },
-                            width: { xs: '100%', sm: 'auto' },
-                            textAlign: { xs: 'center', sm: 'left' }
-                        }}>
-                            <Typography variant="caption">基本時給</Typography>
-                            <Typography
-                                variant="body1"
-                                sx={{
-                                    fontWeight: 'bold',
-                                    fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
-                                }}
-                            >
-                                {formatCurrency(result.baseHourlyWage)}
-                            </Typography>
-                        </Box>
-                    )}
-
-                    {result.overtimePay && (
-                        <Box sx={{
-                            minWidth: { xs: 'auto', sm: 120, md: 120 },
-                            flex: { xs: 'none', sm: 1 },
-                            width: { xs: '100%', sm: 'auto' },
-                            textAlign: { xs: 'center', sm: 'left' }
-                        }}>
-                            <Typography variant="caption">月間残業代</Typography>
-                            <Typography
-                                variant="body1"
-                                sx={{
-                                    fontWeight: 'bold',
-                                    fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
-                                }}
-                            >
-                                {formatCurrency(result.overtimePay)}
-                            </Typography>
-                        </Box>
-                    )}
 
                     <Box sx={{
                         minWidth: { xs: 'auto', sm: 120, md: 120 },
