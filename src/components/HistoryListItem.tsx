@@ -59,10 +59,10 @@ export const HistoryListItem: React.FC<HistoryListItemProps> = ({
     onDelete(id);
   };
 
-  const salaryTypeLabel = getSalaryTypeLabel(inputData.salaryType);
+  const salaryTypeLabel = getSalaryTypeLabel(inputData.salaryType || 'monthly');
   const formattedDateTime = formatDateTime(timestamp);
   const formattedHourlyWage = formatCurrency(result.hourlyWage);
-  const formattedSalary = formatCurrency(inputData.salaryAmount);
+  const formattedSalary = formatCurrency(inputData.baseSalary || inputData.salaryAmount || 0);
 
   return (
     <ListItem

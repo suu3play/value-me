@@ -27,6 +27,70 @@ interface BasicInputFormProps {
 const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChange }) => {
     const { holidayTypeCount, loading } = useHolidayCount(data);
 
+    // 固定残業代から残業時間を逆算する関数
+    const calculateOvertimeHoursFromFixedPay = (): number => {
+        if (!data.fixedOvertimePay || data.fixedOvertimePay <= 0) {
+            return 0;
+        }
+
+        const baseSalary = data.baseSalary || data.salaryAmount || 0;
+        if (baseSalary <= 0) {
+            return 0;
+        }
+
+        // 年間休日の計算
+        let totalAnnualHolidays = data.annualHolidays;
+        if (data.goldenWeekHolidays) {
+            let gwDays = 10;
+            if (data.annualHolidays === 120 || data.annualHolidays === 119) gwDays = 6;
+            if (data.annualHolidays === 119) gwDays = 4;
+            totalAnnualHolidays += gwDays;
+        }
+        if (data.obon) totalAnnualHolidays += 5;
+        if (data.yearEndNewYear) {
+            let yearEndDays = 6;
+            if (data.annualHolidays === 120 || data.annualHolidays === 119) yearEndDays = 4;
+            if (data.annualHolidays === 119) yearEndDays = 3;
+            totalAnnualHolidays += yearEndDays;
+        }
+        totalAnnualHolidays += data.customHolidays;
+
+        const workingDays = 365 - totalAnnualHolidays;
+        const monthlyAverageWorkingDays = workingDays / 12;
+
+        // 1日あたりの労働時間を取得
+        let actualDailyWorkingHours = data.dailyWorkingHours;
+        switch (data.workingHoursType) {
+            case 'weekly':
+                actualDailyWorkingHours = data.dailyWorkingHours / 5;
+                break;
+            case 'monthly':
+                actualDailyWorkingHours = data.dailyWorkingHours / 22;
+                break;
+        }
+
+        // 基本時給の計算
+        const monthlyBaseWorkingHours = actualDailyWorkingHours * monthlyAverageWorkingDays;
+        const baseHourlyWage = monthlyBaseWorkingHours > 0 ? baseSalary / monthlyBaseWorkingHours : 0;
+
+        if (baseHourlyWage <= 0) {
+            return 0;
+        }
+
+        // 逆算式: 残業時間 = 固定残業代 / (基本時給 × 1.25)
+        const monthlyOvertimeHours = data.fixedOvertimePay / (baseHourlyWage * 1.25);
+
+        // 労働時間の単位に応じて変換
+        switch (data.workingHoursType) {
+            case 'daily':
+                return monthlyOvertimeHours / monthlyAverageWorkingDays;
+            case 'weekly':
+                return (monthlyOvertimeHours / monthlyAverageWorkingDays) * 5;
+            default: // monthly
+                return monthlyOvertimeHours;
+        }
+    };
+
     const getHolidayShortcuts = (): HolidayShortcut[] => {
         if (data.useDynamicHolidays && holidayTypeCount) {
             return [
@@ -114,12 +178,12 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
         return total;
     };
 
-    const handleSalaryTypeChange = (
+    const handleOvertimeInputTypeChange = (
         _: React.MouseEvent<HTMLElement>,
-        newSalaryType: 'monthly' | 'annual' | null
+        newType: 'hours' | 'fixed' | null
     ) => {
-        if (newSalaryType) {
-            onChange({ ...data, salaryType: newSalaryType });
+        if (newType) {
+            onChange({ ...data, overtimeInputType: newType });
         }
     };
 
@@ -235,16 +299,37 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                     gap: { xs: 2.5, sm: 3 },
                 }}
             >
-                {/* 給与種別選択 */}
+                {/* 基本給入力 */}
                 <Box>
                     <Typography variant="h6" gutterBottom>
-                        給与種別
+                        基本給（月収）
+                    </Typography>
+                    <ValidatedInput
+                        id="base-salary"
+                        label="基本給"
+                        value={data.baseSalary || data.salaryAmount || 0}
+                        onChange={(value) =>
+                            onChange({ ...data, baseSalary: value })
+                        }
+                        validator={validateSalary}
+                        type="integer"
+                        step={1000}
+                        unit="円"
+                        showIncrementButtons
+                        helperText="月額の基本給を入力してください（残業代は含みません）"
+                    />
+                </Box>
+
+                {/* 残業入力方式選択 */}
+                <Box>
+                    <Typography variant="h6" gutterBottom>
+                        残業入力方式
                     </Typography>
                     <ToggleButtonGroup
-                        value={data.salaryType}
+                        value={data.overtimeInputType || 'hours'}
                         exclusive
-                        onChange={handleSalaryTypeChange}
-                        aria-label="salary type"
+                        onChange={handleOvertimeInputTypeChange}
+                        aria-label="overtime input type"
                         fullWidth
                         sx={{
                             '& .MuiToggleButton-root': {
@@ -252,35 +337,13 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                             },
                         }}
                     >
-                        <ToggleButton value="monthly" aria-label="monthly">
-                            月収
+                        <ToggleButton value="hours" aria-label="hours">
+                            残業時間で入力
                         </ToggleButton>
-                        <ToggleButton value="annual" aria-label="annual">
-                            年収
+                        <ToggleButton value="fixed" aria-label="fixed">
+                            固定残業代で入力
                         </ToggleButton>
                     </ToggleButtonGroup>
-                </Box>
-
-                {/* 給与額入力 */}
-                <Box>
-                    <ValidatedInput
-                        id="salary-amount"
-                        label={data.salaryType === 'monthly' ? '月収' : '年収'}
-                        value={data.salaryAmount}
-                        onChange={(value) =>
-                            onChange({ ...data, salaryAmount: value })
-                        }
-                        validator={validateSalary}
-                        type="integer"
-                        step={data.salaryType === 'monthly' ? 1000 : 10000}
-                        unit="円"
-                        showIncrementButtons
-                        helperText={
-                            data.salaryType === 'monthly'
-                                ? '月収を入力してください（0円～1億円）'
-                                : '年収を入力してください（0円～1億円）'
-                        }
-                    />
                 </Box>
 
                 {/* 年間休日 */}
@@ -519,10 +582,10 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                     </Box>
                 </Box>
 
-                {/* 労働時間と残業時間 */}
+                {/* 労働時間入力 */}
                 <Box>
                     <Typography variant="h6" gutterBottom>
-                        労働時間・残業時間
+                        労働時間
                     </Typography>
                     <Box sx={{ mb: 2 }}>
                         <ToggleButtonGroup
@@ -548,95 +611,38 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                             </ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        残業時間を入力すると、残業代が自動計算されて時給に反映されます
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                        <ValidatedInput
-                            id="working-hours"
-                            label={
-                                data.workingHoursType === 'daily'
-                                    ? '1日の労働時間'
-                                    : data.workingHoursType === 'weekly'
-                                    ? '1週の労働時間'
-                                    : '1ヶ月の労働時間'
-                            }
-                            value={getDisplayWorkingHours()}
-                            onChange={(value) =>
-                                onChange({ ...data, dailyWorkingHours: value })
-                            }
-                            validator={(value) => validateWorkingHours(
-                                value,
-                                data.workingHoursType === 'daily' ? 24 :
-                                data.workingHoursType === 'weekly' ? 168 :
-                                744 // monthly
-                            )}
-                            type="float"
-                            step={data.workingHoursType === 'daily' ? 0.5 : 1}
-                            unit="時間"
-                            helperText={
-                                data.workingHoursType === 'daily'
-                                    ? '労働時間を入力してください（0.5～24時間）'
-                                    : data.workingHoursType === 'weekly'
-                                    ? '労働時間を入力してください（0.5～168時間）'
-                                    : '労働時間を入力してください（0.5～744時間）'
-                            }
-                            sx={{ minWidth: 200, flex: 1 }}
-                            fullWidth={false}
-                        />
-                        <ValidatedInput
-                            id="overtime-hours"
-                            label={
-                                data.workingHoursType === 'daily'
-                                    ? '1日の通常残業時間'
-                                    : data.workingHoursType === 'weekly'
-                                    ? '1週の通常残業時間'
-                                    : '1ヶ月の通常残業時間'
-                            }
-                            value={data.overtimeHours || 0}
-                            onChange={(value) => onChange({ ...data, overtimeHours: value })}
-                            validator={(value) => {
-                                const maxHours = data.workingHoursType === 'daily' ? 24 :
-                                                data.workingHoursType === 'weekly' ? 168 : 744;
-                                if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
-                                if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
-                                return { isValid: true };
-                            }}
-                            type="float"
-                            step={data.workingHoursType === 'daily' ? 0.5 : 1}
-                            unit="時間"
-                            showIncrementButtons
-                            helperText="通常残業時間（割増率1.25倍）"
-                            sx={{ minWidth: 200, flex: 1 }}
-                            fullWidth={false}
-                        />
-                        <ValidatedInput
-                            id="night-overtime-hours"
-                            label={
-                                data.workingHoursType === 'daily'
-                                    ? '1日の深夜残業時間'
-                                    : data.workingHoursType === 'weekly'
-                                    ? '1週の深夜残業時間'
-                                    : '1ヶ月の深夜残業時間'
-                            }
-                            value={data.nightOvertimeHours || 0}
-                            onChange={(value) => onChange({ ...data, nightOvertimeHours: value })}
-                            validator={(value) => {
-                                const maxHours = data.workingHoursType === 'daily' ? 24 :
-                                                data.workingHoursType === 'weekly' ? 168 : 744;
-                                if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
-                                if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
-                                return { isValid: true };
-                            }}
-                            type="float"
-                            step={data.workingHoursType === 'daily' ? 0.5 : 1}
-                            unit="時間"
-                            showIncrementButtons
-                            helperText="深夜残業時間（22時〜5時、割増率1.5倍）"
-                            sx={{ minWidth: 200, flex: 1 }}
-                            fullWidth={false}
-                        />
-                    </Box>
+                    <ValidatedInput
+                        id="working-hours"
+                        label={
+                            data.workingHoursType === 'daily'
+                                ? '1日の労働時間'
+                                : data.workingHoursType === 'weekly'
+                                ? '1週の労働時間'
+                                : '1ヶ月の労働時間'
+                        }
+                        value={getDisplayWorkingHours()}
+                        onChange={(value) =>
+                            onChange({ ...data, dailyWorkingHours: value })
+                        }
+                        validator={(value) => validateWorkingHours(
+                            value,
+                            data.workingHoursType === 'daily' ? 24 :
+                            data.workingHoursType === 'weekly' ? 168 :
+                            744 // monthly
+                        )}
+                        type="float"
+                        step={data.workingHoursType === 'daily' ? 0.5 : 1}
+                        unit="時間"
+                        helperText={
+                            data.workingHoursType === 'daily'
+                                ? '労働時間を入力してください（0.5～24時間）'
+                                : data.workingHoursType === 'weekly'
+                                ? '労働時間を入力してください（0.5～168時間）'
+                                : '労働時間を入力してください（0.5～744時間）'
+                        }
+                        fullWidth={false}
+                        sx={{ maxWidth: 300 }}
+                    />
                     <Typography
                         variant="caption"
                         color="textSecondary"
@@ -645,6 +651,114 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                         1日あたり: {getDailyWorkingHours().toFixed(1)}時間
                     </Typography>
                 </Box>
+
+                {/* 残業入力（方式に応じて切り替え） */}
+                {(data.overtimeInputType || 'hours') === 'hours' ? (
+                    <Box>
+                        <Typography variant="h6" gutterBottom>
+                            残業時間
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            残業時間を入力すると、残業代が自動計算されて時給に反映されます
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                            <ValidatedInput
+                                id="overtime-hours"
+                                label={
+                                    data.workingHoursType === 'daily'
+                                        ? '1日の通常残業時間'
+                                        : data.workingHoursType === 'weekly'
+                                        ? '1週の通常残業時間'
+                                        : '1ヶ月の通常残業時間'
+                                }
+                                value={data.overtimeHours || 0}
+                                onChange={(value) => onChange({ ...data, overtimeHours: value })}
+                                validator={(value) => {
+                                    const maxHours = data.workingHoursType === 'daily' ? 24 :
+                                                    data.workingHoursType === 'weekly' ? 168 : 744;
+                                    if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
+                                    if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
+                                    return { isValid: true };
+                                }}
+                                type="float"
+                                step={data.workingHoursType === 'daily' ? 0.5 : 1}
+                                unit="時間"
+                                showIncrementButtons
+                                helperText="通常残業時間（割増率1.25倍）"
+                                sx={{ minWidth: 200, flex: 1 }}
+                                fullWidth={false}
+                            />
+                            <ValidatedInput
+                                id="night-overtime-hours"
+                                label={
+                                    data.workingHoursType === 'daily'
+                                        ? '1日の深夜残業時間'
+                                        : data.workingHoursType === 'weekly'
+                                        ? '1週の深夜残業時間'
+                                        : '1ヶ月の深夜残業時間'
+                                }
+                                value={data.nightOvertimeHours || 0}
+                                onChange={(value) => onChange({ ...data, nightOvertimeHours: value })}
+                                validator={(value) => {
+                                    const maxHours = data.workingHoursType === 'daily' ? 24 :
+                                                    data.workingHoursType === 'weekly' ? 168 : 744;
+                                    if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
+                                    if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
+                                    return { isValid: true };
+                                }}
+                                type="float"
+                                step={data.workingHoursType === 'daily' ? 0.5 : 1}
+                                unit="時間"
+                                showIncrementButtons
+                                helperText="深夜残業時間（22時〜5時、割増率1.5倍）"
+                                sx={{ minWidth: 200, flex: 1 }}
+                                fullWidth={false}
+                            />
+                        </Box>
+                    </Box>
+                ) : (
+                    <Box>
+                        <Typography variant="h6" gutterBottom>
+                            固定残業代
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            固定残業代から残業時間を逆算します
+                        </Typography>
+                        <ValidatedInput
+                            id="fixed-overtime-pay"
+                            label="月額固定残業代"
+                            value={data.fixedOvertimePay || 0}
+                            onChange={(value) => onChange({ ...data, fixedOvertimePay: value })}
+                            validator={(value) => {
+                                if (value < 0) return { isValid: false, message: '0円以上を入力してください' };
+                                if (value > 10000000) return { isValid: false, message: '1000万円以下を入力してください' };
+                                return { isValid: true };
+                            }}
+                            type="integer"
+                            step={1000}
+                            unit="円"
+                            showIncrementButtons
+                            helperText="月額の固定残業代を入力してください"
+                            fullWidth={false}
+                            sx={{ maxWidth: 300 }}
+                        />
+                        {data.fixedOvertimePay && data.fixedOvertimePay > 0 && (
+                            <Box sx={{ mt: 2, p: 2, bgcolor: 'info.light', borderRadius: 1 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                    逆算された残業時間
+                                </Typography>
+                                <Typography variant="h6" color="primary">
+                                    {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                    {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                    {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                    ※ 基本時給から通常残業（1.25倍）として計算
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+                )}
             </Box>
         </Box>
     );

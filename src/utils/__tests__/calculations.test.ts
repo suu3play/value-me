@@ -4,8 +4,10 @@ import type { SalaryCalculationData } from '../../types';
 
 describe('calculateHourlyWage', () => {
   const createBaseData = (): SalaryCalculationData => ({
-    salaryType: 'monthly',
-    salaryAmount: 200000,
+    baseSalary: 200000,
+    overtimeInputType: 'hours',
+    overtimeHours: 0,
+    nightOvertimeHours: 0,
     annualHolidays: 119,
     dailyWorkingHours: 8,
     workingHoursType: 'daily',
@@ -43,8 +45,7 @@ describe('calculateHourlyWage', () => {
 
     test('年収3,000,000円の場合の時給計算', () => {
       const data = createBaseData();
-      data.salaryType = 'annual';
-      data.salaryAmount = 3000000;
+      data.baseSalary = 250000; // 3,000,000 / 12
 
       const result = calculateHourlyWage(data);
 
@@ -55,7 +56,7 @@ describe('calculateHourlyWage', () => {
 
     test('時給計算の精度確認', () => {
       const data = createBaseData();
-      data.salaryAmount = 240000; // 月給24万円
+      data.baseSalary = 240000; // 月給24万円
       data.annualHolidays = 120;
       data.dailyWorkingHours = 8;
 
@@ -75,7 +76,7 @@ describe('calculateHourlyWage', () => {
   describe('境界値テスト', () => {
     test('給与額0円の場合', () => {
       const data = createBaseData();
-      data.salaryAmount = 0;
+      data.baseSalary = 0;
 
       const result = calculateHourlyWage(data);
 
@@ -85,7 +86,7 @@ describe('calculateHourlyWage', () => {
 
     test('負の給与額の場合', () => {
       const data = createBaseData();
-      data.salaryAmount = -100000;
+      data.baseSalary = -100000;
 
       const result = calculateHourlyWage(data);
 
@@ -195,7 +196,7 @@ describe('calculateHourlyWage', () => {
   describe('エラーハンドリング', () => {
     test('NaNの入力値', () => {
       const data = createBaseData();
-      data.salaryAmount = NaN;
+      data.baseSalary = NaN;
       data.annualHolidays = NaN;
       data.dailyWorkingHours = NaN;
 

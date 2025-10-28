@@ -58,8 +58,10 @@ const ComparisonForm: React.FC<ComparisonFormProps> = React.memo(({
 
     const initializeItems = useCallback(() => {
         const defaultData: SalaryCalculationData = {
-            salaryType: 'monthly',
-            salaryAmount: 200000,
+            baseSalary: 200000,
+            overtimeInputType: 'hours',
+            overtimeHours: 0,
+            nightOvertimeHours: 0,
             annualHolidays: 119,
             dailyWorkingHours: 8,
             workingHoursType: 'daily',
@@ -91,7 +93,7 @@ const ComparisonForm: React.FC<ComparisonFormProps> = React.memo(({
         }
         // 比較先が存在しない場合は追加
         if (!targetItem && sourceItem) {
-            onAddItem('比較先', { ...defaultData, salaryAmount: 250000 });
+            onAddItem('比較先', { ...defaultData, baseSalary: 250000 });
         }
     }, [sourceItem, targetItem, onAddItem, sharedHolidaySettings]);
 
@@ -288,8 +290,8 @@ const ComparisonForm: React.FC<ComparisonFormProps> = React.memo(({
                                 holidayYearType:
                                     sharedHolidaySettings.holidayYearType,
                                 // DynamicHolidaySettingsが必要とする他の必須プロパティを追加
-                                salaryType: 'monthly',
-                                salaryAmount: 0,
+                                baseSalary: 0,
+                                overtimeInputType: 'hours',
                                 annualHolidays: 0,
                                 dailyWorkingHours: 0,
                                 workingHoursType: 'daily',

@@ -4,8 +4,10 @@ import type { SalaryCalculationData } from '../../types';
 
 describe('dynamicHolidayCalculations', () => {
   const createBaseData = (): SalaryCalculationData => ({
-    salaryType: 'monthly',
-    salaryAmount: 200000,
+    baseSalary: 200000,
+    overtimeInputType: 'hours',
+    overtimeHours: 0,
+    nightOvertimeHours: 0,
     annualHolidays: 119,
     dailyWorkingHours: 8,
     workingHoursType: 'daily',
@@ -134,7 +136,7 @@ describe('dynamicHolidayCalculations', () => {
 
     test('境界値: 給与額0円', async () => {
       const data = createBaseData();
-      data.salaryAmount = 0;
+      data.baseSalary = 0;
 
       const result = await calculateHourlyWageWithDynamicHolidays(data);
 
@@ -144,7 +146,7 @@ describe('dynamicHolidayCalculations', () => {
 
     test('境界値: 負の値のハンドリング', async () => {
       const data = createBaseData();
-      data.salaryAmount = -100000;
+      data.baseSalary = -100000;
       data.dailyWorkingHours = -1;
       data.customHolidays = -5;
 

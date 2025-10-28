@@ -226,22 +226,24 @@ export const useComparison = (singleCalculationData?: SalaryCalculationData) => 
     if (mode === 'comparison') {
       // 単一計算データがある場合は比較元として使用
       const sourceData = singleCalculationData || {
-        salaryType: 'monthly',
-        salaryAmount: 200000,
+        baseSalary: 200000,
+        overtimeInputType: 'hours' as const,
+        overtimeHours: 0,
+        nightOvertimeHours: 0,
         annualHolidays: 119,
         dailyWorkingHours: 8,
-        workingHoursType: 'daily',
+        workingHoursType: 'daily' as const,
         useDynamicHolidays: true,
         holidayYear: (() => {
           const currentMonth = new Date().getMonth() + 1;
           const currentYear = new Date().getFullYear();
           return currentMonth >= 4 ? currentYear : currentYear - 1;
         })(),
-        holidayYearType: 'fiscal',
+        holidayYearType: 'fiscal' as const,
         enableBenefits: false,
         welfareAmount: 0,
-        welfareType: 'monthly',
-        welfareInputMethod: 'individual',
+        welfareType: 'monthly' as const,
+        welfareInputMethod: 'individual' as const,
         housingAllowance: 0,
         regionalAllowance: 0,
         familyAllowance: 0,
@@ -255,7 +257,7 @@ export const useComparison = (singleCalculationData?: SalaryCalculationData) => 
         obon: false,
         yearEndNewYear: false,
         customHolidays: 0,
-      } as const;
+      };
 
       const sourceItem: ComparisonItem = {
         id: `comparison-source-${Date.now()}`,
@@ -266,7 +268,7 @@ export const useComparison = (singleCalculationData?: SalaryCalculationData) => 
       const targetItem: ComparisonItem = {
         id: `comparison-target-${Date.now()}`,
         label: '比較先',
-        data: { ...sourceData, salaryAmount: sourceData.salaryAmount + 50000 },
+        data: { ...sourceData, baseSalary: (sourceData.baseSalary || 200000) + 50000 },
       };
 
       newState = {
