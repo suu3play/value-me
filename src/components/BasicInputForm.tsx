@@ -564,7 +564,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                             bgcolor:
                                                 data.fixedOvertimePay &&
                                                 data.fixedOvertimePay > 0
-                                                    ? 'info.light'
+                                                    ? 'primary.main'
                                                     : 'grey.100',
                                             borderRadius: 1,
                                             display: 'flex',
@@ -576,7 +576,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                         data.fixedOvertimePay > 0 ? (
                                             <Typography
                                                 variant="h6"
-                                                color="primary"
+                                                sx={{ color: 'white' }}
                                             >
                                                 {data.workingHoursType ===
                                                     'daily' &&
