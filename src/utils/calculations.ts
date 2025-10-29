@@ -22,7 +22,7 @@ export const calculateHourlyWage = (
             : data.dailyWorkingHours;
 
     // 年収の計算（基本給ベース）
-    let annualIncome = baseSalary * 12;
+    const annualIncome = baseSalary * 12;
 
     // 実質年収の計算（オプション機能が有効な場合）
     let actualAnnualIncome = annualIncome;

@@ -20,15 +20,6 @@ interface OptionsFormProps {
 }
 
 const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) => {
-    const handleWelfareTypeChange = (
-        _: React.MouseEvent<HTMLElement>,
-        newWelfareType: 'monthly' | 'annual' | null
-    ) => {
-        if (newWelfareType) {
-            onChange({ ...data, welfareType: newWelfareType });
-        }
-    };
-
     const handleWelfareInputMethodChange = (
         _: React.MouseEvent<HTMLElement>,
         newMethod: 'total' | 'individual' | null
@@ -98,36 +89,6 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                             aria-label="total"
                                         >
                                             全体額を入力
-                                        </ToggleButton>
-                                    </ToggleButtonGroup>
-                                </Box>
-                                <Box>
-                                    <Typography variant="body2" sx={{ mb: 1 }}>
-                                        計算単位
-                                    </Typography>
-                                    <ToggleButtonGroup
-                                        value={data.welfareType}
-                                        exclusive
-                                        onChange={handleWelfareTypeChange}
-                                        aria-label="welfare type"
-                                        size="small"
-                                        sx={{
-                                            '& .MuiToggleButton-root': {
-                                                minHeight: { xs: 44, sm: 40 },
-                                            }
-                                        }}
-                                    >
-                                        <ToggleButton
-                                            value="monthly"
-                                            aria-label="monthly"
-                                        >
-                                            月額
-                                        </ToggleButton>
-                                        <ToggleButton
-                                            value="annual"
-                                            aria-label="annual"
-                                            >
-                                            年額
                                         </ToggleButton>
                                     </ToggleButtonGroup>
                                 </Box>
@@ -218,34 +179,34 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                 >
                                     <ValidatedInput
                                         id="housing-allowance"
-                                        label={`住宅手当（${
-                                            data.welfareType === 'monthly' ? '月額' : '年額'
-                                        }）`}
+                                        label="住宅手当（月額）"
                                         value={data.housingAllowance}
                                         onChange={(value) => onChange({ ...data, housingAllowance: value })}
                                         validator={validateAllowance}
                                         type="integer"
-                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        step={1000}
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
+                                        inlineMultiStepButtons={true}
                                         helperText="住宅手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
                                     />
                                     <ValidatedInput
                                         id="regional-allowance"
-                                        label={`地域手当（${
-                                            data.welfareType === 'monthly' ? '月額' : '年額'
-                                        }）`}
+                                        label="地域手当（月額）"
                                         value={data.regionalAllowance}
                                         onChange={(value) => onChange({ ...data, regionalAllowance: value })}
                                         validator={validateAllowance}
                                         type="integer"
-                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        step={1000}
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
+                                        inlineMultiStepButtons={true}
                                         helperText="地域手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
@@ -260,34 +221,34 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                 >
                                     <ValidatedInput
                                         id="family-allowance"
-                                        label={`家族手当（${
-                                            data.welfareType === 'monthly' ? '月額' : '年額'
-                                        }）`}
+                                        label="家族手当（月額）"
                                         value={data.familyAllowance}
                                         onChange={(value) => onChange({ ...data, familyAllowance: value })}
                                         validator={validateAllowance}
                                         type="integer"
-                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        step={1000}
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
+                                        inlineMultiStepButtons={true}
                                         helperText="家族手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
                                     />
                                     <ValidatedInput
                                         id="qualification-allowance"
-                                        label={`資格手当（${
-                                            data.welfareType === 'monthly' ? '月額' : '年額'
-                                        }）`}
+                                        label="資格手当（月額）"
                                         value={data.qualificationAllowance}
                                         onChange={(value) => onChange({ ...data, qualificationAllowance: value })}
                                         validator={validateAllowance}
                                         type="integer"
-                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        step={1000}
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
+                                        inlineMultiStepButtons={true}
                                         helperText="資格手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
@@ -302,17 +263,17 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                 >
                                     <ValidatedInput
                                         id="other-allowance"
-                                        label={`その他手当（${
-                                            data.welfareType === 'monthly' ? '月額' : '年額'
-                                        }）`}
+                                        label="その他手当（月額）"
                                         value={data.otherAllowance}
                                         onChange={(value) => onChange({ ...data, otherAllowance: value })}
                                         validator={validateAllowance}
                                         type="integer"
-                                        step={data.welfareType === 'monthly' ? 1000 : 10000}
+                                        step={1000}
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
+                                        inlineMultiStepButtons={true}
                                         helperText="その他手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
@@ -353,6 +314,8 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                     step={10000}
                                     unit="円"
                                     showIncrementButtons
+                                    multiStepButtons={[10000, 100000]}
+                                    inlineMultiStepButtons={true}
                                     helperText="夏期賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
                                     fullWidth={false}
@@ -367,6 +330,8 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                     step={10000}
                                     unit="円"
                                     showIncrementButtons
+                                    multiStepButtons={[10000, 100000]}
+                                    inlineMultiStepButtons={true}
                                     helperText="冬期賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
                                     fullWidth={false}
@@ -389,6 +354,8 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                     step={10000}
                                     unit="円"
                                     showIncrementButtons
+                                    multiStepButtons={[10000, 100000]}
+                                    inlineMultiStepButtons={true}
                                     helperText="決算賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
                                     fullWidth={false}
@@ -403,6 +370,8 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                     step={10000}
                                     unit="円"
                                     showIncrementButtons
+                                    multiStepButtons={[10000, 100000]}
+                                    inlineMultiStepButtons={true}
                                     helperText="その他特別賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
                                     fullWidth={false}
