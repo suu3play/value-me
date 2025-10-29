@@ -428,42 +428,59 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                 固定残業代から残業時間を逆算します
                             </Typography>
-                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                                <ValidatedInput
-                                    id="fixed-overtime-pay"
-                                    label="月額固定残業代"
-                                    value={data.fixedOvertimePay || 0}
-                                    onChange={(value) => onChange({ ...data, fixedOvertimePay: value })}
-                                    validator={(value) => {
-                                        if (value < 0) return { isValid: false, message: '0円以上を入力してください' };
-                                        if (value > 10000000) return { isValid: false, message: '1000万円以下を入力してください' };
-                                        return { isValid: true };
-                                    }}
-                                    type="integer"
-                                    step={1000}
-                                    unit="円"
-                                    showIncrementButtons
-                                    helperText="月額の固定残業代を入力してください"
-                                    fullWidth={false}
-                                    sx={{ minWidth: 200, flex: 1 }}
-                                />
-                                {data.fixedOvertimePay && data.fixedOvertimePay > 0 && (
-                                    <Box sx={{ minWidth: 200, flex: 1, p: 2, bgcolor: 'info.light', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Box>
-                                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                                                逆算された残業時間
+                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'stretch' }}>
+                                <Box sx={{ minWidth: 200, flex: 1 }}>
+                                    <ValidatedInput
+                                        id="fixed-overtime-pay"
+                                        label="月額固定残業代"
+                                        value={data.fixedOvertimePay || 0}
+                                        onChange={(value) => onChange({ ...data, fixedOvertimePay: value })}
+                                        validator={(value) => {
+                                            if (value < 0) return { isValid: false, message: '0円以上を入力してください' };
+                                            if (value > 10000000) return { isValid: false, message: '1000万円以下を入力してください' };
+                                            return { isValid: true };
+                                        }}
+                                        type="integer"
+                                        step={1000}
+                                        unit="円"
+                                        showIncrementButtons
+                                        helperText="月額の固定残業代を入力してください"
+                                        fullWidth
+                                    />
+                                </Box>
+                                <Box sx={{
+                                    minWidth: 200,
+                                    flex: 1,
+                                    p: 2,
+                                    bgcolor: data.fixedOvertimePay && data.fixedOvertimePay > 0 ? 'info.light' : 'grey.100',
+                                    borderRadius: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    minHeight: '100%'
+                                }}>
+                                    <Box sx={{ textAlign: 'center' }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                            逆算された残業時間
+                                        </Typography>
+                                        {data.fixedOvertimePay && data.fixedOvertimePay > 0 ? (
+                                            <>
+                                                <Typography variant="h6" color="primary">
+                                                    {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                                    {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                                    {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                                    ※ 基本時給から通常残業（1.25倍）として計算
+                                                </Typography>
+                                            </>
+                                        ) : (
+                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                                固定残業代を入力すると<br />残業時間が表示されます
                                             </Typography>
-                                            <Typography variant="h6" color="primary">
-                                                {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                                {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                                {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                                ※ 基本時給から通常残業（1.25倍）として計算
-                                            </Typography>
-                                        </Box>
+                                        )}
                                     </Box>
-                                )}
+                                </Box>
                             </Box>
                         </>
                     )}
