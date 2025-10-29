@@ -183,7 +183,23 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
         newType: 'hours' | 'fixed' | null
     ) => {
         if (newType) {
-            onChange({ ...data, overtimeInputType: newType });
+            // 入力方式切り替え時に前の値をクリア
+            if (newType === 'hours') {
+                // 時間入力モードに切り替え: 固定残業代をクリア
+                onChange({
+                    ...data,
+                    overtimeInputType: newType,
+                    fixedOvertimePay: undefined
+                });
+            } else {
+                // 固定残業代モードに切り替え: 残業時間をクリア
+                onChange({
+                    ...data,
+                    overtimeInputType: newType,
+                    overtimeHours: 0,
+                    nightOvertimeHours: 0
+                });
+            }
         }
     };
 
@@ -412,39 +428,43 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                 固定残業代から残業時間を逆算します
                             </Typography>
-                            <ValidatedInput
-                                id="fixed-overtime-pay"
-                                label="月額固定残業代"
-                                value={data.fixedOvertimePay || 0}
-                                onChange={(value) => onChange({ ...data, fixedOvertimePay: value })}
-                                validator={(value) => {
-                                    if (value < 0) return { isValid: false, message: '0円以上を入力してください' };
-                                    if (value > 10000000) return { isValid: false, message: '1000万円以下を入力してください' };
-                                    return { isValid: true };
-                                }}
-                                type="integer"
-                                step={1000}
-                                unit="円"
-                                showIncrementButtons
-                                helperText="月額の固定残業代を入力してください"
-                                fullWidth={false}
-                                sx={{ maxWidth: 300 }}
-                            />
-                            {data.fixedOvertimePay && data.fixedOvertimePay > 0 && (
-                                <Box sx={{ mt: 2, p: 2, bgcolor: 'info.light', borderRadius: 1 }}>
-                                    <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                                        逆算された残業時間
-                                    </Typography>
-                                    <Typography variant="h6" color="primary">
-                                        {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                        {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                        {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                        ※ 基本時給から通常残業（1.25倍）として計算
-                                    </Typography>
-                                </Box>
-                            )}
+                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                <ValidatedInput
+                                    id="fixed-overtime-pay"
+                                    label="月額固定残業代"
+                                    value={data.fixedOvertimePay || 0}
+                                    onChange={(value) => onChange({ ...data, fixedOvertimePay: value })}
+                                    validator={(value) => {
+                                        if (value < 0) return { isValid: false, message: '0円以上を入力してください' };
+                                        if (value > 10000000) return { isValid: false, message: '1000万円以下を入力してください' };
+                                        return { isValid: true };
+                                    }}
+                                    type="integer"
+                                    step={1000}
+                                    unit="円"
+                                    showIncrementButtons
+                                    helperText="月額の固定残業代を入力してください"
+                                    fullWidth={false}
+                                    sx={{ minWidth: 200, flex: 1 }}
+                                />
+                                {data.fixedOvertimePay && data.fixedOvertimePay > 0 && (
+                                    <Box sx={{ minWidth: 200, flex: 1, p: 2, bgcolor: 'info.light', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Box>
+                                            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                                逆算された残業時間
+                                            </Typography>
+                                            <Typography variant="h6" color="primary">
+                                                {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                                {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                                {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                                ※ 基本時給から通常残業（1.25倍）として計算
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                )}
+                            </Box>
                         </>
                     )}
                 </Box>
