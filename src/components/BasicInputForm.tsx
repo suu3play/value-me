@@ -320,7 +320,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                     />
                 </Box>
 
-                {/* 残業入力方式選択 */}
+                {/* 残業入力方式選択と残業入力欄 */}
                 <Box>
                     <Typography variant="h6" gutterBottom>
                         残業入力方式
@@ -332,6 +332,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                         aria-label="overtime input type"
                         fullWidth
                         sx={{
+                            mb: 2,
                             '& .MuiToggleButton-root': {
                                 minHeight: { xs: 48, sm: 44 },
                             },
@@ -344,93 +345,202 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                             固定残業代で入力
                         </ToggleButton>
                     </ToggleButtonGroup>
+
+                    {/* 残業入力（方式に応じて切り替え） */}
+                    {(data.overtimeInputType || 'hours') === 'hours' ? (
+                        <>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                残業時間を入力すると、残業代が自動計算されて時給に反映されます
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                <ValidatedInput
+                                    id="overtime-hours"
+                                    label={
+                                        data.workingHoursType === 'daily'
+                                            ? '1日の通常残業時間'
+                                            : data.workingHoursType === 'weekly'
+                                            ? '1週の通常残業時間'
+                                            : '1ヶ月の通常残業時間'
+                                    }
+                                    value={data.overtimeHours || 0}
+                                    onChange={(value) => onChange({ ...data, overtimeHours: value })}
+                                    validator={(value) => {
+                                        const maxHours = data.workingHoursType === 'daily' ? 24 :
+                                                        data.workingHoursType === 'weekly' ? 168 : 744;
+                                        if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
+                                        if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
+                                        return { isValid: true };
+                                    }}
+                                    type="float"
+                                    step={data.workingHoursType === 'daily' ? 0.5 : 1}
+                                    unit="時間"
+                                    showIncrementButtons
+                                    helperText="通常残業時間（割増率1.25倍）"
+                                    sx={{ minWidth: 200, flex: 1 }}
+                                    fullWidth={false}
+                                />
+                                <ValidatedInput
+                                    id="night-overtime-hours"
+                                    label={
+                                        data.workingHoursType === 'daily'
+                                            ? '1日の深夜残業時間'
+                                            : data.workingHoursType === 'weekly'
+                                            ? '1週の深夜残業時間'
+                                            : '1ヶ月の深夜残業時間'
+                                    }
+                                    value={data.nightOvertimeHours || 0}
+                                    onChange={(value) => onChange({ ...data, nightOvertimeHours: value })}
+                                    validator={(value) => {
+                                        const maxHours = data.workingHoursType === 'daily' ? 24 :
+                                                        data.workingHoursType === 'weekly' ? 168 : 744;
+                                        if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
+                                        if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
+                                        return { isValid: true };
+                                    }}
+                                    type="float"
+                                    step={data.workingHoursType === 'daily' ? 0.5 : 1}
+                                    unit="時間"
+                                    showIncrementButtons
+                                    helperText="深夜残業時間（22時〜5時、割増率1.5倍）"
+                                    sx={{ minWidth: 200, flex: 1 }}
+                                    fullWidth={false}
+                                />
+                            </Box>
+                        </>
+                    ) : (
+                        <>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                固定残業代から残業時間を逆算します
+                            </Typography>
+                            <ValidatedInput
+                                id="fixed-overtime-pay"
+                                label="月額固定残業代"
+                                value={data.fixedOvertimePay || 0}
+                                onChange={(value) => onChange({ ...data, fixedOvertimePay: value })}
+                                validator={(value) => {
+                                    if (value < 0) return { isValid: false, message: '0円以上を入力してください' };
+                                    if (value > 10000000) return { isValid: false, message: '1000万円以下を入力してください' };
+                                    return { isValid: true };
+                                }}
+                                type="integer"
+                                step={1000}
+                                unit="円"
+                                showIncrementButtons
+                                helperText="月額の固定残業代を入力してください"
+                                fullWidth={false}
+                                sx={{ maxWidth: 300 }}
+                            />
+                            {data.fixedOvertimePay && data.fixedOvertimePay > 0 && (
+                                <Box sx={{ mt: 2, p: 2, bgcolor: 'info.light', borderRadius: 1 }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                        逆算された残業時間
+                                    </Typography>
+                                    <Typography variant="h6" color="primary">
+                                        {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                        {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                        {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                        ※ 基本時給から通常残業（1.25倍）として計算
+                                    </Typography>
+                                </Box>
+                            )}
+                        </>
+                    )}
                 </Box>
 
-                {/* 年間休日 */}
+                {/* 年間休日と総休日数 */}
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                         <Typography variant="h6">年間休日</Typography>
                         <YearSelector data={data} onChange={onChange} />
                     </Box>
-                    <ValidatedInput
-                        id="annual-holidays"
-                        label="年間休日"
-                        value={data.annualHolidays}
-                        onChange={(value) =>
-                            onChange({ ...data, annualHolidays: value })
-                        }
-                        validator={validateHolidays}
-                        type="integer"
-                        unit="日"
-                        helperText="年間休日数を入力してください（0～366日）"
-                        sx={{ mb: 2 }}
-                    />
 
-                    <Box
-                        sx={{
-                            mb: 2,
-                            p: 2,
-                            bgcolor: 'primary.main',
-                            borderRadius: 1,
-                            color: 'white',
-                        }}
-                    >
-                        <Typography
-                            variant="body1"
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+                        <ValidatedInput
+                            id="annual-holidays"
+                            label="年間休日"
+                            value={data.annualHolidays}
+                            onChange={(value) =>
+                                onChange({ ...data, annualHolidays: value })
+                            }
+                            validator={validateHolidays}
+                            type="integer"
+                            unit="日"
+                            helperText="年間休日数を入力してください（0～366日）"
+                            sx={{ minWidth: 200, flex: 1 }}
+                            fullWidth={false}
+                        />
+
+                        <Box
                             sx={{
-                                fontWeight: 'bold',
-                                textAlign: 'center',
-                                mb: 1,
+                                minWidth: 200,
+                                flex: 1,
+                                p: 2,
+                                bgcolor: 'primary.main',
+                                borderRadius: 1,
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                             }}
                         >
-                            総休日数: {calculateTotalHolidays()}日
                             <Typography
-                                component="span"
-                                variant="body2"
-                                sx={{ opacity: 0.7, ml: 1 }}
+                                variant="body1"
+                                sx={{
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                }}
                             >
-                                (基本{data.annualHolidays}日
-                                {data.goldenWeekHolidays && (
-                                    <>
-                                        + GW
-                                        {(() => {
-                                            let gwDays = 10;
-                                            if (
-                                                data.annualHolidays === 120 ||
-                                                data.annualHolidays === 119
-                                            )
-                                                gwDays = 6;
-                                            if (data.annualHolidays === 119)
-                                                gwDays = 4;
-                                            return gwDays;
-                                        })()}
-                                        日
-                                    </>
-                                )}
-                                {data.obon && <> + お盆5日</>}
-                                {data.yearEndNewYear && (
-                                    <>
-                                        + 年末年始
-                                        {(() => {
-                                            let yearEndDays = 6;
-                                            if (
-                                                data.annualHolidays === 120 ||
-                                                data.annualHolidays === 119
-                                            )
-                                                yearEndDays = 4;
-                                            if (data.annualHolidays === 119)
-                                                yearEndDays = 3;
-                                            return yearEndDays;
-                                        })()}
-                                        日
-                                    </>
-                                )}
-                                {data.customHolidays > 0 && (
-                                    <> + その他{data.customHolidays}日</>
-                                )}
-                                )
+                                総休日数: {calculateTotalHolidays()}日
+                                <Typography
+                                    component="span"
+                                    variant="body2"
+                                    sx={{ opacity: 0.7, ml: 1, display: 'block', mt: 0.5 }}
+                                >
+                                    (基本{data.annualHolidays}日
+                                    {data.goldenWeekHolidays && (
+                                        <>
+                                            + GW
+                                            {(() => {
+                                                let gwDays = 10;
+                                                if (
+                                                    data.annualHolidays === 120 ||
+                                                    data.annualHolidays === 119
+                                                )
+                                                    gwDays = 6;
+                                                if (data.annualHolidays === 119)
+                                                    gwDays = 4;
+                                                return gwDays;
+                                            })()}
+                                            日
+                                        </>
+                                    )}
+                                    {data.obon && <> + お盆5日</>}
+                                    {data.yearEndNewYear && (
+                                        <>
+                                            + 年末年始
+                                            {(() => {
+                                                let yearEndDays = 6;
+                                                if (
+                                                    data.annualHolidays === 120 ||
+                                                    data.annualHolidays === 119
+                                                )
+                                                    yearEndDays = 4;
+                                                if (data.annualHolidays === 119)
+                                                    yearEndDays = 3;
+                                                return yearEndDays;
+                                            })()}
+                                            日
+                                        </>
+                                    )}
+                                    {data.customHolidays > 0 && (
+                                        <> + その他{data.customHolidays}日</>
+                                    )}
+                                    )
+                                </Typography>
                             </Typography>
-                        </Typography>
+                        </Box>
                     </Box>
 
                     {/* ショートカットボタン */}
@@ -651,114 +761,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                         1日あたり: {getDailyWorkingHours().toFixed(1)}時間
                     </Typography>
                 </Box>
-
-                {/* 残業入力（方式に応じて切り替え） */}
-                {(data.overtimeInputType || 'hours') === 'hours' ? (
-                    <Box>
-                        <Typography variant="h6" gutterBottom>
-                            残業時間
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            残業時間を入力すると、残業代が自動計算されて時給に反映されます
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                            <ValidatedInput
-                                id="overtime-hours"
-                                label={
-                                    data.workingHoursType === 'daily'
-                                        ? '1日の通常残業時間'
-                                        : data.workingHoursType === 'weekly'
-                                        ? '1週の通常残業時間'
-                                        : '1ヶ月の通常残業時間'
-                                }
-                                value={data.overtimeHours || 0}
-                                onChange={(value) => onChange({ ...data, overtimeHours: value })}
-                                validator={(value) => {
-                                    const maxHours = data.workingHoursType === 'daily' ? 24 :
-                                                    data.workingHoursType === 'weekly' ? 168 : 744;
-                                    if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
-                                    if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
-                                    return { isValid: true };
-                                }}
-                                type="float"
-                                step={data.workingHoursType === 'daily' ? 0.5 : 1}
-                                unit="時間"
-                                showIncrementButtons
-                                helperText="通常残業時間（割増率1.25倍）"
-                                sx={{ minWidth: 200, flex: 1 }}
-                                fullWidth={false}
-                            />
-                            <ValidatedInput
-                                id="night-overtime-hours"
-                                label={
-                                    data.workingHoursType === 'daily'
-                                        ? '1日の深夜残業時間'
-                                        : data.workingHoursType === 'weekly'
-                                        ? '1週の深夜残業時間'
-                                        : '1ヶ月の深夜残業時間'
-                                }
-                                value={data.nightOvertimeHours || 0}
-                                onChange={(value) => onChange({ ...data, nightOvertimeHours: value })}
-                                validator={(value) => {
-                                    const maxHours = data.workingHoursType === 'daily' ? 24 :
-                                                    data.workingHoursType === 'weekly' ? 168 : 744;
-                                    if (value < 0) return { isValid: false, message: '0時間以上を入力してください' };
-                                    if (value > maxHours) return { isValid: false, message: `${maxHours}時間以下を入力してください` };
-                                    return { isValid: true };
-                                }}
-                                type="float"
-                                step={data.workingHoursType === 'daily' ? 0.5 : 1}
-                                unit="時間"
-                                showIncrementButtons
-                                helperText="深夜残業時間（22時〜5時、割増率1.5倍）"
-                                sx={{ minWidth: 200, flex: 1 }}
-                                fullWidth={false}
-                            />
-                        </Box>
-                    </Box>
-                ) : (
-                    <Box>
-                        <Typography variant="h6" gutterBottom>
-                            固定残業代
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            固定残業代から残業時間を逆算します
-                        </Typography>
-                        <ValidatedInput
-                            id="fixed-overtime-pay"
-                            label="月額固定残業代"
-                            value={data.fixedOvertimePay || 0}
-                            onChange={(value) => onChange({ ...data, fixedOvertimePay: value })}
-                            validator={(value) => {
-                                if (value < 0) return { isValid: false, message: '0円以上を入力してください' };
-                                if (value > 10000000) return { isValid: false, message: '1000万円以下を入力してください' };
-                                return { isValid: true };
-                            }}
-                            type="integer"
-                            step={1000}
-                            unit="円"
-                            showIncrementButtons
-                            helperText="月額の固定残業代を入力してください"
-                            fullWidth={false}
-                            sx={{ maxWidth: 300 }}
-                        />
-                        {data.fixedOvertimePay && data.fixedOvertimePay > 0 && (
-                            <Box sx={{ mt: 2, p: 2, bgcolor: 'info.light', borderRadius: 1 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                                    逆算された残業時間
-                                </Typography>
-                                <Typography variant="h6" color="primary">
-                                    {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                    {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                    {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                    ※ 基本時給から通常残業（1.25倍）として計算
-                                </Typography>
-                            </Box>
-                        )}
-                    </Box>
-                )}
             </Box>
         </Box>
     );
