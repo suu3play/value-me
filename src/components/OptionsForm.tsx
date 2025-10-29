@@ -188,7 +188,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
-                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 10000, 100000] : undefined}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
                                         helperText="住宅手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
@@ -204,7 +204,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
-                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 10000, 100000] : undefined}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
                                         helperText="地域手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
@@ -228,7 +228,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
-                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 10000, 100000] : undefined}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
                                         helperText="家族手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
@@ -244,7 +244,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
-                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 10000, 100000] : undefined}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
                                         helperText="資格手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
@@ -268,7 +268,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                         unit="円"
                                         disabled={data.welfareInputMethod === 'total'}
                                         showIncrementButtons={data.welfareInputMethod !== 'total'}
-                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 10000, 100000] : undefined}
+                                        multiStepButtons={data.welfareInputMethod !== 'total' ? [1000, 100000] : undefined}
                                         helperText="その他手当を入力してください（0円～1,000万円）"
                                         sx={{ minWidth: 200, flex: 1 }}
                                         fullWidth={false}
@@ -309,7 +309,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                     step={10000}
                                     unit="円"
                                     showIncrementButtons
-                                    multiStepButtons={[1000, 10000, 100000]}
+                                    multiStepButtons={[10000, 100000]}
                                     helperText="夏期賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
                                     fullWidth={false}
@@ -324,7 +324,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                     step={10000}
                                     unit="円"
                                     showIncrementButtons
-                                    multiStepButtons={[1000, 10000, 100000]}
+                                    multiStepButtons={[10000, 100000]}
                                     helperText="冬期賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
                                     fullWidth={false}
@@ -347,7 +347,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                     step={10000}
                                     unit="円"
                                     showIncrementButtons
-                                    multiStepButtons={[1000, 10000, 100000]}
+                                    multiStepButtons={[10000, 100000]}
                                     helperText="決算賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
                                     fullWidth={false}
@@ -362,7 +362,7 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(({ data, onChange }) 
                                     step={10000}
                                     unit="円"
                                     showIncrementButtons
-                                    multiStepButtons={[1000, 10000, 100000]}
+                                    multiStepButtons={[10000, 100000]}
                                     helperText="その他特別賞与を入力してください（0円～1,000万円）"
                                     sx={{ minWidth: 200, flex: 1 }}
                                     fullWidth={false}

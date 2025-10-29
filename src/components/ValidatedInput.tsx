@@ -26,6 +26,7 @@ interface ValidatedInputProps {
   sx?: object;
   showIncrementButtons?: boolean;
   multiStepButtons?: number[]; // 複数のステップボタン（例: [1000, 10000, 100000]）
+  inlineMultiStepButtons?: boolean; // multiStepButtonsを入力欄内に表示
   helperText?: string;
 }
 
@@ -43,6 +44,7 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
   sx = {},
   showIncrementButtons = false,
   multiStepButtons,
+  inlineMultiStepButtons = false,
   helperText,
 }) => {
   const [validationResult, setValidationResult] = useState<ValidationResult>({
@@ -157,7 +159,49 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
           disabled={disabled}
           endAdornment={
             <InputAdornment position="end">
-              {showIncrementButtons && !disabled && (
+              {inlineMultiStepButtons && multiStepButtons && !disabled && (
+                <Box sx={{ display: 'flex', gap: 0.5, mr: unit ? 1 : 0 }}>
+                  {multiStepButtons.map((stepValue) => (
+                    <Box key={stepValue} sx={{ display: 'flex', gap: 0.3 }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleMultiStepDecrement(stepValue)}
+                        sx={{
+                          p: 0.3,
+                          minWidth: 'auto',
+                          fontSize: '0.7rem',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 0.5
+                        }}
+                      >
+                        <KeyboardArrowDown sx={{ fontSize: '0.9rem' }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.65rem', ml: 0.2 }}>
+                          {stepValue >= 1000 ? `${stepValue / 1000}k` : stepValue}
+                        </Typography>
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleMultiStepIncrement(stepValue)}
+                        sx={{
+                          p: 0.3,
+                          minWidth: 'auto',
+                          fontSize: '0.7rem',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 0.5
+                        }}
+                      >
+                        <KeyboardArrowUp sx={{ fontSize: '0.9rem' }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.65rem', ml: 0.2 }}>
+                          {stepValue >= 1000 ? `${stepValue / 1000}k` : stepValue}
+                        </Typography>
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+              {showIncrementButtons && !disabled && !inlineMultiStepButtons && (
                 <Box
                   sx={{
                     display: 'flex',
@@ -199,7 +243,7 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
           </FormHelperText>
         )}
       </FormControl>
-      {multiStepButtons && !disabled && (
+      {multiStepButtons && !disabled && !inlineMultiStepButtons && (
         <Box sx={{ display: 'flex', gap: 0.5, mt: 1, flexWrap: 'wrap' }}>
           {multiStepButtons.map((stepValue) => (
             <Box key={stepValue} sx={{ display: 'flex', gap: 0.5 }}>
