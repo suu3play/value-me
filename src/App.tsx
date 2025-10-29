@@ -41,8 +41,10 @@ const ENABLE_QUALIFICATION = false;  // 資格投資機能
 const ENABLE_HAPPINESS = false;      // 幸福度換算機能
 
 const initialData: SalaryCalculationData = {
-    salaryType: 'monthly',
-    salaryAmount: 200000,
+    baseSalary: 200000,
+    overtimeInputType: 'hours',
+    overtimeHours: 0,
+    nightOvertimeHours: 0,
     annualHolidays: 119,
     dailyWorkingHours: 8,
     workingHoursType: 'daily',
@@ -70,8 +72,6 @@ const initialData: SalaryCalculationData = {
     obon: false,
     yearEndNewYear: false,
     customHolidays: 0,
-    overtimeHours: 0,
-    nightOvertimeHours: 0,
 };
 
 function App() {

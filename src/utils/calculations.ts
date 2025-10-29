@@ -4,10 +4,14 @@ export const calculateHourlyWage = (
     data: SalaryCalculationData
 ): CalculationResult => {
     // 入力値のvalidation
-    const salaryAmount =
-        isNaN(data.salaryAmount) || data.salaryAmount < 0
-            ? 0
-            : data.salaryAmount;
+    // 基本給（baseSalaryを優先、なければ後方互換のためsalaryAmountを使用）
+    const baseSalary =
+        data.baseSalary !== undefined && !isNaN(data.baseSalary) && data.baseSalary >= 0
+            ? data.baseSalary
+            : data.salaryAmount !== undefined && !isNaN(data.salaryAmount) && data.salaryAmount >= 0
+            ? (data.salaryType === 'monthly' ? data.salaryAmount : data.salaryAmount / 12)
+            : 0;
+
     const annualHolidays =
         isNaN(data.annualHolidays) || data.annualHolidays < 0
             ? 0
@@ -17,11 +21,8 @@ export const calculateHourlyWage = (
             ? 0
             : data.dailyWorkingHours;
 
-    // 年収の計算
-    let annualIncome = salaryAmount;
-    if (data.salaryType === 'monthly') {
-        annualIncome = salaryAmount * 12;
-    }
+    // 年収の計算（基本給ベース）
+    let annualIncome = baseSalary * 12;
 
     // 実質年収の計算（オプション機能が有効な場合）
     let actualAnnualIncome = annualIncome;
@@ -156,40 +157,56 @@ export const calculateHourlyWage = (
     // 月平均労働日数の計算（年間労働日数から算出）
     const monthlyAverageWorkingDays = workingDays / 12;
 
-    // 残業時間を年間に変換
+    // 基本時給の計算（残業代を除く月給ベース）
+    const monthlyBaseWorkingHours = actualDailyWorkingHours * monthlyAverageWorkingDays;
+    const baseHourlyWage = monthlyBaseWorkingHours > 0 ? baseSalary / monthlyBaseWorkingHours : 0;
+
+    // 残業入力方式によって処理を分岐
     let annualOvertimeHours = 0;
     let annualNightOvertimeHours = 0;
+    let annualOvertimePay = 0;
 
-    switch (data.workingHoursType) {
-        case 'daily':
-            // 日単位：年間労働日数を掛ける
-            annualOvertimeHours = (data.overtimeHours || 0) * workingDays;
-            annualNightOvertimeHours = (data.nightOvertimeHours || 0) * workingDays;
-            break;
-        case 'weekly':
-            // 週単位：年間週数（約52.14週）を掛ける
-            annualOvertimeHours = (data.overtimeHours || 0) * 52.14;
-            annualNightOvertimeHours = (data.nightOvertimeHours || 0) * 52.14;
-            break;
-        default: // monthly
-            // 月単位：12ヶ月を掛ける
-            annualOvertimeHours = (data.overtimeHours || 0) * 12;
-            annualNightOvertimeHours = (data.nightOvertimeHours || 0) * 12;
+    if ((data.overtimeInputType || 'hours') === 'hours') {
+        // 残業時間入力モード：残業時間から残業代を計算
+        switch (data.workingHoursType) {
+            case 'daily':
+                // 日単位：年間労働日数を掛ける
+                annualOvertimeHours = (data.overtimeHours || 0) * workingDays;
+                annualNightOvertimeHours = (data.nightOvertimeHours || 0) * workingDays;
+                break;
+            case 'weekly':
+                // 週単位：年間週数（約52.14週）を掛ける
+                annualOvertimeHours = (data.overtimeHours || 0) * 52.14;
+                annualNightOvertimeHours = (data.nightOvertimeHours || 0) * 52.14;
+                break;
+            default: // monthly
+                // 月単位：12ヶ月を掛ける
+                annualOvertimeHours = (data.overtimeHours || 0) * 12;
+                annualNightOvertimeHours = (data.nightOvertimeHours || 0) * 12;
+        }
+
+        // 残業代の計算（割増率適用）
+        const normalOvertimePay = baseHourlyWage * 1.25 * annualOvertimeHours;  // 通常残業：1.25倍
+        const nightOvertimePay = baseHourlyWage * 1.5 * annualNightOvertimeHours;  // 深夜残業：1.5倍
+        annualOvertimePay = normalOvertimePay + nightOvertimePay;
+    } else {
+        // 固定残業代入力モード：固定残業代から残業時間を逆算
+        const monthlyFixedOvertimePay = data.fixedOvertimePay || 0;
+        annualOvertimePay = monthlyFixedOvertimePay * 12;
+
+        // 固定残業代から残業時間を逆算（通常残業のみと仮定）
+        // 逆算式: 残業時間 = 固定残業代 / (基本時給 × 1.25)
+        if (baseHourlyWage > 0) {
+            const monthlyOvertimeHours = monthlyFixedOvertimePay / (baseHourlyWage * 1.25);
+            annualOvertimeHours = monthlyOvertimeHours * 12;
+            // 固定残業代モードでは深夜残業は0とする
+            annualNightOvertimeHours = 0;
+        }
     }
 
     // 残業時間の合計
     const totalAnnualOvertimeHours = (isNaN(annualOvertimeHours) || annualOvertimeHours < 0 ? 0 : annualOvertimeHours) +
                                      (isNaN(annualNightOvertimeHours) || annualNightOvertimeHours < 0 ? 0 : annualNightOvertimeHours);
-
-    // 基本時給の計算（残業代を除く月給ベース）
-    const monthlyBaseSalary = data.salaryType === 'monthly' ? salaryAmount : salaryAmount / 12;
-    const monthlyBaseWorkingHours = actualDailyWorkingHours * monthlyAverageWorkingDays;
-    const baseHourlyWage = monthlyBaseWorkingHours > 0 ? monthlyBaseSalary / monthlyBaseWorkingHours : 0;
-
-    // 残業代の計算（割増率適用）
-    const normalOvertimePay = baseHourlyWage * 1.25 * annualOvertimeHours;  // 通常残業：1.25倍
-    const nightOvertimePay = baseHourlyWage * 1.5 * annualNightOvertimeHours;  // 深夜残業：1.5倍
-    const annualOvertimePay = normalOvertimePay + nightOvertimePay;
 
     // 残業代を年収に加算
     actualAnnualIncome += annualOvertimePay;

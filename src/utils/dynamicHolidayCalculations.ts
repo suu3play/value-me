@@ -7,17 +7,20 @@ export interface DynamicHolidayOptions {
 }
 
 export const calculateHourlyWageWithDynamicHolidays = async (
-  data: SalaryCalculationData, 
+  data: SalaryCalculationData,
   options: DynamicHolidayOptions = {}
 ): Promise<CalculationResult> => {
-  const salaryAmount = isNaN(data.salaryAmount) || data.salaryAmount < 0 ? 0 : data.salaryAmount;
-  const dailyWorkingHours = isNaN(data.dailyWorkingHours) || data.dailyWorkingHours < 0 ? 0 : data.dailyWorkingHours;
-  
-  let annualIncome = salaryAmount;
-  if (data.salaryType === 'monthly') {
-    annualIncome = salaryAmount * 12;
-  }
+  // 基本給（baseSalaryを優先、なければ後方互換のためsalaryAmountを使用）
+  const baseSalary =
+    data.baseSalary !== undefined && !isNaN(data.baseSalary) && data.baseSalary >= 0
+      ? data.baseSalary
+      : data.salaryAmount !== undefined && !isNaN(data.salaryAmount) && data.salaryAmount >= 0
+      ? (data.salaryType === 'monthly' ? data.salaryAmount : data.salaryAmount / 12)
+      : 0;
 
+  const dailyWorkingHours = isNaN(data.dailyWorkingHours) || data.dailyWorkingHours < 0 ? 0 : data.dailyWorkingHours;
+
+  let annualIncome = baseSalary * 12;
   let actualAnnualIncome = annualIncome;
   
   if (data.welfareInputMethod === 'total') {
@@ -118,9 +121,8 @@ export const calculateHourlyWageWithDynamicHolidays = async (
                                    (isNaN(annualNightOvertimeHours) || annualNightOvertimeHours < 0 ? 0 : annualNightOvertimeHours);
 
   // 基本時給の計算（残業代を除く月給ベース）
-  const monthlyBaseSalary = data.salaryType === 'monthly' ? salaryAmount : salaryAmount / 12;
   const monthlyBaseWorkingHours = actualDailyWorkingHours * monthlyAverageWorkingDays;
-  const baseHourlyWage = monthlyBaseWorkingHours > 0 ? monthlyBaseSalary / monthlyBaseWorkingHours : 0;
+  const baseHourlyWage = monthlyBaseWorkingHours > 0 ? baseSalary / monthlyBaseWorkingHours : 0;
 
   // 残業代の計算（割増率適用）
   const normalOvertimePay = baseHourlyWage * 1.25 * annualOvertimeHours;  // 通常残業：1.25倍

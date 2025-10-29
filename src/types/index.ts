@@ -1,43 +1,52 @@
 export interface SalaryCalculationData {
-  salaryType: 'monthly' | 'annual';
-  salaryAmount: number;
+  // 給与入力（月収のみ）
+  baseSalary: number;                    // 基本給（月額）
+  overtimeInputType: 'hours' | 'fixed';  // 残業入力方式
+
+  // 残業時間入力モード
+  overtimeHours?: number;                // 通常残業時間（月間）
+  nightOvertimeHours?: number;           // 深夜残業時間（月間、22時〜5時）
+
+  // 固定残業代入力モード
+  fixedOvertimePay?: number;             // 固定残業代（月額）
+
+  // 従来の互換性のため残す（非推奨）
+  salaryType?: 'monthly' | 'annual';     // 非推奨: 月収のみに統一
+  salaryAmount?: number;                 // 非推奨: baseSalaryを使用
+
   annualHolidays: number;
   dailyWorkingHours: number;
   workingHoursType: 'daily' | 'weekly' | 'monthly';
-  
+
   // 祝日計算オプション
   useDynamicHolidays?: boolean;
   holidayYear?: number;
   holidayYearType?: 'calendar' | 'fiscal';
-  
+
   // オプション機能
   enableBenefits: boolean;
   welfareAmount: number;
   welfareType: 'monthly' | 'annual';
   welfareInputMethod: 'total' | 'individual';
-  
+
   // 手当
   housingAllowance: number;
   regionalAllowance: number;
   familyAllowance: number;
   qualificationAllowance: number;
   otherAllowance: number;
-  
+
   // ボーナス
   summerBonus: number;
   winterBonus: number;
   settlementBonus: number;
   otherBonus: number;
-  
+
   // カスタム休日
   goldenWeekHolidays: boolean;
   obon: boolean;
   yearEndNewYear: boolean;
   customHolidays: number;
-
-  // 残業時間（月間）
-  overtimeHours?: number;          // 通常残業時間
-  nightOvertimeHours?: number;     // 深夜残業時間（22時〜5時）
 
 }
 
