@@ -191,9 +191,10 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
                           borderColor: 'divider',
                           borderRadius: 0.5,
                           display: 'flex',
-                          flexDirection: 'column',
+                          flexDirection: 'row',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          gap: 0.2,
                           lineHeight: 1
                         }}
                       >
@@ -221,9 +222,10 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
                           borderColor: 'divider',
                           borderRadius: 0.5,
                           display: 'flex',
-                          flexDirection: 'column',
+                          flexDirection: 'row',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          gap: 0.2,
                           lineHeight: 1
                         }}
                       >
