@@ -173,45 +173,61 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
           endAdornment={
             <InputAdornment position="end">
               {inlineMultiStepButtons && multiStepButtons && !disabled && (
-                <Box sx={{ display: 'flex', gap: 0.5, mr: unit ? 1 : 0 }}>
-                  {multiStepButtons.map((stepValue) => (
-                    <Box key={stepValue} sx={{ display: 'flex', gap: 0.3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, mr: unit ? 1 : 0 }}>
+                  {/* UP ボタン列 */}
+                  <Box sx={{ display: 'flex', gap: 0.3 }}>
+                    {multiStepButtons.map((stepValue) => (
                       <IconButton
-                        size="small"
-                        onClick={() => handleMultiStepDecrement(stepValue)}
-                        sx={{
-                          p: 0.3,
-                          minWidth: 'auto',
-                          fontSize: '0.7rem',
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          borderRadius: 0.5
-                        }}
-                      >
-                        <KeyboardArrowDown sx={{ fontSize: '0.9rem' }} />
-                        <Typography variant="caption" sx={{ fontSize: '0.65rem', ml: 0.2 }}>
-                          {stepValue >= 1000 ? `${stepValue / 1000}k` : stepValue}
-                        </Typography>
-                      </IconButton>
-                      <IconButton
+                        key={`up-${stepValue}`}
                         size="small"
                         onClick={() => handleMultiStepIncrement(stepValue)}
                         sx={{
                           p: 0.3,
-                          minWidth: 'auto',
-                          fontSize: '0.7rem',
+                          width: '50px',
+                          fontSize: '0.65rem',
                           border: '1px solid',
                           borderColor: 'divider',
-                          borderRadius: 0.5
+                          borderRadius: 0.5,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          lineHeight: 1
                         }}
                       >
-                        <KeyboardArrowUp sx={{ fontSize: '0.9rem' }} />
-                        <Typography variant="caption" sx={{ fontSize: '0.65rem', ml: 0.2 }}>
-                          {stepValue >= 1000 ? `${stepValue / 1000}k` : stepValue}
+                        <KeyboardArrowUp sx={{ fontSize: '0.8rem' }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.6rem' }}>
+                          {stepValue >= 10000 ? `${stepValue / 10000}万` : stepValue >= 1000 ? `${stepValue / 1000}千` : stepValue}
                         </Typography>
                       </IconButton>
-                    </Box>
-                  ))}
+                    ))}
+                  </Box>
+                  {/* DOWN ボタン列 */}
+                  <Box sx={{ display: 'flex', gap: 0.3 }}>
+                    {multiStepButtons.map((stepValue) => (
+                      <IconButton
+                        key={`down-${stepValue}`}
+                        size="small"
+                        onClick={() => handleMultiStepDecrement(stepValue)}
+                        sx={{
+                          p: 0.3,
+                          width: '50px',
+                          fontSize: '0.65rem',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 0.5,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          lineHeight: 1
+                        }}
+                      >
+                        <KeyboardArrowDown sx={{ fontSize: '0.8rem' }} />
+                        <Typography variant="caption" sx={{ fontSize: '0.6rem' }}>
+                          {stepValue >= 10000 ? `${stepValue / 10000}万` : stepValue >= 1000 ? `${stepValue / 1000}千` : stepValue}
+                        </Typography>
+                      </IconButton>
+                    ))}
+                  </Box>
                 </Box>
               )}
               {showIncrementButtons && !disabled && !inlineMultiStepButtons && (
