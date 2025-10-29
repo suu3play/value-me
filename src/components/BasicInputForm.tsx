@@ -459,27 +459,17 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(({ data, onChan
                                     justifyContent: 'center',
                                     minHeight: '100%'
                                 }}>
-                                    <Box sx={{ textAlign: 'center' }}>
-                                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                                            逆算された残業時間
+                                    {data.fixedOvertimePay && data.fixedOvertimePay > 0 ? (
+                                        <Typography variant="h6" color="primary">
+                                            {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                            {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
+                                            {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
                                         </Typography>
-                                        {data.fixedOvertimePay && data.fixedOvertimePay > 0 ? (
-                                            <>
-                                                <Typography variant="h6" color="primary">
-                                                    {data.workingHoursType === 'daily' && `1日あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                                    {data.workingHoursType === 'weekly' && `1週あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                                    {data.workingHoursType === 'monthly' && `1ヶ月あたり ${calculateOvertimeHoursFromFixedPay().toFixed(1)}時間`}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                                    ※ 基本時給から通常残業（1.25倍）として計算
-                                                </Typography>
-                                            </>
-                                        ) : (
-                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                                固定残業代を入力すると<br />残業時間が表示されます
-                                            </Typography>
-                                        )}
-                                    </Box>
+                                    ) : (
+                                        <Typography variant="body2" color="text.secondary">
+                                            固定残業代を入力すると<br />残業時間が表示されます
+                                        </Typography>
+                                    )}
                                 </Box>
                             </Box>
                         </>
