@@ -20,7 +20,7 @@ export const calculateHourlyWageWithDynamicHolidays = async (
 
   const dailyWorkingHours = isNaN(data.dailyWorkingHours) || data.dailyWorkingHours < 0 ? 0 : data.dailyWorkingHours;
 
-  let annualIncome = baseSalary * 12;
+  const annualIncome = baseSalary * 12;
   let actualAnnualIncome = annualIncome;
   
   if (data.welfareInputMethod === 'total') {
