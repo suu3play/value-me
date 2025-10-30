@@ -551,7 +551,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                             step={1000}
                                             unit="円"
                                             showIncrementButtons
-                                            multiStepButtons={[1000, 10000, 100000]}
+                                            multiStepButtons={[1000, 10000]}
                                             helperText="月額の固定残業代を入力してください"
                                             fullWidth
                                         />
