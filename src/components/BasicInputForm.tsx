@@ -353,7 +353,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                             step={1000}
                             unit="円"
                             multiStepButtons={[1000, 10000, 100000]}
-                            inlineMultiStepButtons={true}
                             helperText="月額の基本給を入力してください（残業代は含みません）"
                         />
                     </Box>
@@ -522,7 +521,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                         alignItems: 'stretch',
                                     }}
                                 >
-                                    <Box sx={{ minWidth: 200, flex: 1 }}>
+                                    <Box sx={{ minWidth: 250, flex: 2 }}>
                                         <ValidatedInput
                                             id="fixed-overtime-pay"
                                             label="月額固定残業代"
@@ -552,17 +551,17 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                             step={1000}
                                             unit="円"
                                             showIncrementButtons
-                                            multiStepButtons={[1000, 10000, 100000]}
+                                            multiStepButtons={[1000, 10000]}
                                             helperText="月額の固定残業代を入力してください"
                                             fullWidth
                                         />
                                     </Box>
                                     <Box
                                         sx={{
-                                            minWidth: 200,
+                                            minWidth: 150,
                                             flex: 1,
                                             height: '56px',
-                                            p: 2,
+                                            p: 1.5,
                                             bgcolor:
                                                 data.fixedOvertimePay &&
                                                 data.fixedOvertimePay > 0
@@ -577,8 +576,8 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                         {data.fixedOvertimePay &&
                                         data.fixedOvertimePay > 0 ? (
                                             <Typography
-                                                variant="h6"
-                                                sx={{ color: 'white' }}
+                                                variant="body1"
+                                                sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem' }}
                                             >
                                                 {data.workingHoursType ===
                                                     'daily' &&
@@ -600,6 +599,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                             <Typography
                                                 variant="body2"
                                                 color="text.secondary"
+                                                sx={{ fontSize: '0.8rem', textAlign: 'center' }}
                                             >
                                                 固定残業代を入力すると残業時間が表示されます
                                             </Typography>
