@@ -521,7 +521,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                         alignItems: 'stretch',
                                     }}
                                 >
-                                    <Box sx={{ minWidth: 200, flex: 1 }}>
+                                    <Box sx={{ minWidth: 250, flex: 2 }}>
                                         <ValidatedInput
                                             id="fixed-overtime-pay"
                                             label="月額固定残業代"
@@ -558,10 +558,10 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                     </Box>
                                     <Box
                                         sx={{
-                                            minWidth: 200,
+                                            minWidth: 150,
                                             flex: 1,
                                             height: '56px',
-                                            p: 2,
+                                            p: 1.5,
                                             bgcolor:
                                                 data.fixedOvertimePay &&
                                                 data.fixedOvertimePay > 0
@@ -576,8 +576,8 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                         {data.fixedOvertimePay &&
                                         data.fixedOvertimePay > 0 ? (
                                             <Typography
-                                                variant="h6"
-                                                sx={{ color: 'white' }}
+                                                variant="body1"
+                                                sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem' }}
                                             >
                                                 {data.workingHoursType ===
                                                     'daily' &&
@@ -599,6 +599,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                             <Typography
                                                 variant="body2"
                                                 color="text.secondary"
+                                                sx={{ fontSize: '0.8rem', textAlign: 'center' }}
                                             >
                                                 固定残業代を入力すると残業時間が表示されます
                                             </Typography>
