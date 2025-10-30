@@ -389,10 +389,10 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
             </FormControl>
             {multiStepButtons && !disabled && !inlineMultiStepButtons && (
                 <Box
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flexShrink: 0 }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flexShrink: 0, height: '56px' }}
                 >
                     {/* UP ボタン列 */}
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', gap: 0.5, flex: 1 }}>
                         {multiStepButtons.map((stepValue) => (
                             <IconButton
                                 key={`up-${stepValue}`}
@@ -410,6 +410,8 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                     gap: 0.3,
+                                    minHeight: 0,
+                                    height: '100%',
                                 }}
                             >
                                 <KeyboardArrowUp fontSize="small" />
@@ -420,7 +422,7 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
                         ))}
                     </Box>
                     {/* DOWN ボタン列 */}
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', gap: 0.5, flex: 1 }}>
                         {multiStepButtons.map((stepValue) => (
                             <IconButton
                                 key={`down-${stepValue}`}
@@ -438,6 +440,8 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                     gap: 0.3,
+                                    minHeight: 0,
+                                    height: '100%',
                                 }}
                             >
                                 <KeyboardArrowDown fontSize="small" />
