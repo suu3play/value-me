@@ -788,7 +788,7 @@ function App() {
                     sx={{
                         flex: 1,
                         py: { xs: 1, sm: 2 },
-                        px: { xs: 2, sm: 3 },
+                        px: { xs: 1, sm: 1.5 },
                         width: '100%',
                         display: 'flex',
                         justifyContent: 'center',
