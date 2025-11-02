@@ -60,33 +60,33 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = React.memo(({ data, on
         {layout === 'horizontal' ? (
           <>
             <Box sx={{ flex: 1, width: '100%' }}>
-              <Paper 
-                elevation={2} 
-                sx={{ 
-                  p: { xs: 2, sm: 3 }, 
-                  borderRadius: 2, 
+              <Paper
+                elevation={2}
+                sx={{
+                  p: { xs: 2, sm: 3 },
+                  borderRadius: 2,
                   mb: { xs: 2, sm: 3 },
                   width: '100%',
                 }}
               >
                 <BasicInputForm data={data} onChange={onChange} />
               </Paper>
+              {!hideDynamicHolidaySettings && (
+                <DynamicHolidaySettings data={data} onChange={onChange} />
+              )}
             </Box>
             <Box sx={{ flex: 1, width: '100%' }}>
-              <Paper 
-                elevation={2} 
-                sx={{ 
-                  p: { xs: 2, sm: 3 }, 
-                  borderRadius: 2, 
+              <Paper
+                elevation={2}
+                sx={{
+                  p: { xs: 2, sm: 3 },
+                  borderRadius: 2,
                   mb: { xs: 2, sm: 2 },
                   width: '100%',
                 }}
               >
                 <OptionsForm data={data} onChange={onChange} />
               </Paper>
-              {!hideDynamicHolidaySettings && (
-                <DynamicHolidaySettings data={data} onChange={onChange} />
-              )}
             </Box>
           </>
         ) : (

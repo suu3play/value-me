@@ -15,7 +15,6 @@ import ValidatedInput from './ValidatedInput';
 import {
     validateSalary,
     validateHolidays,
-    validateWorkingHours,
     validateCustomHolidays,
 } from '../utils/validation';
 
@@ -219,96 +218,6 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
             }
         };
 
-        const handleWorkingHoursTypeChange = (
-            _: React.MouseEvent<HTMLElement>,
-            newType: 'daily' | 'weekly' | 'monthly' | null
-        ) => {
-            if (newType) {
-                // 単位変更時に値を適切に変換
-                let convertedHours = data.dailyWorkingHours;
-                let convertedOvertime = data.overtimeHours || 0;
-                let convertedNightOvertime = data.nightOvertimeHours || 0;
-
-                if (data.workingHoursType === 'daily' && newType === 'weekly') {
-                    convertedHours = data.dailyWorkingHours * 5; // 週5日勤務と仮定
-                    convertedOvertime = (data.overtimeHours || 0) * 5;
-                    convertedNightOvertime = (data.nightOvertimeHours || 0) * 5;
-                } else if (
-                    data.workingHoursType === 'daily' &&
-                    newType === 'monthly'
-                ) {
-                    convertedHours = data.dailyWorkingHours * 22; // 月22日勤務と仮定
-                    convertedOvertime = (data.overtimeHours || 0) * 22;
-                    convertedNightOvertime =
-                        (data.nightOvertimeHours || 0) * 22;
-                } else if (
-                    data.workingHoursType === 'weekly' &&
-                    newType === 'daily'
-                ) {
-                    convertedHours = data.dailyWorkingHours / 5;
-                    convertedOvertime = (data.overtimeHours || 0) / 5;
-                    convertedNightOvertime = (data.nightOvertimeHours || 0) / 5;
-                } else if (
-                    data.workingHoursType === 'weekly' &&
-                    newType === 'monthly'
-                ) {
-                    convertedHours = data.dailyWorkingHours * 4.4; // 1ヶ月約4.4週
-                    convertedOvertime = (data.overtimeHours || 0) * 4.4;
-                    convertedNightOvertime =
-                        (data.nightOvertimeHours || 0) * 4.4;
-                } else if (
-                    data.workingHoursType === 'monthly' &&
-                    newType === 'daily'
-                ) {
-                    convertedHours = data.dailyWorkingHours / 22;
-                    convertedOvertime = (data.overtimeHours || 0) / 22;
-                    convertedNightOvertime =
-                        (data.nightOvertimeHours || 0) / 22;
-                } else if (
-                    data.workingHoursType === 'monthly' &&
-                    newType === 'weekly'
-                ) {
-                    convertedHours = data.dailyWorkingHours / 4.4;
-                    convertedOvertime = (data.overtimeHours || 0) / 4.4;
-                    convertedNightOvertime =
-                        (data.nightOvertimeHours || 0) / 4.4;
-                }
-
-                onChange({
-                    ...data,
-                    workingHoursType: newType,
-                    dailyWorkingHours: Math.round(convertedHours * 10) / 10, // 小数点1桁で四捨五入
-                    overtimeHours: Math.round(convertedOvertime * 10) / 10,
-                    nightOvertimeHours:
-                        Math.round(convertedNightOvertime * 10) / 10,
-                });
-            }
-        };
-
-        // 表示用の労働時間を取得
-        const getDisplayWorkingHours = () => {
-            switch (data.workingHoursType) {
-                case 'weekly':
-                    return data.dailyWorkingHours;
-                case 'monthly':
-                    return data.dailyWorkingHours;
-                default:
-                    return data.dailyWorkingHours;
-            }
-        };
-
-        // 1日あたりの労働時間を計算（計算で使用）
-        const getDailyWorkingHours = () => {
-            switch (data.workingHoursType) {
-                case 'weekly':
-                    return data.dailyWorkingHours / 5; // 週5日勤務と仮定
-                case 'monthly':
-                    return data.dailyWorkingHours / 22; // 月22日勤務と仮定
-                default:
-                    return data.dailyWorkingHours;
-            }
-        };
-
         const handleHolidayShortcut = (days: number) => {
             onChange({ ...data, annualHolidays: days });
         };
@@ -395,9 +304,12 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                 </Typography>
                                 <Box
                                     sx={{
-                                        display: 'flex',
+                                        display: 'grid',
+                                        gridTemplateColumns: {
+                                            xs: '1fr',
+                                            sm: 'repeat(2, minmax(0, 1fr))',
+                                        },
                                         gap: 2,
-                                        flexWrap: 'wrap',
                                     }}
                                 >
                                     <ValidatedInput
@@ -448,8 +360,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                         unit="時間"
                                         showIncrementButtons
                                         helperText="通常残業時間（割増率1.25倍）"
-                                        sx={{ minWidth: 200, flex: 1 }}
-                                        fullWidth={false}
+                                        fullWidth
                                     />
                                     <ValidatedInput
                                         id="night-overtime-hours"
@@ -499,8 +410,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                         unit="時間"
                                         showIncrementButtons
                                         helperText="深夜残業時間（22時〜5時、割増率1.5倍）"
-                                        sx={{ minWidth: 200, flex: 1 }}
-                                        fullWidth={false}
+                                        fullWidth
                                     />
                                 </Box>
                             </>
@@ -625,9 +535,12 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
 
                         <Box
                             sx={{
-                                display: 'flex',
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: 'repeat(2, minmax(0, 1fr))',
+                                },
                                 gap: 2,
-                                flexWrap: 'wrap',
                                 mb: 2,
                             }}
                         >
@@ -642,97 +555,109 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                 type="integer"
                                 unit="日"
                                 helperText="年間休日数を入力してください（0～366日）"
-                                sx={{ minWidth: 200, flex: 1 }}
-                                fullWidth={false}
+                                fullWidth
                             />
 
-                            <Box
+                            <ValidatedInput
+                                id="custom-holidays"
+                                label="その他特別休暇"
+                                value={data.customHolidays}
+                                onChange={(value) =>
+                                    onChange({ ...data, customHolidays: value })
+                                }
+                                validator={validateCustomHolidays}
+                                type="integer"
+                                unit="日"
+                                helperText="その他の特別休暇日数（0～365日）"
+                                fullWidth
+                            />
+                        </Box>
+
+                        <Box
+                            sx={{
+                                p: 2,
+                                mb: 2,
+                                bgcolor: 'primary.main',
+                                borderRadius: 1,
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Typography
+                                variant="body1"
                                 sx={{
-                                    minWidth: 200,
-                                    flex: 1,
-                                    p: 2,
-                                    bgcolor: 'primary.main',
-                                    borderRadius: 1,
-                                    color: 'white',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
                                 }}
                             >
+                                総休日数: {calculateTotalHolidays()}日
                                 <Typography
-                                    variant="body1"
+                                    component="span"
+                                    variant="body2"
                                     sx={{
-                                        fontWeight: 'bold',
-                                        textAlign: 'center',
+                                        opacity: 0.7,
+                                        ml: 1,
+                                        display: 'block',
+                                        mt: 0.5,
                                     }}
                                 >
-                                    総休日数: {calculateTotalHolidays()}日
-                                    <Typography
-                                        component="span"
-                                        variant="body2"
-                                        sx={{
-                                            opacity: 0.7,
-                                            ml: 1,
-                                            display: 'block',
-                                            mt: 0.5,
-                                        }}
-                                    >
-                                        (基本{data.annualHolidays}日
-                                        {data.goldenWeekHolidays && (
-                                            <>
-                                                + GW
-                                                {(() => {
-                                                    let gwDays = 10;
-                                                    if (
-                                                        data.annualHolidays ===
-                                                            120 ||
-                                                        data.annualHolidays ===
-                                                            119
-                                                    )
-                                                        gwDays = 6;
-                                                    if (
-                                                        data.annualHolidays ===
+                                    (基本{data.annualHolidays}日
+                                    {data.goldenWeekHolidays && (
+                                        <>
+                                            + GW
+                                            {(() => {
+                                                let gwDays = 10;
+                                                if (
+                                                    data.annualHolidays ===
+                                                        120 ||
+                                                    data.annualHolidays ===
                                                         119
-                                                    )
-                                                        gwDays = 4;
-                                                    return gwDays;
-                                                })()}
-                                                日
-                                            </>
-                                        )}
-                                        {data.obon && <> + お盆5日</>}
-                                        {data.yearEndNewYear && (
-                                            <>
-                                                + 年末年始
-                                                {(() => {
-                                                    let yearEndDays = 6;
-                                                    if (
-                                                        data.annualHolidays ===
-                                                            120 ||
-                                                        data.annualHolidays ===
-                                                            119
-                                                    )
-                                                        yearEndDays = 4;
-                                                    if (
-                                                        data.annualHolidays ===
+                                                )
+                                                    gwDays = 6;
+                                                if (
+                                                    data.annualHolidays ===
+                                                    119
+                                                )
+                                                    gwDays = 4;
+                                                return gwDays;
+                                            })()}
+                                            日
+                                        </>
+                                    )}
+                                    {data.obon && <> + お盆5日</>}
+                                    {data.yearEndNewYear && (
+                                        <>
+                                            + 年末年始
+                                            {(() => {
+                                                let yearEndDays = 6;
+                                                if (
+                                                    data.annualHolidays ===
+                                                        120 ||
+                                                    data.annualHolidays ===
                                                         119
-                                                    )
-                                                        yearEndDays = 3;
-                                                    return yearEndDays;
-                                                })()}
-                                                日
-                                            </>
-                                        )}
-                                        {data.customHolidays > 0 && (
-                                            <>
-                                                {' '}
-                                                + その他{data.customHolidays}日
-                                            </>
-                                        )}
-                                        )
-                                    </Typography>
+                                                )
+                                                    yearEndDays = 4;
+                                                if (
+                                                    data.annualHolidays ===
+                                                    119
+                                                )
+                                                    yearEndDays = 3;
+                                                return yearEndDays;
+                                            })()}
+                                            日
+                                        </>
+                                    )}
+                                    {data.customHolidays > 0 && (
+                                        <>
+                                            {' '}
+                                            + その他{data.customHolidays}日
+                                        </>
+                                    )}
+                                    )
                                 </Typography>
-                            </Box>
+                            </Typography>
                         </Box>
 
                         {/* ショートカットボタン */}
@@ -873,101 +798,7 @@ const BasicInputForm: React.FC<BasicInputFormProps> = React.memo(
                                 }
                                 label="年末年始"
                             />
-                            <ValidatedInput
-                                id="custom-holidays"
-                                label="その他特別休暇"
-                                value={data.customHolidays}
-                                onChange={(value) =>
-                                    onChange({ ...data, customHolidays: value })
-                                }
-                                validator={validateCustomHolidays}
-                                type="integer"
-                                unit="日"
-                                helperText="その他の特別休暇日数（0～365日）"
-                                sx={{ minWidth: 200 }}
-                                fullWidth={false}
-                            />
                         </Box>
-                    </Box>
-
-                    {/* 労働時間入力 */}
-                    <Box>
-                        <Typography variant="h6" gutterBottom>
-                            労働時間
-                        </Typography>
-                        <Box sx={{ mb: 2 }}>
-                            <ToggleButtonGroup
-                                value={data.workingHoursType}
-                                exclusive
-                                onChange={handleWorkingHoursTypeChange}
-                                aria-label="working hours type"
-                                size="small"
-                                sx={{
-                                    '& .MuiToggleButton-root': {
-                                        minHeight: { xs: 44, sm: 40 },
-                                    },
-                                }}
-                            >
-                                <ToggleButton value="daily" aria-label="daily">
-                                    1日単位
-                                </ToggleButton>
-                                <ToggleButton
-                                    value="weekly"
-                                    aria-label="weekly"
-                                >
-                                    1週単位
-                                </ToggleButton>
-                                <ToggleButton
-                                    value="monthly"
-                                    aria-label="monthly"
-                                >
-                                    1ヶ月単位
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                        </Box>
-                        <ValidatedInput
-                            id="working-hours"
-                            label={
-                                data.workingHoursType === 'daily'
-                                    ? '1日の労働時間'
-                                    : data.workingHoursType === 'weekly'
-                                    ? '1週の労働時間'
-                                    : '1ヶ月の労働時間'
-                            }
-                            value={getDisplayWorkingHours()}
-                            onChange={(value) =>
-                                onChange({ ...data, dailyWorkingHours: value })
-                            }
-                            validator={(value) =>
-                                validateWorkingHours(
-                                    value,
-                                    data.workingHoursType === 'daily'
-                                        ? 24
-                                        : data.workingHoursType === 'weekly'
-                                        ? 168
-                                        : 744 // monthly
-                                )
-                            }
-                            type="float"
-                            step={data.workingHoursType === 'daily' ? 0.5 : 1}
-                            unit="時間"
-                            helperText={
-                                data.workingHoursType === 'daily'
-                                    ? '労働時間を入力してください（0.5～24時間）'
-                                    : data.workingHoursType === 'weekly'
-                                    ? '労働時間を入力してください（0.5～168時間）'
-                                    : '労働時間を入力してください（0.5～744時間）'
-                            }
-                            fullWidth={false}
-                            sx={{ maxWidth: 300 }}
-                        />
-                        <Typography
-                            variant="caption"
-                            color="textSecondary"
-                            sx={{ ml: 1, mt: 1, display: 'block' }}
-                        >
-                            1日あたり: {getDailyWorkingHours().toFixed(1)}時間
-                        </Typography>
                     </Box>
                 </Box>
             </Box>

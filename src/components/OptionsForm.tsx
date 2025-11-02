@@ -192,176 +192,150 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(
 
                                 <Box
                                     sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
+                                        display: 'grid',
+                                        gridTemplateColumns: {
+                                            xs: '1fr',
+                                            sm: 'repeat(2, minmax(0, 1fr))',
+                                        },
                                         gap: 2,
                                     }}
                                 >
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            gap: 2,
-                                            flexWrap: 'wrap',
-                                        }}
-                                    >
-                                        <ValidatedInput
-                                            id="housing-allowance"
-                                            label="住宅手当"
-                                            value={data.housingAllowance}
-                                            onChange={(value) =>
-                                                onChange({
-                                                    ...data,
-                                                    housingAllowance: value,
-                                                })
-                                            }
-                                            validator={validateAllowance}
-                                            type="integer"
-                                            step={1000}
-                                            unit="円"
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            multiStepButtons={
-                                                data.welfareInputMethod !==
-                                                'total'
-                                                    ? [1000, 10000]
-                                                    : undefined
-                                            }
-                                            helperText="住宅手当を入力してください（0円～1,000万円）"
-                                            sx={{ minWidth: 200, flex: 1 }}
-                                            fullWidth={false}
-                                        />
-                                        <ValidatedInput
-                                            id="regional-allowance"
-                                            label="地域手当"
-                                            value={data.regionalAllowance}
-                                            onChange={(value) =>
-                                                onChange({
-                                                    ...data,
-                                                    regionalAllowance: value,
-                                                })
-                                            }
-                                            validator={validateAllowance}
-                                            type="integer"
-                                            step={1000}
-                                            unit="円"
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            multiStepButtons={
-                                                data.welfareInputMethod !==
-                                                'total'
-                                                    ? [1000, 10000]
-                                                    : undefined
-                                            }
-                                            helperText="地域手当を入力してください（0円～1,000万円）"
-                                            sx={{ minWidth: 200, flex: 1 }}
-                                            fullWidth={false}
-                                        />
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            gap: 2,
-                                            flexWrap: 'wrap',
-                                        }}
-                                    >
-                                        <ValidatedInput
-                                            id="family-allowance"
-                                            label="家族手当"
-                                            value={data.familyAllowance}
-                                            onChange={(value) =>
-                                                onChange({
-                                                    ...data,
-                                                    familyAllowance: value,
-                                                })
-                                            }
-                                            validator={validateAllowance}
-                                            type="integer"
-                                            step={1000}
-                                            unit="円"
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            multiStepButtons={
-                                                data.welfareInputMethod !==
-                                                'total'
-                                                    ? [1000, 10000]
-                                                    : undefined
-                                            }
-                                            helperText="家族手当を入力してください（0円～1,000万円）"
-                                            sx={{ minWidth: 200, flex: 1 }}
-                                            fullWidth={false}
-                                        />
-                                        <ValidatedInput
-                                            id="qualification-allowance"
-                                            label="資格手当"
-                                            value={data.qualificationAllowance}
-                                            onChange={(value) =>
-                                                onChange({
-                                                    ...data,
-                                                    qualificationAllowance:
-                                                        value,
-                                                })
-                                            }
-                                            validator={validateAllowance}
-                                            type="integer"
-                                            step={1000}
-                                            unit="円"
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            multiStepButtons={
-                                                data.welfareInputMethod !==
-                                                'total'
-                                                    ? [1000, 10000]
-                                                    : undefined
-                                            }
-                                            helperText="資格手当を入力してください（0円～1,000万円）"
-                                            sx={{ minWidth: 200, flex: 1 }}
-                                            fullWidth={false}
-                                        />
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            gap: 2,
-                                            flexWrap: 'wrap',
-                                        }}
-                                    >
-                                        <ValidatedInput
-                                            id="other-allowance"
-                                            label="その他手当"
-                                            value={data.otherAllowance}
-                                            onChange={(value) =>
-                                                onChange({
-                                                    ...data,
-                                                    otherAllowance: value,
-                                                })
-                                            }
-                                            validator={validateAllowance}
-                                            type="integer"
-                                            step={1000}
-                                            unit="円"
-                                            disabled={
-                                                data.welfareInputMethod ===
-                                                'total'
-                                            }
-                                            multiStepButtons={
-                                                data.welfareInputMethod !==
-                                                'total'
-                                                    ? [1000, 10000]
-                                                    : undefined
-                                            }
-                                            helperText="その他手当を入力してください（0円～1,000万円）"
-                                            sx={{ minWidth: 200, flex: 1 }}
-                                            fullWidth={false}
-                                        />
-                                    </Box>
+                                    <ValidatedInput
+                                        id="housing-allowance"
+                                        label="住宅手当"
+                                        value={data.housingAllowance}
+                                        onChange={(value) =>
+                                            onChange({
+                                                ...data,
+                                                housingAllowance: value,
+                                            })
+                                        }
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={1000}
+                                        unit="円"
+                                        disabled={
+                                            data.welfareInputMethod ===
+                                            'total'
+                                        }
+                                        multiStepButtons={
+                                            data.welfareInputMethod !==
+                                            'total'
+                                                ? [1000, 10000]
+                                                : undefined
+                                        }
+                                        helperText="住宅手当を入力してください（0円～1,000万円）"
+                                        fullWidth
+                                    />
+                                    <ValidatedInput
+                                        id="regional-allowance"
+                                        label="地域手当"
+                                        value={data.regionalAllowance}
+                                        onChange={(value) =>
+                                            onChange({
+                                                ...data,
+                                                regionalAllowance: value,
+                                            })
+                                        }
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={1000}
+                                        unit="円"
+                                        disabled={
+                                            data.welfareInputMethod ===
+                                            'total'
+                                        }
+                                        multiStepButtons={
+                                            data.welfareInputMethod !==
+                                            'total'
+                                                ? [1000, 10000]
+                                                : undefined
+                                        }
+                                        helperText="地域手当を入力してください（0円～1,000万円）"
+                                        fullWidth
+                                    />
+                                    <ValidatedInput
+                                        id="family-allowance"
+                                        label="家族手当"
+                                        value={data.familyAllowance}
+                                        onChange={(value) =>
+                                            onChange({
+                                                ...data,
+                                                familyAllowance: value,
+                                            })
+                                        }
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={1000}
+                                        unit="円"
+                                        disabled={
+                                            data.welfareInputMethod ===
+                                            'total'
+                                        }
+                                        multiStepButtons={
+                                            data.welfareInputMethod !==
+                                            'total'
+                                                ? [1000, 10000]
+                                                : undefined
+                                        }
+                                        helperText="家族手当を入力してください（0円～1,000万円）"
+                                        fullWidth
+                                    />
+                                    <ValidatedInput
+                                        id="qualification-allowance"
+                                        label="資格手当"
+                                        value={data.qualificationAllowance}
+                                        onChange={(value) =>
+                                            onChange({
+                                                ...data,
+                                                qualificationAllowance:
+                                                    value,
+                                            })
+                                        }
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={1000}
+                                        unit="円"
+                                        disabled={
+                                            data.welfareInputMethod ===
+                                            'total'
+                                        }
+                                        multiStepButtons={
+                                            data.welfareInputMethod !==
+                                            'total'
+                                                ? [1000, 10000]
+                                                : undefined
+                                        }
+                                        helperText="資格手当を入力してください（0円～1,000万円）"
+                                        fullWidth
+                                    />
+                                    <ValidatedInput
+                                        id="other-allowance"
+                                        label="その他手当"
+                                        value={data.otherAllowance}
+                                        onChange={(value) =>
+                                            onChange({
+                                                ...data,
+                                                otherAllowance: value,
+                                            })
+                                        }
+                                        validator={validateAllowance}
+                                        type="integer"
+                                        step={1000}
+                                        unit="円"
+                                        disabled={
+                                            data.welfareInputMethod ===
+                                            'total'
+                                        }
+                                        multiStepButtons={
+                                            data.welfareInputMethod !==
+                                            'total'
+                                                ? [1000, 10000]
+                                                : undefined
+                                        }
+                                        helperText="その他手当を入力してください（0円～1,000万円）"
+                                        fullWidth
+                                    />
                                 </Box>
                             </Box>
                         </Box>
@@ -378,107 +352,86 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(
                             </Typography>
                             <Box
                                 sx={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
+                                    display: 'grid',
+                                    gridTemplateColumns: {
+                                        xs: '1fr',
+                                        sm: 'repeat(2, minmax(0, 1fr))',
+                                    },
                                     gap: 2,
                                 }}
                             >
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        gap: 2,
-                                        flexWrap: 'wrap',
-                                    }}
-                                >
-                                    <ValidatedInput
-                                        id="summer-bonus"
-                                        label="夏期賞与"
-                                        value={data.summerBonus}
-                                        onChange={(value) =>
-                                            onChange({
-                                                ...data,
-                                                summerBonus: value,
-                                            })
-                                        }
-                                        validator={validateBonus}
-                                        type="integer"
-                                        step={10000}
-                                        unit="円"
-                                        showIncrementButtons
-                                        multiStepButtons={[10000, 100000]}
-                                        helperText="夏期賞与を入力してください（0円～1,000万円）"
-                                        sx={{ minWidth: 200, flex: 1 }}
-                                        fullWidth={false}
-                                    />
-                                    <ValidatedInput
-                                        id="winter-bonus"
-                                        label="冬期賞与"
-                                        value={data.winterBonus}
-                                        onChange={(value) =>
-                                            onChange({
-                                                ...data,
-                                                winterBonus: value,
-                                            })
-                                        }
-                                        validator={validateBonus}
-                                        type="integer"
-                                        step={10000}
-                                        unit="円"
-                                        showIncrementButtons
-                                        multiStepButtons={[10000, 100000]}
-                                        helperText="冬期賞与を入力してください（0円～1,000万円）"
-                                        sx={{ minWidth: 200, flex: 1 }}
-                                        fullWidth={false}
-                                    />
-                                </Box>
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        gap: 2,
-                                        flexWrap: 'wrap',
-                                    }}
-                                >
-                                    <ValidatedInput
-                                        id="settlement-bonus"
-                                        label="決算賞与"
-                                        value={data.settlementBonus}
-                                        onChange={(value) =>
-                                            onChange({
-                                                ...data,
-                                                settlementBonus: value,
-                                            })
-                                        }
-                                        validator={validateBonus}
-                                        type="integer"
-                                        step={10000}
-                                        unit="円"
-                                        showIncrementButtons
-                                        multiStepButtons={[10000, 100000]}
-                                        helperText="決算賞与を入力してください（0円～1,000万円）"
-                                        sx={{ minWidth: 200, flex: 1 }}
-                                        fullWidth={false}
-                                    />
-                                    <ValidatedInput
-                                        id="other-bonus"
-                                        label="その他特別賞与"
-                                        value={data.otherBonus}
-                                        onChange={(value) =>
-                                            onChange({
-                                                ...data,
-                                                otherBonus: value,
-                                            })
-                                        }
-                                        validator={validateBonus}
-                                        type="integer"
-                                        step={10000}
-                                        unit="円"
-                                        showIncrementButtons
-                                        multiStepButtons={[10000, 100000]}
-                                        helperText="その他特別賞与を入力してください（0円～1,000万円）"
-                                        sx={{ minWidth: 200, flex: 1 }}
-                                        fullWidth={false}
-                                    />
-                                </Box>
+                                <ValidatedInput
+                                    id="summer-bonus"
+                                    label="夏期賞与"
+                                    value={data.summerBonus}
+                                    onChange={(value) =>
+                                        onChange({
+                                            ...data,
+                                            summerBonus: value,
+                                        })
+                                    }
+                                    validator={validateBonus}
+                                    type="integer"
+                                    step={10000}
+                                    unit="円"
+                                    multiStepButtons={[10000, 100000]}
+                                    helperText="夏期賞与を入力してください（0円～1,000万円）"
+                                    fullWidth
+                                />
+                                <ValidatedInput
+                                    id="winter-bonus"
+                                    label="冬期賞与"
+                                    value={data.winterBonus}
+                                    onChange={(value) =>
+                                        onChange({
+                                            ...data,
+                                            winterBonus: value,
+                                        })
+                                    }
+                                    validator={validateBonus}
+                                    type="integer"
+                                    step={10000}
+                                    unit="円"
+                                    multiStepButtons={[10000, 100000]}
+                                    helperText="冬期賞与を入力してください（0円～1,000万円）"
+                                    fullWidth
+                                />
+                                <ValidatedInput
+                                    id="settlement-bonus"
+                                    label="決算賞与"
+                                    value={data.settlementBonus}
+                                    onChange={(value) =>
+                                        onChange({
+                                            ...data,
+                                            settlementBonus: value,
+                                        })
+                                    }
+                                    validator={validateBonus}
+                                    type="integer"
+                                    step={10000}
+                                    unit="円"
+                                    multiStepButtons={[10000, 100000]}
+                                    helperText="決算賞与を入力してください（0円～1,000万円）"
+                                    fullWidth
+                                />
+                                <ValidatedInput
+                                    id="other-bonus"
+                                    label="その他特別賞与"
+                                    value={data.otherBonus}
+                                    onChange={(value) =>
+                                        onChange({
+                                            ...data,
+                                            otherBonus: value,
+                                        })
+                                    }
+                                    validator={validateBonus}
+                                    type="integer"
+                                    step={10000}
+                                    unit="円"
+                                    multiStepButtons={[10000, 100000]}
+                                    helperText="その他特別賞与を入力してください（0円～1,000万円）"
+                                    fullWidth
+                                />
                             </Box>
                         </Box>
                     </Paper>
