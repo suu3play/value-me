@@ -167,18 +167,23 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
     return (
         <Box sx={{
             width: fullWidth ? '100%' : 'auto',
-            display: multiStepButtons && !inlineMultiStepButtons ? 'flex' : 'block',
-            gap: multiStepButtons && !inlineMultiStepButtons ? 1 : 0,
-            alignItems: 'flex-start'
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0,
         }}>
-            <FormControl
-                fullWidth={fullWidth}
-                variant="outlined"
-                error={hasError}
-                sx={sx}
-            >
-                <InputLabel htmlFor={id}>{label}</InputLabel>
-                <OutlinedInput
+            <Box sx={{
+                display: multiStepButtons && !inlineMultiStepButtons ? 'flex' : 'block',
+                gap: multiStepButtons && !inlineMultiStepButtons ? 1 : 0,
+                alignItems: 'flex-start'
+            }}>
+                <FormControl
+                    fullWidth={fullWidth}
+                    variant="outlined"
+                    error={hasError}
+                    sx={sx}
+                >
+                    <InputLabel htmlFor={id}>{label}</InputLabel>
+                    <OutlinedInput
                     id={id}
                     type="number"
                     value={value || ''}
@@ -377,17 +382,8 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
                         step: type === 'float' ? 0.1 : 1,
                     }}
                 />
-                {showHelperText && (
-                    <FormHelperText>
-                        {hasError
-                            ? validationResult.errorMessage
-                            : isFocused && helperText
-                            ? helperText
-                            : ''}
-                    </FormHelperText>
-                )}
-            </FormControl>
-            {multiStepButtons && !disabled && !inlineMultiStepButtons && (
+                </FormControl>
+                {multiStepButtons && !disabled && !inlineMultiStepButtons && (
                 <Box
                     sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flexShrink: 0, height: '56px' }}
                 >
@@ -452,6 +448,26 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
                         ))}
                     </Box>
                 </Box>
+            )}
+            </Box>
+            {showHelperText && (
+                <FormHelperText
+                    error={hasError}
+                    sx={{
+                        mx: 0,
+                        mt: 0.5,
+                        maxWidth: 'none',
+                        width: '100%',
+                        whiteSpace: 'normal',
+                        wordBreak: 'break-word',
+                    }}
+                >
+                    {hasError
+                        ? validationResult.errorMessage
+                        : isFocused && helperText
+                        ? helperText
+                        : ''}
+                </FormHelperText>
             )}
         </Box>
     );
