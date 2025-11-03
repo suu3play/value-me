@@ -71,8 +71,11 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = React.memo(({ data, on
               >
                 <BasicInputForm data={data} onChange={onChange} />
               </Paper>
+              {/* 画面幅が広い場合は基本情報の下に配置 */}
               {!hideDynamicHolidaySettings && (
-                <DynamicHolidaySettings data={data} onChange={onChange} />
+                <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+                  <DynamicHolidaySettings data={data} onChange={onChange} />
+                </Box>
               )}
             </Box>
             <Box sx={{ flex: 1, width: '100%' }}>
@@ -88,31 +91,37 @@ const SalaryCalculator: React.FC<SalaryCalculatorProps> = React.memo(({ data, on
                 <OptionsForm data={data} onChange={onChange} />
               </Paper>
             </Box>
+            {/* 画面幅が狭い場合は一番下に配置 */}
+            {!hideDynamicHolidaySettings && (
+              <Box sx={{ display: { xs: 'block', lg: 'none' }, width: '100%' }}>
+                <DynamicHolidaySettings data={data} onChange={onChange} />
+              </Box>
+            )}
           </>
         ) : (
           <>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: { xs: 2, sm: 3 }, 
-                borderRadius: 2, 
+            <Paper
+              elevation={2}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 2,
                 width: '100%',
               }}
             >
               <BasicInputForm data={data} onChange={onChange} />
             </Paper>
-            
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: { xs: 2, sm: 3 }, 
-                borderRadius: 2, 
+
+            <Paper
+              elevation={2}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: 2,
                 width: '100%',
               }}
             >
               <OptionsForm data={data} onChange={onChange} />
             </Paper>
-            
+
             {!hideDynamicHolidaySettings && (
               <DynamicHolidaySettings data={data} onChange={onChange} />
             )}

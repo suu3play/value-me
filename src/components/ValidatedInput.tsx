@@ -378,7 +378,14 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
                     }}
                 />
                 {showHelperText && (
-                    <FormHelperText>
+                    <FormHelperText
+                        sx={{
+                            mx: 0,
+                            maxWidth: 'none',
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-word',
+                        }}
+                    >
                         {hasError
                             ? validationResult.errorMessage
                             : isFocused && helperText

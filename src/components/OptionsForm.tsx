@@ -192,11 +192,8 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(
 
                                 <Box
                                     sx={{
-                                        display: 'grid',
-                                        gridTemplateColumns: {
-                                            xs: '1fr',
-                                            sm: 'repeat(2, minmax(0, 1fr))',
-                                        },
+                                        display: 'flex',
+                                        flexDirection: 'column',
                                         gap: 2,
                                     }}
                                 >
@@ -352,11 +349,8 @@ const OptionsForm: React.FC<OptionsFormProps> = React.memo(
                             </Typography>
                             <Box
                                 sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: {
-                                        xs: '1fr',
-                                        sm: 'repeat(2, minmax(0, 1fr))',
-                                    },
+                                    display: 'flex',
+                                    flexDirection: 'column',
                                     gap: 2,
                                 }}
                             >
