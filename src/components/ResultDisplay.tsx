@@ -35,8 +35,12 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
             {/* 時給表示 */}
             <Box sx={{
                 textAlign: 'center',
-                minWidth: { xs: 'auto', md: 200 },
-                width: { xs: '100%', md: 'auto' }
+                minWidth: { xs: 'auto', md: 250 },
+                width: { xs: '100%', md: 'auto' },
+                minHeight: { md: 150 },
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center'
             }}>
                 <Typography variant="h6" sx={{
                     fontWeight: 'bold',
@@ -52,16 +56,19 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                     {formatCurrency(result.hourlyWage)}
                 </Typography>
                 {result.baseHourlyWage && (
-                    <Box sx={{ mt: 1 }}>
+                    <Box sx={{ mt: 0.5 }}>
                         <Typography variant="caption" sx={{
                             color: 'rgba(255, 255, 255, 0.7)',
-                            fontSize: '0.75rem'
+                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                            display: 'block',
+                            lineHeight: 1.2
                         }}>
                             基本時給
                         </Typography>
                         <Typography variant="body2" sx={{
                             fontWeight: 'bold',
-                            fontSize: '0.9rem'
+                            fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                            lineHeight: 1.2
                         }}>
                             {formatCurrency(result.baseHourlyWage)}
                         </Typography>
@@ -81,7 +88,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
             {/* 内訳 */}
             <Box sx={{
                 flex: 1,
-                minWidth: { xs: 'auto', md: 300 },
+                minWidth: { xs: 'auto', md: 280 },
                 width: { xs: '100%', md: 'auto' }
             }}>
                 <Typography
@@ -108,7 +115,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                     }}
                 >
                     <Box sx={{
-                        minWidth: { xs: 'auto', sm: 120, md: 120 },
+                        minWidth: { xs: 'auto', sm: 110, md: 110 },
                         flex: { xs: 'none', sm: 1 },
                         width: { xs: '100%', sm: 'auto' },
                         textAlign: { xs: 'center', sm: 'left' }
@@ -148,7 +155,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                     </Box>
 
                     <Box sx={{
-                        minWidth: { xs: 'auto', sm: 120, md: 120 },
+                        minWidth: { xs: 'auto', sm: 110, md: 110 },
                         flex: { xs: 'none', sm: 1 },
                         width: { xs: '100%', sm: 'auto' },
                         textAlign: { xs: 'center', sm: 'left' }
@@ -179,7 +186,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                     </Box>
 
                     <Box sx={{
-                        minWidth: { xs: 'auto', sm: 120, md: 120 },
+                        minWidth: { xs: 'auto', sm: 110, md: 110 },
                         flex: { xs: 'none', sm: 1 },
                         width: { xs: '100%', sm: 'auto' },
                         textAlign: { xs: 'center', sm: 'left' }
@@ -187,18 +194,16 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                         <Typography variant="caption">
                             {result.totalOvertimeHours ? '年間総労働時間' : '年間労働時間'}
                         </Typography>
-                        {result.totalOvertimeHours && (
-                            <Typography
-                                variant="caption"
-                                sx={{
-                                    color: 'rgba(255, 255, 255, 0.8)',
-                                    fontSize: '0.7rem',
-                                    display: 'block',
-                                }}
-                            >
-                                （残業：{formatNumber(result.totalOvertimeHours * 12)}h）
-                            </Typography>
-                        )}
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                fontSize: '0.7rem',
+                            }}
+                        >
+                            {result.totalOvertimeHours ? `（残業：${formatNumber(result.totalOvertimeHours * 12)}h）` : ''}
+                        </Typography>
+
                         <Typography
                             variant="body1"
                             sx={{
@@ -211,7 +216,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                     </Box>
 
                     <Box sx={{
-                        minWidth: { xs: 'auto', sm: 100, md: 100 },
+                        minWidth: { xs: 'auto', sm: 90, md: 90 },
                         flex: { xs: 'none', sm: 1 },
                         width: { xs: '100%', sm: 'auto' },
                         textAlign: { xs: 'center', sm: 'left' }
