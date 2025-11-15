@@ -194,18 +194,16 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({
                         <Typography variant="caption">
                             {result.totalOvertimeHours ? '年間総労働時間' : '年間労働時間'}
                         </Typography>
-                        {result.totalOvertimeHours && (
-                            <Typography
-                                variant="caption"
-                                sx={{
-                                    color: 'rgba(255, 255, 255, 0.8)',
-                                    fontSize: '0.7rem',
-                                    display: 'block',
-                                }}
-                            >
-                                （残業：{formatNumber(result.totalOvertimeHours * 12)}h）
-                            </Typography>
-                        )}
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                fontSize: '0.7rem',
+                            }}
+                        >
+                            {result.totalOvertimeHours ? `（残業：${formatNumber(result.totalOvertimeHours * 12)}h）` : ''}
+                        </Typography>
+
                         <Typography
                             variant="body1"
                             sx={{
