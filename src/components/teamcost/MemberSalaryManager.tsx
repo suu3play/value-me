@@ -321,6 +321,18 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
                     </Select>
                   </Box>
                   <Box sx={{ width: '200px', minWidth: '200px', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <TextField
+                      type="number"
+                      value={salaryAmount}
+                      onChange={(e) => handleSalaryAmountChange(position.name, parseFloat(e.target.value) || 0)}
+                      size="small"
+                      placeholder={getPlaceholder(salaryType)}
+                      inputProps={{ min: 0, max: 999999 }}
+                      InputProps={{
+                        endAdornment: <InputAdornment position="end">{getUnitLabel(salaryType)}</InputAdornment>,
+                      }}
+                      sx={{ flex: 1 }}
+                    />
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                       <IconButton
                         size="small"
@@ -337,18 +349,6 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
                         <ArrowDropDownIcon fontSize="small" />
                       </IconButton>
                     </Box>
-                    <TextField
-                      type="number"
-                      value={salaryAmount}
-                      onChange={(e) => handleSalaryAmountChange(position.name, parseFloat(e.target.value) || 0)}
-                      size="small"
-                      placeholder={getPlaceholder(salaryType)}
-                      inputProps={{ min: 0, max: 999999 }}
-                      InputProps={{
-                        endAdornment: <InputAdornment position="end">{getUnitLabel(salaryType)}</InputAdornment>,
-                      }}
-                      sx={{ flex: 1 }}
-                    />
                   </Box>
                   <Box sx={{ width: '120px', minWidth: '120px' }}>
                     <Typography variant="body2" color={salaryAmount > 0 ? 'primary.main' : 'text.secondary'}>
