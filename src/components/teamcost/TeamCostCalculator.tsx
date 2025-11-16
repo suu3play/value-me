@@ -12,11 +12,8 @@ import {
 } from '@mui/material';
 import {
   Calculate as CalculateIcon,
-  TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
-import { PositionManager } from './PositionManager';
-import { WorkItemManager } from './WorkItemManager';
-import { SalaryManager } from './SalaryManager';
+import { MemberSalaryManager } from './MemberSalaryManager';
 import type { TeamCostData, CostCalculationResult } from '../../types/teamCost';
 import { 
   calculateTeamCost, 
@@ -100,23 +97,12 @@ export const TeamCostCalculator: React.FC = () => {
         {/* 設定エリア */}
         <Grid size={{ xs: 12, lg: 8 }}>
           <Stack spacing={3}>
-            {/* メンバー構成 */}
-            <PositionManager
-              positions={teamData.positions}
-              onChange={(positions) => updateTeamData({ positions })}
-            />
-
-            {/* 作業項目 */}
-            <WorkItemManager
-              workItems={teamData.workItems}
-              onChange={(workItems) => updateTeamData({ workItems })}
-            />
-
-            {/* 給与設定 */}
-            <SalaryManager
+            {/* メンバー構成・給与設定 */}
+            <MemberSalaryManager
               positions={teamData.positions}
               salaryData={teamData.salaryData}
-              onChange={(salaryData) => updateTeamData({ salaryData })}
+              onPositionsChange={(positions) => updateTeamData({ positions })}
+              onSalaryChange={(salaryData) => updateTeamData({ salaryData })}
             />
           </Stack>
         </Grid>
@@ -185,39 +171,6 @@ export const TeamCostCalculator: React.FC = () => {
                     </Box>
 
                     <Divider sx={{ my: 2 }} />
-
-                    {/* 作業別内訳 */}
-                    <Box sx={{ mb: 3 }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <TrendingUpIcon sx={{ mr: 0.5, fontSize: 16 }} />
-                        作業別コスト
-                      </Typography>
-                      <Stack spacing={1}>
-                        {result.workBreakdown
-                          .sort((a, b) => b.totalAnnualCost - a.totalAnnualCost)
-                          .slice(0, 5)
-                          .map((work) => (
-                            <Box key={work.workName} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Box sx={{ flex: 1 }}>
-                                <Typography variant="body2" noWrap>
-                                  {work.workName}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {work.frequency} × {work.hoursPerExecution}h
-                                </Typography>
-                              </Box>
-                              <Typography variant="body2" fontWeight="medium">
-                                {formatCurrency(work.totalAnnualCost)}
-                              </Typography>
-                            </Box>
-                          ))}
-                        {result.workBreakdown.length > 5 && (
-                          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                            ...他 {result.workBreakdown.length - 5} 項目
-                          </Typography>
-                        )}
-                      </Stack>
-                    </Box>
 
                     {/* 役職別内訳 */}
                     <Box>

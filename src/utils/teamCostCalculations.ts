@@ -1,13 +1,11 @@
-import type { 
-  TeamCostData, 
-  CostCalculationResult, 
-  Position, 
-  WorkItem, 
-  SalaryData
+import type {
+  TeamCostData,
+  CostCalculationResult,
+  Position
 } from '../types/teamCost';
 
 // 役職ごとの年収を計算
-export const calculateAnnualSalary = (amount: number, type: SalaryData['type']): number => {
+export const calculateAnnualSalary = (amount: number, type: 'hourly' | 'monthly' | 'annual'): number => {
   switch (type) {
     case 'hourly':
       return amount * 8 * 250; // 時給 × 8時間 × 250日
@@ -25,43 +23,12 @@ export const calculateHourlyRate = (annualSalary: number): number => {
   return annualSalary / (8 * 250); // 年収 ÷ (8時間 × 250日)
 };
 
-// 年間実行回数を計算
-export const calculateAnnualExecutions = (frequency: WorkItem['frequency']): number => {
-  const multipliers = {
-    daily: 365,
-    weekly: 52,
-    monthly: 12,
-    yearly: 1,
-  };
-  return multipliers[frequency];
-};
-
-// チームの平均時給を計算
-export const calculateTeamAverageHourlyRate = (
-  positions: Position[], 
-  salaryData: SalaryData
-): number => {
-  const totalMembers = positions.reduce((sum, pos) => sum + pos.count, 0);
-  if (totalMembers === 0) return 0;
-
-  const totalHourlyCost = positions.reduce((sum, pos) => {
-    const annualSalary = calculateAnnualSalary(
-      salaryData.positions[pos.name] || 0, 
-      salaryData.type
-    );
-    const hourlyRate = calculateHourlyRate(annualSalary);
-    return sum + (hourlyRate * pos.count);
-  }, 0);
-
-  return totalHourlyCost / totalMembers;
-};
-
 // メインのコスト計算関数
 export const calculateTeamCost = (data: TeamCostData): CostCalculationResult => {
   // 役職別の内訳を計算
   const positionBreakdown = data.positions.map(position => {
-    const salaryAmount = data.salaryData.positions[position.name] || 0;
-    const annualSalaryPerPerson = calculateAnnualSalary(salaryAmount, data.salaryData.type);
+    const salaryInfo = data.salaryData.positions[position.name] || { type: 'monthly', amount: 0 };
+    const annualSalaryPerPerson = calculateAnnualSalary(salaryInfo.amount, salaryInfo.type);
     const totalAnnualSalary = annualSalaryPerPerson * position.count;
     const hourlyRate = calculateHourlyRate(annualSalaryPerPerson);
 
@@ -74,30 +41,12 @@ export const calculateTeamCost = (data: TeamCostData): CostCalculationResult => 
     };
   });
 
-  // チーム全体の時給平均
-  const teamAverageHourlyRate = calculateTeamAverageHourlyRate(data.positions, data.salaryData);
+  // 全体の合計を計算（役職別給与の総計）
+  const totalAnnualCost = positionBreakdown.reduce((sum, pos) => sum + pos.totalAnnualSalary, 0);
 
-  // 作業別の内訳を計算
-  const workBreakdown = data.workItems.map(workItem => {
-    const annualExecutions = calculateAnnualExecutions(workItem.frequency);
-    const totalAnnualHours = workItem.hours * annualExecutions;
-    const costPerExecution = workItem.hours * teamAverageHourlyRate;
-    const totalAnnualCost = costPerExecution * annualExecutions;
-
-    return {
-      workName: workItem.name,
-      frequency: workItem.frequency,
-      hoursPerExecution: workItem.hours,
-      annualExecutions,
-      totalAnnualHours,
-      costPerExecution,
-      totalAnnualCost,
-    };
-  });
-
-  // 全体の合計を計算
-  const totalAnnualCost = workBreakdown.reduce((sum, work) => sum + work.totalAnnualCost, 0);
-  const totalAnnualHours = workBreakdown.reduce((sum, work) => sum + work.totalAnnualHours, 0);
+  // 総労働時間を計算（年間労働日数 × 8時間 × 総メンバー数）
+  const totalMembers = data.positions.reduce((sum, pos) => sum + pos.count, 0);
+  const totalAnnualHours = 250 * 8 * totalMembers;
   const totalMonthlyHours = totalAnnualHours / 12;
 
   return {
@@ -105,7 +54,6 @@ export const calculateTeamCost = (data: TeamCostData): CostCalculationResult => 
     totalMonthlyHours,
     totalAnnualHours,
     positionBreakdown,
-    workBreakdown,
   };
 };
 
@@ -117,23 +65,15 @@ export const createDefaultTeamCostData = (): TeamCostData => {
     { id: `pos_${Date.now()}_3`, name: 'ジュニア', count: 3 },
   ];
 
-  const defaultWorkItems: WorkItem[] = [
-    { id: `work_${Date.now()}_1`, name: '定例会', frequency: 'monthly', hours: 2 },
-    { id: `work_${Date.now()}_2`, name: 'ドキュメント作成', frequency: 'weekly', hours: 1 },
-    { id: `work_${Date.now()}_3`, name: '日次MTG', frequency: 'daily', hours: 0.5 },
-  ];
-
   return {
     id: `team_${Date.now()}`,
     name: '作業チーム',
     positions: defaultPositions,
-    workItems: defaultWorkItems,
     salaryData: {
-      type: 'monthly',
       positions: {
-        'リーダー': 55,
-        'ミドル': 40,
-        'ジュニア': 20,
+        'リーダー': { type: 'monthly', amount: 55 },
+        'ミドル': { type: 'monthly', amount: 40 },
+        'ジュニア': { type: 'monthly', amount: 20 },
       },
     },
     createdAt: new Date().toISOString(),
@@ -149,13 +89,9 @@ export const validateTeamCostData = (data: TeamCostData): string[] => {
     errors.push('メンバー構成が設定されていません');
   }
 
-  if (data.workItems.length === 0) {
-    errors.push('作業項目が設定されていません');
-  }
-
   const positionNames = data.positions.map(p => p.name);
-  const missingSalaries = positionNames.filter(name => 
-    !(name in data.salaryData.positions) || data.salaryData.positions[name] === 0
+  const missingSalaries = positionNames.filter(name =>
+    !(name in data.salaryData.positions) || !data.salaryData.positions[name] || data.salaryData.positions[name].amount === 0
   );
 
   if (missingSalaries.length > 0) {

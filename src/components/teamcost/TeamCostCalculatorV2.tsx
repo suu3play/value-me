@@ -3,7 +3,6 @@ import {
   Box,
 } from '@mui/material';
 import { MemberSalaryManager } from './MemberSalaryManager';
-import { WorkItemManager } from './WorkItemManager';
 import type { TeamCostData, CostCalculationResult } from '../../types/teamCost';
 import { 
   calculateTeamCost, 
@@ -78,12 +77,6 @@ export const TeamCostCalculatorV2: React.FC<TeamCostCalculatorV2Props> = ({
         salaryData={teamData.salaryData}
         onPositionsChange={(positions) => updateTeamData({ positions })}
         onSalaryChange={(salaryData) => updateTeamData({ salaryData })}
-      />
-
-      {/* 作業項目 */}
-      <WorkItemManager
-        workItems={teamData.workItems}
-        onChange={(workItems) => updateTeamData({ workItems })}
       />
     </Box>
   );
