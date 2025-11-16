@@ -20,6 +20,8 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
   People as PeopleIcon,
+  ArrowDropUp as ArrowDropUpIcon,
+  ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material';
 import type { Position, SalaryData } from '../../types/teamCost';
 
@@ -82,14 +84,46 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
     ));
   };
 
-  const handleSalaryTypeChange = (positionName: string, type: 'hourly' | 'monthly' | 'annual') => {
+  const handleSalaryTypeChange = (positionName: string, newType: 'hourly' | 'monthly' | 'annual') => {
+    const currentSalary = salaryData.positions[positionName] || { type: 'monthly', amount: 0 };
+    const oldType = currentSalary.type;
+    const oldAmount = currentSalary.amount;
+
+    // 現在の給与を年収に変換
+    let annualAmount = 0;
+    switch (oldType) {
+      case 'hourly':
+        annualAmount = oldAmount * 8 * 250; // 時給 × 8時間 × 250日
+        break;
+      case 'monthly':
+        annualAmount = oldAmount * 10000 * 12; // 万円/月 → 円/年
+        break;
+      case 'annual':
+        annualAmount = oldAmount * 10000; // 万円/年 → 円/年
+        break;
+    }
+
+    // 新しい給与形式に変換
+    let newAmount = 0;
+    switch (newType) {
+      case 'hourly':
+        newAmount = Math.round(annualAmount / (8 * 250)); // 円/年 → 時給
+        break;
+      case 'monthly':
+        newAmount = Math.round(annualAmount / (10000 * 12)); // 円/年 → 万円/月
+        break;
+      case 'annual':
+        newAmount = Math.round(annualAmount / 10000); // 円/年 → 万円/年
+        break;
+    }
+
     onSalaryChange({
       ...salaryData,
       positions: {
         ...salaryData.positions,
         [positionName]: {
-          type,
-          amount: salaryData.positions[positionName]?.amount || 0,
+          type: newType,
+          amount: newAmount,
         },
       },
     });
@@ -106,6 +140,27 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
         },
       },
     });
+  };
+
+  const getStepAmount = (type: 'hourly' | 'monthly' | 'annual') => {
+    switch (type) {
+      case 'hourly': return 1000; // 1000円単位
+      case 'monthly': return 1; // 1万円単位（入力は万円）
+      case 'annual': return 10; // 10万円単位（入力は万円）
+      default: return 1;
+    }
+  };
+
+  const handleIncrement = (positionName: string) => {
+    const salaryInfo = salaryData.positions[positionName] || { type: 'monthly', amount: 0 };
+    const step = getStepAmount(salaryInfo.type);
+    handleSalaryAmountChange(positionName, salaryInfo.amount + step);
+  };
+
+  const handleDecrement = (positionName: string) => {
+    const salaryInfo = salaryData.positions[positionName] || { type: 'monthly', amount: 0 };
+    const step = getStepAmount(salaryInfo.type);
+    handleSalaryAmountChange(positionName, Math.max(0, salaryInfo.amount - step));
   };
 
   const getUnitLabel = (type: 'hourly' | 'monthly' | 'annual') => {
@@ -179,7 +234,7 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
                   給与形式
                 </Typography>
               </Box>
-              <Box sx={{ width: '120px', minWidth: '120px' }}>
+              <Box sx={{ width: '200px', minWidth: '200px' }}>
                 <Typography variant="caption" color="text.secondary" fontWeight="medium">
                   給与額
                 </Typography>
@@ -265,7 +320,23 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
                       <MenuItem value="hourly">時給</MenuItem>
                     </Select>
                   </Box>
-                  <Box sx={{ width: '120px', minWidth: '120px' }}>
+                  <Box sx={{ width: '200px', minWidth: '200px', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleIncrement(position.name)}
+                        sx={{ padding: '2px' }}
+                      >
+                        <ArrowDropUpIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDecrement(position.name)}
+                        sx={{ padding: '2px' }}
+                      >
+                        <ArrowDropDownIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
                     <TextField
                       type="number"
                       value={salaryAmount}
@@ -276,7 +347,7 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
                       InputProps={{
                         endAdornment: <InputAdornment position="end">{getUnitLabel(salaryType)}</InputAdornment>,
                       }}
-                      fullWidth
+                      sx={{ flex: 1 }}
                     />
                   </Box>
                   <Box sx={{ width: '120px', minWidth: '120px' }}>
