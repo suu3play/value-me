@@ -331,7 +331,20 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
                       InputProps={{
                         endAdornment: <InputAdornment position="end">{getUnitLabel(salaryType)}</InputAdornment>,
                       }}
-                      sx={{ flex: 1 }}
+                      sx={{
+                        flex: 1,
+                        '& input[type=number]': {
+                          MozAppearance: 'textfield',
+                        },
+                        '& input[type=number]::-webkit-outer-spin-button': {
+                          WebkitAppearance: 'none',
+                          margin: 0,
+                        },
+                        '& input[type=number]::-webkit-inner-spin-button': {
+                          WebkitAppearance: 'none',
+                          margin: 0,
+                        },
+                      }}
                     />
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                       <IconButton
