@@ -144,7 +144,7 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
 
   const getStepAmount = (type: 'hourly' | 'monthly' | 'annual') => {
     switch (type) {
-      case 'hourly': return 1000; // 1000円単位
+      case 'hourly': return 100; // 100円単位
       case 'monthly': return 1; // 1万円単位（入力は万円）
       case 'annual': return 10; // 10万円単位（入力は万円）
       default: return 1;
