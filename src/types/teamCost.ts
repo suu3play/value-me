@@ -4,6 +4,7 @@ export interface Position {
   id: string;
   name: string;
   count: number;
+  workingRate?: number; // 稼働率 0-100 (%)、デフォルト100
 }
 
 export interface SalaryData {
@@ -20,6 +21,11 @@ export interface TeamCostData {
   name: string;
   positions: Position[];
   salaryData: SalaryData;
+  // 法定福利費・間接費設定
+  includeWelfareCost?: boolean; // 法定福利費を含む
+  welfareRate?: number; // デフォルト15%
+  includeOverheadCost?: boolean; // 間接費を含む
+  overheadRate?: number; // デフォルト25%
   createdAt: string;
   updatedAt: string;
 }
@@ -31,8 +37,13 @@ export interface CostCalculationResult {
   positionBreakdown: {
     positionName: string;
     count: number;
+    workingRate: number;
     annualSalaryPerPerson: number;
     totalAnnualSalary: number;
     hourlyRate: number;
   }[];
+  // コスト内訳
+  baseSalaryCost: number; // 基本給与
+  welfareCost: number; // 法定福利費
+  overheadCost: number; // 間接費
 }

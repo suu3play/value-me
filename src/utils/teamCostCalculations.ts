@@ -28,25 +28,42 @@ export const calculateTeamCost = (data: TeamCostData): CostCalculationResult => 
   // 役職別の内訳を計算
   const positionBreakdown = data.positions.map(position => {
     const salaryInfo = data.salaryData.positions[position.name] || { type: 'monthly', amount: 0 };
+    const workingRate = position.workingRate ?? 100; // デフォルト100%
     const annualSalaryPerPerson = calculateAnnualSalary(salaryInfo.amount, salaryInfo.type);
-    const totalAnnualSalary = annualSalaryPerPerson * position.count;
+    // 稼働率を考慮した給与計算
+    const adjustedAnnualSalary = annualSalaryPerPerson * (workingRate / 100);
+    const totalAnnualSalary = adjustedAnnualSalary * position.count;
     const hourlyRate = calculateHourlyRate(annualSalaryPerPerson);
 
     return {
       positionName: position.name,
       count: position.count,
-      annualSalaryPerPerson,
+      workingRate,
+      annualSalaryPerPerson: adjustedAnnualSalary,
       totalAnnualSalary,
       hourlyRate,
     };
   });
 
-  // 全体の合計を計算（役職別給与の総計）
-  const totalAnnualCost = positionBreakdown.reduce((sum, pos) => sum + pos.totalAnnualSalary, 0);
+  // 基本給与の合計
+  const baseSalaryCost = positionBreakdown.reduce((sum, pos) => sum + pos.totalAnnualSalary, 0);
 
-  // 総労働時間を計算（年間労働日数 × 8時間 × 総メンバー数）
-  const totalMembers = data.positions.reduce((sum, pos) => sum + pos.count, 0);
-  const totalAnnualHours = 250 * 8 * totalMembers;
+  // 法定福利費の計算
+  const welfareRate = data.welfareRate ?? 15; // デフォルト15%
+  const welfareCost = data.includeWelfareCost ? baseSalaryCost * (welfareRate / 100) : 0;
+
+  // 間接費の計算
+  const overheadRate = data.overheadRate ?? 25; // デフォルト25%
+  const overheadCost = data.includeOverheadCost ? baseSalaryCost * (overheadRate / 100) : 0;
+
+  // 総コスト
+  const totalAnnualCost = baseSalaryCost + welfareCost + overheadCost;
+
+  // 総労働時間を計算（年間労働日数 × 8時間 × 総メンバー数 × 稼働率）
+  const totalAnnualHours = data.positions.reduce((sum, pos) => {
+    const workingRate = pos.workingRate ?? 100;
+    return sum + (250 * 8 * pos.count * (workingRate / 100));
+  }, 0);
   const totalMonthlyHours = totalAnnualHours / 12;
 
   return {
@@ -54,6 +71,9 @@ export const calculateTeamCost = (data: TeamCostData): CostCalculationResult => 
     totalMonthlyHours,
     totalAnnualHours,
     positionBreakdown,
+    baseSalaryCost,
+    welfareCost,
+    overheadCost,
   };
 };
 
