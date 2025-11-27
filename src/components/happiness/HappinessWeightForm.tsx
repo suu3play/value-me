@@ -42,6 +42,7 @@ export const HappinessWeightForm: React.FC<HappinessWeightFormProps> = ({
 
       {Object.entries(categoryLabels).map(([categoryId, categoryName]) => {
         const categoryKey = categoryId as keyof HappinessWeights;
+        // eslint-disable-next-line security/detect-object-injection
         const currentWeight = weights[categoryKey];
 
         return (

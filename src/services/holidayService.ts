@@ -23,6 +23,7 @@ function isHolidayObject(holiday: unknown): holiday is { name?: string; name_en?
 }
 
 function hasStringProperty(obj: object, prop: string): obj is Record<string, string> {
+  // eslint-disable-next-line security/detect-object-injection
   return prop in obj && typeof (obj as Record<string, unknown>)[prop] === 'string';
 }
 

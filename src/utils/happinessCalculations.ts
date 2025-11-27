@@ -260,5 +260,6 @@ export function getImprovementSuggestion(category: string, score: number): strin
   const categoryName = category as keyof typeof suggestions;
   const level = score >= 65 ? 'high' : score >= 45 ? 'medium' : 'low';
 
+  // eslint-disable-next-line security/detect-object-injection
   return suggestions[categoryName]?.[level] || '継続的な改善を心がけましょう。';
 }

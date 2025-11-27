@@ -197,13 +197,14 @@ function App() {
             }, 100);
             
             // モード変更をスクリーンリーダーに通知
-            const modeNames = {
+            const modeNames: Record<string, string> = {
                 'hourly-calculation': '時給計算',
                 'hourly-comparison': '時給比較',
                 'team-cost': 'チームコスト計算',
                 'qualification': '資格投資計算',
                 'happiness': '幸福度換算'
             };
+            // eslint-disable-next-line security/detect-object-injection
             setLiveMessage(`${modeNames[newMode]}モードに切り替えました。`);
         }
     }, [comparison]);

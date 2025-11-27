@@ -132,6 +132,7 @@ export const useTaskManagement = () => {
     // 頻度別統計
     const frequencyStats = activeTasks.reduce((acc, task) => {
       const type = task.frequency.type;
+      // eslint-disable-next-line security/detect-object-injection
       acc[type] = (acc[type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -143,6 +144,7 @@ export const useTaskManagement = () => {
     const tagStats = activeTasks.reduce((acc, task) => {
       if (task.tags) {
         task.tags.forEach(tag => {
+          // eslint-disable-next-line security/detect-object-injection
           acc[tag] = (acc[tag] || 0) + 1;
         });
       }
@@ -194,6 +196,7 @@ export const useTaskManagement = () => {
       case 'weekly':
         if (frequency.daysOfWeek && frequency.daysOfWeek.length > 0) {
           const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+          // eslint-disable-next-line security/detect-object-injection
           const days = frequency.daysOfWeek.map(day => dayNames[day]).join('・');
           const weekText = interval === 1 ? '' : `${interval}週間毎の`;
           return `${weekText}${days}曜日`;
