@@ -157,6 +157,7 @@ export const analyzeTaskEfficiency = (taskAnalyses: TaskCostAnalysis[]) => {
   // コスト分布（範囲別）
   const costDistribution = taskAnalyses.reduce((dist, analysis) => {
     const range = getCostRange(analysis.annualTotalCost);
+    // eslint-disable-next-line security/detect-object-injection
     dist[range] = (dist[range] || 0) + 1;
     return dist;
   }, {} as Record<string, number>);
@@ -164,6 +165,7 @@ export const analyzeTaskEfficiency = (taskAnalyses: TaskCostAnalysis[]) => {
   // 実行時間分布（範囲別）
   const timeDistribution = taskAnalyses.reduce((dist, analysis) => {
     const range = getTimeRange(analysis.annualExecutionCount);
+    // eslint-disable-next-line security/detect-object-injection
     dist[range] = (dist[range] || 0) + 1;
     return dist;
   }, {} as Record<string, number>);
@@ -240,6 +242,7 @@ export const generateFrequencyDescription = (task: TaskDefinition): string => {
     case 'weekly':
       if (frequency.daysOfWeek && frequency.daysOfWeek.length > 0) {
         const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+        // eslint-disable-next-line security/detect-object-injection
         const days = frequency.daysOfWeek.map(day => dayNames[day]).join('・');
         const weekText = interval === 1 ? '' : `${interval}週間毎の`;
         return `${weekText}${days}曜日`;

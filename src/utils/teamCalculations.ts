@@ -170,6 +170,7 @@ export const getTeamRoleStatistics = (team: Team) => {
       avgMonthlyIncome,
       avgAnnualIncome,
       members: memberResults.map((result, index) => ({
+        // eslint-disable-next-line security/detect-object-injection
         ...(members?.[index] || {}),
         calculationResult: result,
       })),

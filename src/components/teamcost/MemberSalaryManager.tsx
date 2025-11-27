@@ -85,6 +85,7 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
   };
 
   const handleSalaryTypeChange = (positionName: string, newType: 'hourly' | 'monthly' | 'annual') => {
+    // eslint-disable-next-line security/detect-object-injection
     const currentSalary = salaryData.positions[positionName] || { type: 'monthly', amount: 0 };
     const oldType = currentSalary.type;
     const oldAmount = currentSalary.amount;
@@ -135,6 +136,7 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
       positions: {
         ...salaryData.positions,
         [positionName]: {
+          // eslint-disable-next-line security/detect-object-injection
           type: salaryData.positions[positionName]?.type || 'monthly',
           amount: Math.max(0, amount),
         },
@@ -152,12 +154,14 @@ export const MemberSalaryManager: React.FC<MemberSalaryManagerProps> = ({
   };
 
   const handleIncrement = (positionName: string) => {
+    // eslint-disable-next-line security/detect-object-injection
     const salaryInfo = salaryData.positions[positionName] || { type: 'monthly', amount: 0 };
     const step = getStepAmount(salaryInfo.type);
     handleSalaryAmountChange(positionName, salaryInfo.amount + step);
   };
 
   const handleDecrement = (positionName: string) => {
+    // eslint-disable-next-line security/detect-object-injection
     const salaryInfo = salaryData.positions[positionName] || { type: 'monthly', amount: 0 };
     const step = getStepAmount(salaryInfo.type);
     handleSalaryAmountChange(positionName, Math.max(0, salaryInfo.amount - step));

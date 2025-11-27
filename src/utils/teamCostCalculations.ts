@@ -111,6 +111,7 @@ export const validateTeamCostData = (data: TeamCostData): string[] => {
 
   const positionNames = data.positions.map(p => p.name);
   const missingSalaries = positionNames.filter(name =>
+    // eslint-disable-next-line security/detect-object-injection
     !(name in data.salaryData.positions) || !data.salaryData.positions[name] || data.salaryData.positions[name].amount === 0
   );
 

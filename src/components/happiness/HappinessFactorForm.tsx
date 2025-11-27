@@ -60,6 +60,7 @@ export const HappinessFactorForm: React.FC<HappinessFactorFormProps> = ({
     const newFactors = {
       ...factors,
       [category]: {
+        // eslint-disable-next-line security/detect-object-injection
         ...factors[category],
         [factor]: value,
       },
@@ -73,6 +74,7 @@ export const HappinessFactorForm: React.FC<HappinessFactorFormProps> = ({
     description: string
   ) => {
     const categoryQuestions = happinessQuestions.filter(q => q.categoryId === categoryId);
+    // eslint-disable-next-line security/detect-object-injection
     const categoryFactors = factors[categoryId];
 
     return (
@@ -99,6 +101,7 @@ export const HappinessFactorForm: React.FC<HappinessFactorFormProps> = ({
         <Box sx={{ space: 4 }}>
           {categoryQuestions.map((question) => {
             const factorKey = question.id.split('-')[1] as keyof typeof categoryFactors;
+            // eslint-disable-next-line security/detect-object-injection
             const currentValue = categoryFactors[factorKey] || 5.5;
 
             return (

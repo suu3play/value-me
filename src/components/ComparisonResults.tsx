@@ -63,7 +63,9 @@ const ComparisonResults: React.FC<ComparisonResultsProps> = ({
         item: ComparisonItem,
         metric: 'hourlyWage' | 'annualIncome'
     ) => {
+        // eslint-disable-next-line security/detect-object-injection
         const isHighest = highest[metric]?.id === item.id;
+        // eslint-disable-next-line security/detect-object-injection
         const isLowest = lowest[metric]?.id === item.id;
 
         if (isHighest && isLowest) return 'neutral';

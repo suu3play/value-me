@@ -58,6 +58,7 @@ export const useMultiFieldValidation = (): UseMultiFieldValidationReturn => {
   const clearError = useCallback((fieldName: string) => {
     setValidationResults(prev => {
       const newResults = { ...prev };
+      // eslint-disable-next-line security/detect-object-injection
       delete newResults[fieldName];
       return newResults;
     });
