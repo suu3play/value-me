@@ -147,7 +147,6 @@ function App() {
 
                 if (result.hourlyWage > 0) {
                     calculationHistory.addToHistory(calculationData, result);
-                    console.log('履歴に保存されました:', result.hourlyWage);
                 }
             } catch (error) {
                 console.error('履歴保存エラー:', error);
