@@ -123,7 +123,6 @@ export const useCalculationHistory = (): UseCalculationHistoryReturn => {
             latestEntry.result.actualMonthlyIncome === result.actualMonthlyIncome;
         
           if (isSameResult) {
-            console.log('重複した計算結果のため履歴追加をスキップしました');
             return prevHistory; // 重複の場合は追加しない
           }
         }
